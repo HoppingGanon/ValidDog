@@ -66,18 +66,20 @@ export function matchPath(
 }
 
 /**
- * OpenAPIのパスパターンを正規表現に変換
+ * OpenAPIのパスパターンを正規表現に変換（後方一致）
  * 例: /users/{userId} -> /users/([^/]+)
+ * /bbb/auth は /auth にマッチする
  */
 function pathPatternToRegex(pathPattern: string): RegExp {
   const regexPattern = pathPattern
     .replace(/\{[^}]+\}/g, '([^/]+)')
     .replace(/\//g, '\\/');
-  return new RegExp(`^${regexPattern}$`);
+  // 後方一致にするため、先頭の ^ を削除
+  return new RegExp(`${regexPattern}$`);
 }
 
 /**
- * パスパラメータを抽出
+ * パスパラメータを抽出（後方一致対応）
  */
 function extractPathParams(
   pathPattern: string,
@@ -99,6 +101,7 @@ function extractPathParams(
   const urlMatch = requestUrl.match(pathRegex);
 
   if (urlMatch && paramNames.length > 0) {
+    // 後方一致の場合、キャプチャグループのインデックスは変わらない
     paramNames.forEach((name, index) => {
       params[name] = urlMatch[index + 1];
     });

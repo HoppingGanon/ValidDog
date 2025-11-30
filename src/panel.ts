@@ -7,6 +7,7 @@ import { NetworkRequest, OpenAPISpec, ValidationResult } from './types';
 let currentSpec: OpenAPISpec | null = null;
 let requests: NetworkRequest[] = [];
 let selectedRequestId: string | null = null;
+let filterMatchedOnly = false;
 
 /**
  * 初期化
@@ -43,6 +44,15 @@ function setupEventListeners(): void {
   const clearBtn = document.getElementById('clear-btn');
   if (clearBtn) {
     clearBtn.addEventListener('click', clearRequests);
+  }
+
+  // フィルターチェックボックス
+  const filterCheckbox = document.getElementById('filter-matched-only') as HTMLInputElement;
+  if (filterCheckbox) {
+    filterCheckbox.addEventListener('change', (e) => {
+      filterMatchedOnly = (e.target as HTMLInputElement).checked;
+      updateRequestList();
+    });
   }
 }
 
@@ -260,18 +270,32 @@ function updateRequestList(): void {
   const listElement = document.getElementById('request-list');
   if (!listElement) return;
 
-  if (requests.length === 0) {
-    listElement.innerHTML = `
-      <div class="empty-state">
-        <p>ネットワークリクエストが表示されます</p>
-        <p class="small">ページを操作してリクエストを生成してください</p>
-      </div>
-    `;
+  // フィルタリング
+  const filteredRequests = filterMatchedOnly 
+    ? requests.filter(r => r.matched)
+    : requests;
+
+  if (filteredRequests.length === 0) {
+    if (requests.length > 0 && filterMatchedOnly) {
+      listElement.innerHTML = `
+        <div class="empty-state">
+          <p>仕様書にマッチするリクエストがありません</p>
+          <p class="small">フィルターを解除するか、仕様書を確認してください</p>
+        </div>
+      `;
+    } else {
+      listElement.innerHTML = `
+        <div class="empty-state">
+          <p>ネットワークリクエストが表示されます</p>
+          <p class="small">ページを操作してリクエストを生成してください</p>
+        </div>
+      `;
+    }
     return;
   }
 
   listElement.innerHTML = '';
-  requests.forEach(request => {
+  filteredRequests.forEach(request => {
     const item = createRequestItem(request);
     listElement.appendChild(item);
   });

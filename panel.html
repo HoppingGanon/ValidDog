@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ValidKun Panel</title>
+    <link rel="stylesheet" href="styles-panel.css">
+</head>
+<body>
+    <div class="panel-container">
+        <!-- 左パネル: リクエスト一覧 -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <h2>Network Requests</h2>
+                <div class="header-controls">
+                    <button id="clear-btn" class="icon-button" title="クリア">🗑️</button>
+                    <button id="upload-spec-btn" class="icon-button" title="仕様書を読み込む">📄</button>
+                    <input type="file" id="spec-file-input" accept=".json,.yaml,.yml" style="display: none;">
+                </div>
+            </div>
+            <div id="spec-info" class="spec-info">仕様書が読み込まれていません</div>
+            <div class="request-list" id="request-list">
+                <div class="empty-state">
+                    <p>ネットワークリクエストが表示されます</p>
+                    <p class="small">ページを操作してリクエストを生成してください</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右パネル: 詳細表示 -->
+        <div class="right-panel">
+            <div class="panel-header">
+                <h2>Request Details</h2>
+            </div>
+            <div class="detail-content" id="detail-content">
+                <div class="empty-state">
+                    <p>左側からリクエストを選択してください</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dist/panel.js"></script>
+</body>
+</html>

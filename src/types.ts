@@ -97,3 +97,26 @@ export interface MatchedPath {
   pathParams: { [key: string]: string };
 }
 
+/**
+ * ネットワークリクエスト情報
+ */
+export interface NetworkRequest {
+  id: string;
+  method: string;
+  url: string;
+  path: string;
+  timestamp: number;
+  status?: number;
+  statusText?: string;
+  requestBody?: string;
+  responseBody?: string;
+  requestHeaders?: { [key: string]: string };
+  responseHeaders?: { [key: string]: string };
+  matched: boolean;
+  matchedPath?: string;
+  validationResult?: {
+    request: ValidationResult | null;
+    response: ValidationResult | null;
+  };
+  hasSchemaViolation: boolean;
+}

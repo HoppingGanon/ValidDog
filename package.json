@@ -6,9 +6,12 @@
   "main": "dist/bundle.js",
   "scripts": {
     "build": "rollup -c",
+    "build:chrome": "rollup -c rollup.config.chrome.js",
     "dev": "rollup -c -w",
+    "dev:chrome": "rollup -c rollup.config.chrome.js -w",
     "clean": "rm -rf dist",
     "rebuild": "npm run clean && npm run build",
+    "rebuild:chrome": "npm run clean && npm run build:chrome",
     "preview": "serve -l 8080",
     "lint": "eslint src/**/*.ts",
     "type-check": "tsc --noEmit"
@@ -23,6 +26,7 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
+    "@types/chrome": "^0.0.254",
     "@types/js-yaml": "^4.0.9",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",

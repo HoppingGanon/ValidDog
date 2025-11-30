@@ -1,0 +1,178 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  version: 1.0.0
+  description: サンプルAPI仕様書（テスト用）
+
+paths:
+  /users:
+    get:
+      summary: ユーザー一覧を取得
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    email:
+                      type: string
+                  required:
+                    - id
+                    - name
+    
+    post:
+      summary: 新規ユーザーを作成
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+                age:
+                  type: integer
+                  minimum: 0
+                  maximum: 150
+              required:
+                - name
+                - email
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  age:
+                    type: integer
+                required:
+                  - id
+                  - name
+                  - email
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /users/{userId}:
+    get:
+      summary: 特定のユーザーを取得
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  age:
+                    type: integer
+                required:
+                  - id
+                  - name
+                  - email
+        '404':
+          description: ユーザーが見つかりません
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    
+    put:
+      summary: ユーザー情報を更新
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                email:
+                  type: string
+                age:
+                  type: integer
+                  minimum: 0
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  age:
+                    type: integer
+        '404':
+          description: ユーザーが見つかりません
+
+    delete:
+      summary: ユーザーを削除
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 削除成功
+        '404':
+          description: ユーザーが見つかりません
+

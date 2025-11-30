@@ -278,6 +278,69 @@ body {
     overflow-y: auto;
 }
 
+/* JSON表示 */
+.json-viewer {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 16px;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+    max-height: 500px;
+    overflow-y: auto;
+    color: #d4d4d4;
+}
+
+.json-viewer pre {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+/* JSONシンタックスハイライト */
+.json-key {
+    color: #9cdcfe;
+}
+
+.json-string {
+    color: #ce9178;
+}
+
+.json-number {
+    color: #b5cea8;
+}
+
+.json-boolean {
+    color: #569cd6;
+}
+
+.json-null {
+    color: #569cd6;
+}
+
+.json-punctuation {
+    color: #d4d4d4;
+}
+
+/* エラー箇所のハイライト */
+.json-error {
+    background: rgba(255, 0, 0, 0.2);
+    color: #ff6b6b;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
+    text-decoration: underline;
+    text-decoration-color: #ff6b6b;
+}
+
+.json-error-line {
+    background: rgba(255, 0, 0, 0.1);
+    display: inline-block;
+    width: 100%;
+}
+
 /* バリデーション結果 */
 .validation-result {
     padding: 16px;

@@ -440,37 +440,27 @@ function showRequestDetail(request: NetworkRequest): void {
 
   // リクエストボディ
   if (request.requestBody) {
+    const requestErrors = request.validationResult?.request?.errors.map(e => e.path) || [];
     html += `
       <div class="detail-section">
         <h3>Request Body</h3>
-        <div class="code-block">${escapeHtml(formatJson(request.requestBody))}</div>
+        <div class="json-viewer"><pre>${highlightJson(request.requestBody, requestErrors)}</pre></div>
       </div>
     `;
   }
 
   // レスポンスボディ
   if (request.responseBody) {
+    const responseErrors = request.validationResult?.response?.errors.map(e => e.path) || [];
     html += `
       <div class="detail-section">
         <h3>Response Body</h3>
-        <div class="code-block">${escapeHtml(formatJson(request.responseBody))}</div>
+        <div class="json-viewer"><pre>${highlightJson(request.responseBody, responseErrors)}</pre></div>
       </div>
     `;
   }
 
   detailContent.innerHTML = html;
-}
-
-/**
- * JSONを整形
- */
-function formatJson(json: string): string {
-  try {
-    const parsed = JSON.parse(json);
-    return JSON.stringify(parsed, null, 2);
-  } catch {
-    return json;
-  }
 }
 
 /**
@@ -480,6 +470,120 @@ function escapeHtml(text: string): string {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+/**
+ * JSONをシンタックスハイライト付きで表示
+ */
+function highlightJson(json: string, errorPaths: string[] = []): string {
+  try {
+    const parsed = JSON.parse(json);
+    const formatted = JSON.stringify(parsed, null, 2);
+    
+    // エラーパスを解析
+    const errorKeys = new Set<string>();
+    errorPaths.forEach(path => {
+      // "requestBody.name" -> ["name"]
+      // "responseBody.user.email" -> ["user", "email"]
+      const parts = path.replace(/^(requestBody|responseBody)\./, '').split('.');
+      parts.forEach(part => {
+        // 配列インデックスも処理 "items[0]" -> "items", "0"
+        const arrayMatch = part.match(/^([^\[]+)\[(\d+)\]$/);
+        if (arrayMatch) {
+          errorKeys.add(arrayMatch[1]);
+        } else {
+          errorKeys.add(part);
+        }
+      });
+    });
+    
+    // JSONをトークンに分解してハイライト
+    let result = '';
+    let inString = false;
+    let currentToken = '';
+    let escapeNext = false;
+    
+    for (let i = 0; i < formatted.length; i++) {
+      const char = formatted[i];
+      
+      if (escapeNext) {
+        currentToken += char;
+        escapeNext = false;
+        continue;
+      }
+      
+      if (char === '\\' && inString) {
+        currentToken += char;
+        escapeNext = true;
+        continue;
+      }
+      
+      if (char === '"') {
+        if (inString) {
+          currentToken += char;
+          // 文字列の終わり - キーか値かを判定
+          const nextNonSpace = formatted.slice(i + 1).match(/^\s*:/);
+          const isKey = nextNonSpace !== null;
+          
+          const tokenContent = currentToken.slice(1, -1); // クォートを除去
+          const isError = errorKeys.has(tokenContent);
+          
+          if (isKey) {
+            result += `<span class="json-key${isError ? ' json-error' : ''}">${escapeHtml(currentToken)}</span>`;
+          } else {
+            result += `<span class="json-string">${escapeHtml(currentToken)}</span>`;
+          }
+          currentToken = '';
+          inString = false;
+        } else {
+          inString = true;
+          currentToken = char;
+        }
+      } else if (inString) {
+        currentToken += char;
+      } else if (/[{}[\],:]/.test(char)) {
+        // 直前のトークンを処理
+        if (currentToken.trim()) {
+          result += highlightToken(currentToken.trim());
+          currentToken = '';
+        }
+        result += `<span class="json-punctuation">${escapeHtml(char)}</span>`;
+      } else if (char === ' ' || char === '\n' || char === '\t' || char === '\r') {
+        // 直前のトークンを処理
+        if (currentToken.trim()) {
+          result += highlightToken(currentToken.trim());
+          currentToken = '';
+        }
+        result += escapeHtml(char);
+      } else {
+        currentToken += char;
+      }
+    }
+    
+    // 残りのトークンを処理
+    if (currentToken.trim()) {
+      result += highlightToken(currentToken.trim());
+    }
+    
+    return result;
+  } catch {
+    return escapeHtml(json);
+  }
+}
+
+/**
+ * トークンをハイライト
+ */
+function highlightToken(token: string): string {
+  if (token === 'true' || token === 'false') {
+    return `<span class="json-boolean">${escapeHtml(token)}</span>`;
+  } else if (token === 'null') {
+    return `<span class="json-null">${escapeHtml(token)}</span>`;
+  } else if (/^-?\d+\.?\d*$/.test(token)) {
+    return `<span class="json-number">${escapeHtml(token)}</span>`;
+  } else {
+    return escapeHtml(token);
+  }
 }
 
 /**

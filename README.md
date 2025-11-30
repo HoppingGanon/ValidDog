@@ -6,6 +6,8 @@ OpenAPI仕様書に基づいてリクエスト/レスポンスをバリデーシ
 
 - OpenAPI仕様書（YAML/JSON）の読み込みとLocalStorageへの保存
 - リクエストURLの自動パスマッチング
+  - フルURL（`https://example.com/users/123?key=value`）とパスのみ（`/users/123`）の両方に対応
+  - クエリパラメータは自動的に除去され、パス部分のみでマッチング
 - リクエストボディのバリデーション
 - レスポンスボディのバリデーション
 - TypeScriptによる型安全な実装
@@ -79,7 +81,10 @@ npm run preview
 ### 3. リクエスト/レスポンスを検証
 
 以下の情報を入力：
-- **リクエストURL**: 例 `/users/123`
+- **リクエストURL**: パスのみ、またはフルURLで入力可能
+  - パスのみ: `/users/123`
+  - フルURL: `https://example.com/users/123?key=value`
+  - クエリパラメータは自動的に除去され、パス部分だけがマッチングに使用されます
 - **HTTPメソッド**: GET, POST, PUT, PATCH, DELETE
 - **リクエストボディ**: JSON形式（POSTやPUTの場合）
 - **レスポンスボディ**: JSON形式
@@ -97,7 +102,7 @@ npm run preview
 `sample-api.yaml` を使用したテスト例：
 
 **例1: GET /users/123**
-- リクエストURL: `/users/123`
+- リクエストURL: `/users/123` または `https://api.example.com/users/123`
 - HTTPメソッド: `GET`
 - レスポンスボディ:
 ```json

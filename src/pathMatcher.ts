@@ -1,6 +1,32 @@
 import { OpenAPISpec, MatchedPath } from './types';
 
 /**
+ * URLからパス部分を抽出
+ * フルURL、パス+クエリ、パスのみのいずれにも対応
+ */
+function extractPathFromUrl(input: string): string {
+  // クエリパラメータを除去
+  const withoutQuery = input.split('?')[0];
+  
+  // フラグメントを除去
+  const withoutFragment = withoutQuery.split('#')[0];
+  
+  // フルURLの場合、パス部分のみを抽出
+  try {
+    // http:// または https:// で始まる場合
+    if (withoutFragment.match(/^https?:\/\//)) {
+      const url = new URL(withoutFragment);
+      return url.pathname;
+    }
+  } catch {
+    // URLのパースに失敗した場合は、そのまま使用
+  }
+  
+  // パスのみの場合はそのまま返す
+  return withoutFragment;
+}
+
+/**
  * リクエストURLとHTTPメソッドに一致するOpenAPIパスを検索
  */
 export function matchPath(
@@ -9,6 +35,9 @@ export function matchPath(
   method: string
 ): MatchedPath | null {
   const normalizedMethod = method.toLowerCase();
+  
+  // フルURLからパス部分を抽出
+  const path = extractPathFromUrl(requestUrl);
   
   // パスパラメータを抽出するための正規表現を生成
   for (const [pathPattern, pathItem] of Object.entries(spec.paths)) {
@@ -19,11 +48,11 @@ export function matchPath(
 
     // パスパターンを正規表現に変換
     const pathRegex = pathPatternToRegex(pathPattern);
-    const match = requestUrl.match(pathRegex);
+    const match = path.match(pathRegex);
 
     if (match) {
       // パスパラメータを抽出
-      const pathParams = extractPathParams(pathPattern, requestUrl);
+      const pathParams = extractPathParams(pathPattern, path);
       return {
         path: pathPattern,
         method: normalizedMethod,

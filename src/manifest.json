@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "ValidDog - OpenAPI Validator",
-  "version": "1.0.0",
+  "name": "ばりっどーぬ (ValidDog)",
+  "version": "0.9.0",
   "description": "OpenAPI仕様書に基づいてネットワークトラフィックを自動検証するDevToolsパネル",
   "permissions": [
     "storage"

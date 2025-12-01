@@ -348,25 +348,34 @@ function createRequestItem(request: NetworkRequest): HTMLElement {
     item.classList.add('selected');
   }
 
-  // ステータス判定
-  let statusClass = 'warning';
-  if (request.hasSchemaViolation) {
-    statusClass = 'error';
-  } else if (request.status && request.status >= 200 && request.status < 300) {
-    statusClass = 'success';
+  // スキーマ違反のビックリマークSVG
+  const schemaViolationIcon = request.hasSchemaViolation ? `
+    <div class="schema-violation-indicator">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 20h20L12 2z" fill="#ffc107" stroke="#f57c00" stroke-width="1.5"/>
+        <path d="M12 9v5" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="17" r="1" fill="#000"/>
+      </svg>
+    </div>
+  ` : '<div class="schema-violation-indicator"></div>';
+
+  // APIステータスの判定
+  let statusClass = '';
+  if (request.status) {
+    statusClass = request.status >= 200 && request.status < 300 ? 'success' : 'error';
   }
 
   const time = new Date(request.timestamp).toLocaleTimeString('ja-JP');
 
   item.innerHTML = `
-    <div class="status-indicator ${statusClass}"></div>
+    ${schemaViolationIcon}
     <div class="request-info">
       <div>
         <span class="request-method ${request.method}">${request.method.toUpperCase()}</span>
         <span class="request-url">${request.path}</span>
       </div>
       <div class="request-meta">
-        <span class="request-status">Status: ${request.status || '-'}</span>
+        <span class="request-status ${statusClass}">Status: ${request.status || '-'}</span>
         <span class="request-time">${time}</span>
       </div>
     </div>

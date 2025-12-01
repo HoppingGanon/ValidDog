@@ -138,25 +138,19 @@ body {
     background: #e3f2fd;
 }
 
-/* ステータスインジケーター */
-.status-indicator {
-    width: 8px;
-    height: 100%;
-    min-height: 40px;
-    border-radius: 4px;
+/* スキーマ違反インジケーター */
+.schema-violation-indicator {
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.status-indicator.success {
-    background: #28a745;
-}
-
-.status-indicator.error {
-    background: #dc3545;
-}
-
-.status-indicator.warning {
-    background: #ffc107;
+.schema-violation-indicator svg {
+    width: 20px;
+    height: 20px;
 }
 
 .request-info {
@@ -201,6 +195,19 @@ body {
 
 .request-status {
     font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.request-status.success {
+    background: #28a745;
+    color: white;
+}
+
+.request-status.error {
+    background: #dc3545;
+    color: white;
 }
 
 .request-time {

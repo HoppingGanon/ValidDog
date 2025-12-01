@@ -13,10 +13,12 @@
             <div class="panel-header">
                 <h2 id="header-app-title">ValidDog</h2>
                 <div class="header-controls">
-                    <select id="language-select" class="language-select">
-                        <option value="en">English</option>
-                        <option value="ja">日本語</option>
-                    </select>
+                    <div class="language-select-wrapper" data-flag="🇯🇵">
+                        <select id="language-select" class="language-select">
+                            <option value="ja">🇯🇵 日本語</option>
+                            <option value="en">🇺🇸 English</option>
+                        </select>
+                    </div>
                     <button id="clear-btn" class="icon-button" title="Clear">🗑️</button>
                     <button id="upload-spec-btn" class="icon-button" title="Upload Spec">📄</button>
                     <input type="file" id="spec-file-input" accept=".json,.yaml,.yml" style="display: none;">

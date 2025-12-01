@@ -48,6 +48,7 @@ function setupEventListeners(): void {
       const lang = (e.target as HTMLSelectElement).value as Language;
       setLanguage(lang);
       await saveLanguage(lang);
+      updateLanguageFlag();
       updateAllTexts();
       updateRequestList();
       if (selectedRequestId) {
@@ -136,7 +137,7 @@ async function saveLanguage(lang: Language): Promise<void> {
 async function restoreLanguage(): Promise<void> {
   try {
     const result = await chrome.storage.local.get(LANGUAGE_STORAGE_KEY);
-    const lang = (result[LANGUAGE_STORAGE_KEY] as Language) || 'en';
+    const lang = (result[LANGUAGE_STORAGE_KEY] as Language) || 'ja'; // デフォルトを日本語に
     setLanguage(lang);
     
     // セレクトボックスの状態を復元
@@ -144,8 +145,23 @@ async function restoreLanguage(): Promise<void> {
     if (languageSelect) {
       languageSelect.value = lang;
     }
+    
+    // 国旗アイコンを更新
+    updateLanguageFlag();
   } catch (error) {
     console.error('Failed to restore language:', error);
+  }
+}
+
+/**
+ * 言語の国旗アイコンを更新
+ */
+function updateLanguageFlag(): void {
+  const languageSelect = document.getElementById('language-select') as HTMLSelectElement;
+  if (languageSelect && languageSelect.parentElement) {
+    const lang = getCurrentLanguage();
+    const flag = lang === 'ja' ? '🇯🇵' : '🇺🇸';
+    languageSelect.parentElement.setAttribute('data-flag', flag);
   }
 }
 

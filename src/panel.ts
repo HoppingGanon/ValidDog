@@ -9,6 +9,8 @@ let requests: NetworkRequest[] = [];
 let selectedRequestId: string | null = null;
 let filterMatchedOnly = false;
 
+const FILTER_STORAGE_KEY = 'filter_matched_only';
+
 /**
  * 初期化
  */
@@ -16,6 +18,9 @@ async function init(): Promise<void> {
   // 保存された仕様書を読み込み
   currentSpec = await loadSpec();
   updateSpecInfo();
+
+  // フィルター状態を復元
+  await restoreFilterState();
 
   // イベントリスナーの設定
   setupEventListeners();
@@ -49,10 +54,42 @@ function setupEventListeners(): void {
   // フィルターチェックボックス
   const filterCheckbox = document.getElementById('filter-matched-only') as HTMLInputElement;
   if (filterCheckbox) {
-    filterCheckbox.addEventListener('change', (e) => {
+    filterCheckbox.addEventListener('change', async (e) => {
       filterMatchedOnly = (e.target as HTMLInputElement).checked;
+      await saveFilterState();
       updateRequestList();
     });
+  }
+}
+
+/**
+ * フィルター状態を保存
+ */
+async function saveFilterState(): Promise<void> {
+  try {
+    await chrome.storage.local.set({ [FILTER_STORAGE_KEY]: filterMatchedOnly });
+  } catch (error) {
+    console.error('Failed to save filter state:', error);
+  }
+}
+
+/**
+ * フィルター状態を復元
+ */
+async function restoreFilterState(): Promise<void> {
+  try {
+    const result = await chrome.storage.local.get(FILTER_STORAGE_KEY);
+    if (result[FILTER_STORAGE_KEY] !== undefined) {
+      filterMatchedOnly = result[FILTER_STORAGE_KEY] as boolean;
+      
+      // チェックボックスの状態を復元
+      const filterCheckbox = document.getElementById('filter-matched-only') as HTMLInputElement;
+      if (filterCheckbox) {
+        filterCheckbox.checked = filterMatchedOnly;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to restore filter state:', error);
   }
 }
 

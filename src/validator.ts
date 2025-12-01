@@ -153,7 +153,22 @@ function validateAgainstSchema(
   // 型チェック
   if (schema.type) {
     const actualType = getJsonType(value);
-    if (schema.type !== actualType) {
+    const schemaType = schema.type;
+    
+    // 型の一致判定
+    let typesMatch = schemaType === actualType;
+    
+    // number型の場合は、integerも許容する
+    if (schemaType === 'number' && (actualType === 'integer' || actualType === 'number')) {
+      typesMatch = true;
+    }
+    
+    // float型の場合も、integerとnumberを許容する
+    if (schemaType === 'float' && (actualType === 'integer' || actualType === 'number')) {
+      typesMatch = true;
+    }
+    
+    if (!typesMatch) {
       errors.push({
         path,
         message: `型が一致しません。期待: ${schema.type}, 実際: ${actualType}`
@@ -232,8 +247,8 @@ function validateAgainstSchema(
     }
   }
 
-  // 数値の範囲チェック
-  if (schema.type === 'number' || schema.type === 'integer') {
+  // 数値の範囲チェック（integer, number, floatはすべて対象）
+  if (schema.type === 'number' || schema.type === 'integer' || schema.type === 'float') {
     const num = value as number;
     if (schema.minimum !== undefined && num < schema.minimum) {
       errors.push({
@@ -269,6 +284,7 @@ function getJsonType(value: unknown): string {
   if (value === null) return 'null';
   if (Array.isArray(value)) return 'array';
   if (typeof value === 'number') {
+    // 整数と小数を区別
     return Number.isInteger(value) ? 'integer' : 'number';
   }
   return typeof value;

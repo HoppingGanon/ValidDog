@@ -628,7 +628,7 @@ function highlightJson(json: string, errorPaths: string[] = []): string {
       const parts = path.replace(/^(requestBody|responseBody)\./, '').split('.');
       parts.forEach(part => {
         // 配列インデックスも処理 "items[0]" -> "items", "0"
-        const arrayMatch = part.match(/^([^\[]+)\[(\d+)\]$/);
+        const arrayMatch = part.match(/^([^[]+)\[(\d+)\]$/);
         if (arrayMatch) {
           errorKeys.add(arrayMatch[1]);
         } else {

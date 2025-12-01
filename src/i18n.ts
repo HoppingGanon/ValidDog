@@ -100,7 +100,7 @@ const translations: Record<Language, Translations> = {
   },
   ja: {
     // Header
-    appTitle: 'バリッドドッグ',
+    appTitle: 'ばりっどーぬ',
     requestDetails: 'リクエスト詳細',
     
     // Spec info

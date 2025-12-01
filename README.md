@@ -1,4 +1,4 @@
-# ValidKun - OpenAPI Validator
+# ValidDog - OpenAPI Validator
 
 OpenAPI仕様書に基づいてリクエスト/レスポンスをバリデーションするツールです。
 
@@ -159,7 +159,6 @@ npm run preview
 ## プロジェクト構造
 
 ```
-validkun/
 ├── src/
 │   ├── main.ts           # エントリーポイント
 │   ├── types.ts          # 型定義

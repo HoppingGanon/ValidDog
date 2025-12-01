@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ValidKun - OpenAPI Validator",
+  "name": "ValidDog - OpenAPI Validator",
   "version": "1.0.0",
   "description": "OpenAPI仕様書に基づいてネットワークトラフィックを自動検証するDevToolsパネル",
   "permissions": [

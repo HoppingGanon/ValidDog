@@ -193,9 +193,9 @@ function updateSpecInfo(): void {
  */
 function updateAllTexts(): void {
   // Header
-  const headerNetworkRequests = document.getElementById('header-network-requests');
-  if (headerNetworkRequests) {
-    headerNetworkRequests.textContent = t('networkRequests');
+  const headerAppTitle = document.getElementById('header-app-title');
+  if (headerAppTitle) {
+    headerAppTitle.textContent = t('appTitle');
   }
   
   const headerRequestDetails = document.getElementById('header-request-details');

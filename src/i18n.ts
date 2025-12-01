@@ -6,7 +6,7 @@ export type Language = 'en' | 'ja';
 
 interface Translations {
   // Header
-  networkRequests: string;
+  appTitle: string;
   requestDetails: string;
   
   // Spec info
@@ -54,7 +54,7 @@ interface Translations {
 const translations: Record<Language, Translations> = {
   en: {
     // Header
-    networkRequests: 'Network Requests',
+    appTitle: 'ValidDog',
     requestDetails: 'Request Details',
     
     // Spec info
@@ -100,7 +100,7 @@ const translations: Record<Language, Translations> = {
   },
   ja: {
     // Header
-    networkRequests: 'ネットワークリクエスト',
+    appTitle: 'バリッドドッグ',
     requestDetails: 'リクエスト詳細',
     
     // Spec info

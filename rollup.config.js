@@ -29,7 +29,7 @@ export default [
       file: 'dist/devtools.js',
       format: 'iife',
       sourcemap: true,
-      name: 'ValidKunDevTools'
+      name: 'ValidDogDevTools'
     },
     ...baseConfig
   },
@@ -40,7 +40,7 @@ export default [
       file: 'dist/panel.js',
       format: 'iife',
       sourcemap: true,
-      name: 'ValidKunPanel'
+      name: 'ValidDogPanel'
     },
     ...baseConfig
   },
@@ -51,7 +51,7 @@ export default [
       file: 'dist/bundle.js',
       format: 'iife',
       sourcemap: true,
-      name: 'ValidKun'
+      name: 'ValidDog'
     },
     ...baseConfig
   }

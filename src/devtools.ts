@@ -4,10 +4,10 @@
  */
 
 chrome.devtools.panels.create(
-  'ValidKun',
+  'ValidDog',
   '', // アイコンパス（オプション）
   'panel.html',
   (_panel) => {
-    console.log('ValidKun panel created');
+    console.log('ValidDog panel created');
   }
 );

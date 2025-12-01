@@ -1,4 +1,4 @@
-# ValidKun Chrome拡張機能
+# ValidDog Chrome拡張機能
 
 OpenAPI仕様書に基づいてネットワークトラフィックを自動検証するDevTools拡張機能です。
 
@@ -17,6 +17,7 @@ npm run build
 2. 右上の「デベロッパーモード」をONにする
 3. 「パッケージ化されていない拡張機能を読み込む」をクリック
 4. このプロジェクトのルートディレクトリを選択
+5. 拡張機能一覧に「ValidDog」が表示されます
 
 ### 3. アイコンの準備（オプション）
 
@@ -38,11 +39,11 @@ chmod +x create-icons.sh
 
 1. 任意のWebページを開く
 2. F12キーまたは右クリック→「検証」でDevToolsを開く
-3. DevToolsのタブに「ValidKun」が追加されています
+3. DevToolsのタブに「ValidDog」が追加されています
 
 ### 2. OpenAPI仕様書を読み込む
 
-1. ValidKunパネルを開く
+1. ValidDogパネルを開く
 2. 右上の📄アイコンをクリック
 3. OpenAPI仕様書（YAML/JSON）を選択
 4. 仕様書はChrome Storageに保存され、別のページでも利用可能です
@@ -105,7 +106,7 @@ chmod +x create-icons.sh
 ### プロジェクト構成
 
 ```
-validkun/
+valid-dog/
 ├── manifest.json          # Chrome拡張機能マニフェスト
 ├── devtools.html          # DevToolsエントリーポイント
 ├── panel.html             # パネルHTML（2パネル構造）
@@ -172,7 +173,7 @@ npm run lint
 ### APIテスト中の利用
 
 1. 開発中のAPIをブラウザでテスト
-2. ValidKunが自動でリクエストをキャプチャ
+2. ValidDogが自動でリクエストをキャプチャ
 3. スキーマ違反を即座に検出
 4. 詳細なエラー情報で問題箇所を特定
 

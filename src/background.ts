@@ -156,5 +156,5 @@ chrome.webRequest.onCompleted.addListener(
   ['responseHeaders']
 );
 
-console.log('ValidKun background script loaded');
+console.log('ValidDog background script loaded');
 

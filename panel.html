@@ -11,18 +11,22 @@
         <!-- 左パネル: リクエスト一覧 -->
         <div class="left-panel">
             <div class="panel-header">
-                <h2>Network Requests</h2>
+                <h2 id="header-network-requests">Network Requests</h2>
                 <div class="header-controls">
-                    <button id="clear-btn" class="icon-button" title="クリア">🗑️</button>
-                    <button id="upload-spec-btn" class="icon-button" title="仕様書を読み込む">📄</button>
+                    <select id="language-select" class="language-select">
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                    </select>
+                    <button id="clear-btn" class="icon-button" title="Clear">🗑️</button>
+                    <button id="upload-spec-btn" class="icon-button" title="Upload Spec">📄</button>
                     <input type="file" id="spec-file-input" accept=".json,.yaml,.yml" style="display: none;">
                 </div>
             </div>
-            <div id="spec-info" class="spec-info">仕様書が読み込まれていません</div>
+            <div id="spec-info" class="spec-info">OpenAPI specification not loaded</div>
             <div class="filter-controls">
                 <label class="filter-checkbox">
                     <input type="checkbox" id="filter-matched-only">
-                    <span>仕様書にマッチするもののみ</span>
+                    <span id="filter-label">Show matched only</span>
                 </label>
             </div>
             <div class="request-list" id="request-list">
@@ -36,7 +40,7 @@
         <!-- 右パネル: 詳細表示 -->
         <div class="right-panel">
             <div class="panel-header">
-                <h2>Request Details</h2>
+                <h2 id="header-request-details">Request Details</h2>
             </div>
             <div class="detail-content" id="detail-content">
                 <div class="empty-state">

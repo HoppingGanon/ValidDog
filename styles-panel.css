@@ -59,6 +59,26 @@ body {
     gap: 8px;
 }
 
+.language-select {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.language-select:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.language-select option {
+    background: #667eea;
+    color: white;
+}
+
 .icon-button {
     background: rgba(255, 255, 255, 0.2);
     border: none;

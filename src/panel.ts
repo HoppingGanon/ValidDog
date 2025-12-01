@@ -3,6 +3,7 @@ import { saveSpec, loadSpec } from './chromeStorage';
 import { matchPath } from './pathMatcher';
 import { validateRequestBody, validateResponseBody } from './validator';
 import { NetworkRequest, OpenAPISpec, ValidationResult } from './types';
+import { setLanguage, getCurrentLanguage, t, type Language } from './i18n';
 
 let currentSpec: OpenAPISpec | null = null;
 let requests: NetworkRequest[] = [];
@@ -10,11 +11,15 @@ let selectedRequestId: string | null = null;
 let filterMatchedOnly = false;
 
 const FILTER_STORAGE_KEY = 'filter_matched_only';
+const LANGUAGE_STORAGE_KEY = 'language';
 
 /**
  * 初期化
  */
 async function init(): Promise<void> {
+  // 言語設定を復元
+  await restoreLanguage();
+  
   // 保存された仕様書を読み込み
   currentSpec = await loadSpec();
   updateSpecInfo();
@@ -27,12 +32,33 @@ async function init(): Promise<void> {
 
   // ネットワーク監視を開始
   startNetworkMonitoring();
+  
+  // UIを更新
+  updateAllTexts();
 }
 
 /**
  * イベントリスナーの設定
  */
 function setupEventListeners(): void {
+  // 言語選択
+  const languageSelect = document.getElementById('language-select') as HTMLSelectElement;
+  if (languageSelect) {
+    languageSelect.addEventListener('change', async (e) => {
+      const lang = (e.target as HTMLSelectElement).value as Language;
+      setLanguage(lang);
+      await saveLanguage(lang);
+      updateAllTexts();
+      updateRequestList();
+      if (selectedRequestId) {
+        const selected = requests.find(r => r.id === selectedRequestId);
+        if (selected) {
+          showRequestDetail(selected);
+        }
+      }
+    });
+  }
+
   // 仕様書アップロードボタン
   const uploadBtn = document.getElementById('upload-spec-btn');
   const fileInput = document.getElementById('spec-file-input') as HTMLInputElement;
@@ -94,6 +120,36 @@ async function restoreFilterState(): Promise<void> {
 }
 
 /**
+ * 言語設定を保存
+ */
+async function saveLanguage(lang: Language): Promise<void> {
+  try {
+    await chrome.storage.local.set({ [LANGUAGE_STORAGE_KEY]: lang });
+  } catch (error) {
+    console.error('Failed to save language:', error);
+  }
+}
+
+/**
+ * 言語設定を復元
+ */
+async function restoreLanguage(): Promise<void> {
+  try {
+    const result = await chrome.storage.local.get(LANGUAGE_STORAGE_KEY);
+    const lang = (result[LANGUAGE_STORAGE_KEY] as Language) || 'en';
+    setLanguage(lang);
+    
+    // セレクトボックスの状態を復元
+    const languageSelect = document.getElementById('language-select') as HTMLSelectElement;
+    if (languageSelect) {
+      languageSelect.value = lang;
+    }
+  } catch (error) {
+    console.error('Failed to restore language:', error);
+  }
+}
+
+/**
  * ファイルアップロード処理
  */
 async function handleFileUpload(event: Event): Promise<void> {
@@ -124,12 +180,48 @@ function updateSpecInfo(): void {
   if (!specInfo) return;
 
   if (currentSpec) {
-    specInfo.textContent = `仕様書: ${currentSpec.info.title} (v${currentSpec.info.version})`;
+    specInfo.textContent = `${t('specLoaded')}: ${currentSpec.info.title} (v${currentSpec.info.version})`;
     specInfo.className = 'spec-info loaded';
   } else {
-    specInfo.textContent = '仕様書が読み込まれていません';
+    specInfo.textContent = t('specNotLoaded');
     specInfo.className = 'spec-info';
   }
+}
+
+/**
+ * すべてのテキストを更新
+ */
+function updateAllTexts(): void {
+  // Header
+  const headerNetworkRequests = document.getElementById('header-network-requests');
+  if (headerNetworkRequests) {
+    headerNetworkRequests.textContent = t('networkRequests');
+  }
+  
+  const headerRequestDetails = document.getElementById('header-request-details');
+  if (headerRequestDetails) {
+    headerRequestDetails.textContent = t('requestDetails');
+  }
+  
+  // Filter label
+  const filterLabel = document.getElementById('filter-label');
+  if (filterLabel) {
+    filterLabel.textContent = t('matchedOnly');
+  }
+  
+  // Buttons
+  const clearBtn = document.getElementById('clear-btn');
+  if (clearBtn) {
+    clearBtn.title = t('clear');
+  }
+  
+  const uploadBtn = document.getElementById('upload-spec-btn');
+  if (uploadBtn) {
+    uploadBtn.title = t('uploadSpec');
+  }
+  
+  // Spec info
+  updateSpecInfo();
 }
 
 /**
@@ -316,15 +408,15 @@ function updateRequestList(): void {
     if (requests.length > 0 && filterMatchedOnly) {
       listElement.innerHTML = `
         <div class="empty-state">
-          <p>仕様書にマッチするリクエストがありません</p>
-          <p class="small">フィルターを解除するか、仕様書を確認してください</p>
+          <p>${t('noMatchedRequestsTitle')}</p>
+          <p class="small">${t('noMatchedRequestsDesc')}</p>
         </div>
       `;
     } else {
       listElement.innerHTML = `
         <div class="empty-state">
-          <p>ネットワークリクエストが表示されます</p>
-          <p class="small">ページを操作してリクエストを生成してください</p>
+          <p>${t('noRequestsTitle')}</p>
+          <p class="small">${t('noRequestsDesc')}</p>
         </div>
       `;
     }
@@ -397,24 +489,26 @@ function showRequestDetail(request: NetworkRequest): void {
   const detailContent = document.getElementById('detail-content');
   if (!detailContent) return;
 
+  const locale = getCurrentLanguage() === 'ja' ? 'ja-JP' : 'en-US';
+  
   let html = `
     <div class="detail-section">
-      <h3>Request Information</h3>
+      <h3>${t('requestInformation')}</h3>
       <div class="detail-row">
-        <span class="detail-label">Method:</span>
+        <span class="detail-label">${t('method')}:</span>
         <span class="detail-value">${request.method.toUpperCase()}</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">URL:</span>
+        <span class="detail-label">${t('url')}:</span>
         <span class="detail-value">${request.url}</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">Status:</span>
+        <span class="detail-label">${t('status')}:</span>
         <span class="detail-value">${request.status} ${request.statusText}</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">Time:</span>
-        <span class="detail-value">${new Date(request.timestamp).toLocaleString('ja-JP')}</span>
+        <span class="detail-label">${t('time')}:</span>
+        <span class="detail-value">${new Date(request.timestamp).toLocaleString(locale)}</span>
       </div>
     </div>
   `;
@@ -423,16 +517,16 @@ function showRequestDetail(request: NetworkRequest): void {
   if (!request.matched) {
     html += `
       <div class="no-match-warning">
-        <h4>⚠️ OpenAPI仕様書とマッチしませんでした</h4>
-        <p>このリクエストは仕様書に定義されていません。</p>
+        <h4>${t('notMatched')}</h4>
+        <p>${t('notMatchedDesc')}</p>
       </div>
     `;
   } else {
     html += `
       <div class="detail-section">
-        <h3>✓ Matched Path</h3>
+        <h3>${t('matchedPath')}</h3>
         <div class="detail-row">
-          <span class="detail-label">Path Pattern:</span>
+          <span class="detail-label">${t('pathPattern')}:</span>
           <span class="detail-value"><code>${request.matchedPath}</code></span>
         </div>
       </div>
@@ -445,11 +539,11 @@ function showRequestDetail(request: NetworkRequest): void {
 
     if (reqResult) {
       const validClass = reqResult.valid ? 'success' : 'error';
-      const validText = reqResult.valid ? '✓ Valid' : '✗ Invalid';
+      const validText = reqResult.valid ? `✓ ${t('valid')}` : `✗ ${t('invalid')}`;
       
       html += `
         <div class="validation-result ${validClass}">
-          <h4>Request Body: ${validText}</h4>
+          <h4>${t('requestBody')}: ${validText}</h4>
       `;
       
       if (reqResult.errors.length > 0) {
@@ -465,11 +559,11 @@ function showRequestDetail(request: NetworkRequest): void {
 
     if (resResult) {
       const validClass = resResult.valid ? 'success' : 'error';
-      const validText = resResult.valid ? '✓ Valid' : '✗ Invalid';
+      const validText = resResult.valid ? `✓ ${t('valid')}` : `✗ ${t('invalid')}`;
       
       html += `
         <div class="validation-result ${validClass}">
-          <h4>Response Body: ${validText}</h4>
+          <h4>${t('responseBody')}: ${validText}</h4>
       `;
       
       if (resResult.errors.length > 0) {
@@ -489,7 +583,7 @@ function showRequestDetail(request: NetworkRequest): void {
     const requestErrors = request.validationResult?.request?.errors.map(e => e.path) || [];
     html += `
       <div class="detail-section">
-        <h3>Request Body</h3>
+        <h3>${t('requestBody')}</h3>
         <div class="json-viewer"><pre>${highlightJson(request.requestBody, requestErrors)}</pre></div>
       </div>
     `;
@@ -500,7 +594,7 @@ function showRequestDetail(request: NetworkRequest): void {
     const responseErrors = request.validationResult?.response?.errors.map(e => e.path) || [];
     html += `
       <div class="detail-section">
-        <h3>Response Body</h3>
+        <h3>${t('responseBody')}</h3>
         <div class="json-viewer"><pre>${highlightJson(request.responseBody, responseErrors)}</pre></div>
       </div>
     `;
@@ -644,7 +738,7 @@ function clearRequests(): void {
   if (detailContent) {
     detailContent.innerHTML = `
       <div class="empty-state">
-        <p>左側からリクエストを選択してください</p>
+        <p>${t('selectRequestPrompt')}</p>
       </div>
     `;
   }

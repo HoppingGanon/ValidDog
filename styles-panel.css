@@ -166,13 +166,16 @@ body {
     font-weight: 600;
     margin-right: 8px;
     color: white;
+    background: #616161;
 }
 
-.request-method.get { background: #61affe; }
-.request-method.post { background: #49cc90; }
-.request-method.put { background: #fca130; }
-.request-method.patch { background: #50e3c2; }
-.request-method.delete { background: #f93e3e; }
+.request-method.get,
+.request-method.post,
+.request-method.put,
+.request-method.patch,
+.request-method.delete {
+    background: #616161;
+}
 
 .request-url {
     font-size: 13px;

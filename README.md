@@ -1,188 +1,216 @@
-# ValidDog - OpenAPI Validator
+# ValidDog Chrome拡張機能
 
-OpenAPI仕様書に基づいてリクエスト/レスポンスをバリデーションするツールです。
+OpenAPI仕様書に基づいてネットワークトラフィックを自動検証するDevTools拡張機能です。
 
-## 📦 2つの使用方法
+## 🚀 インストール方法
 
-### 1. Chrome拡張機能版（推奨）
-
-DevToolsとして動作し、ネットワークトラフィックを自動監視・バリデーション
-
-👉 **[Chrome拡張機能の詳細はこちら](./README-EXTENSION.md)**
-
-### 2. スタンドアロン版
-
-ブラウザでHTMLファイルを開いて使用する従来版（以下の説明）
-
-## 機能
-
-- OpenAPI仕様書（YAML/JSON）の読み込みとLocalStorageへの保存
-- リクエストURLの自動パスマッチング
-  - フルURL（`https://example.com/users/123?key=value`）とパスのみ（`/users/123`）の両方に対応
-  - クエリパラメータは自動的に除去され、パス部分のみでマッチング
-- リクエストボディのバリデーション
-- レスポンスボディのバリデーション
-- TypeScriptによる型安全な実装
-- モダンでレスポンシブなUI
-
-## セットアップ
-
-### 依存関係のインストール
+### 1. ビルド
 
 ```bash
 npm install
-```
-
-### ビルド
-
-```bash
 npm run build
 ```
 
-### クリーンビルド
+### 2. Chromeに読み込む
+
+1. Chromeで `chrome://extensions/` を開く
+2. 右上の「デベロッパーモード」をONにする
+3. 「パッケージ化されていない拡張機能を読み込む」をクリック
+4. このプロジェクトのルートディレクトリを選択
+5. 拡張機能一覧に「ValidDog」が表示されます
+
+### 3. アイコンの準備（オプション）
+
+`icons/` ディレクトリに以下のアイコンを配置してください：
+- `icon16.png` (16x16px)
+- `icon48.png` (48x48px)
+- `icon128.png` (128x128px)
+
+または、ImageMagickがインストールされている場合：
 
 ```bash
-npm run rebuild
+chmod +x create-icons.sh
+./create-icons.sh
 ```
 
-### プレビュー（簡易サーバー起動）
+## 📖 使い方
 
-```bash
-npm run preview
-```
+### 1. DevToolsを開く
 
-ビルド後、http://localhost:8080 でアプリケーションにアクセスできます。
-
-### 開発モード（ウォッチモード）
-
-```bash
-npm run dev
-```
-
-### 型チェック
-
-```bash
-npm run type-check
-```
-
-### リント
-
-```bash
-npm run lint
-```
-
-## 使い方
-
-### 1. アプリケーションを起動
-
-ビルド後、簡易HTTPサーバーを起動：
-
-```bash
-npm run preview
-```
-
-ブラウザで http://localhost:8080 にアクセスします。
+1. 任意のWebページを開く
+2. F12キーまたは右クリック→「検証」でDevToolsを開く
+3. DevToolsのタブに「ValidDog」が追加されています
 
 ### 2. OpenAPI仕様書を読み込む
 
-- 「ファイルを選択」ボタンをクリック
-- OpenAPI仕様書（YAML/JSON）を選択
-- 仕様書は自動的にLocalStorageに保存されます
-- サンプル仕様書: `sample-api.yaml` が用意されています
+1. ValidDogパネルを開く
+2. 右上の📄アイコンをクリック
+3. OpenAPI仕様書（YAML/JSON）を選択
+4. 仕様書はChrome Storageに保存され、別のページでも利用可能です
 
-### 3. リクエスト/レスポンスを検証
+### 3. 自動バリデーション
 
-以下の情報を入力：
-- **リクエストURL**: パスのみ、またはフルURLで入力可能
-  - パスのみ: `/users/123`
-  - フルURL: `https://example.com/users/123?key=value`
-  - クエリパラメータは自動的に除去され、パス部分だけがマッチングに使用されます
-- **HTTPメソッド**: GET, POST, PUT, PATCH, DELETE
-- **リクエストボディ**: JSON形式（POSTやPUTの場合）
-- **レスポンスボディ**: JSON形式
-- **ステータスコード**: 例 200, 201, 404
+- ページでネットワークリクエストが発生すると自動的にキャプチャされます
+- OpenAPI仕様書とマッチするリクエストは自動でバリデーションされます
+- 結果は左側のリストに色分けして表示されます
 
-### 4. 検証実行
+### 4. 色分けルール
 
-「検証」ボタンをクリックすると、以下を自動的に実行：
-- URLパターンのマッチング
+リクエスト一覧の左側のインジケーターで状態を判別できます：
+
+- 🟢 **緑**: 成功（2xx）でスキーマも正常
+- 🔴 **赤**: スキーマ違反が検出された
+- 🟡 **黄色**: 失敗（4xx, 5xx）またはスキーマ違反なし
+
+### 5. 詳細表示
+
+左側のリストからリクエストを選択すると、右側に詳細が表示されます：
+
+- **Request Information**: メソッド、URL、ステータス、タイムスタンプ
+- **Matched Path**: マッチしたOpenAPIパス
+- **Validation Result**: 
+  - リクエストボディのバリデーション結果
+  - レスポンスボディのバリデーション結果
+  - エラー詳細（スキーマ違反がある場合）
+- **Request/Response Body**: 実際のリクエスト・レスポンス内容
+
+## 🎯 主な機能
+
+### 自動ネットワーク監視
+
+- DevToolsが開いている間、すべてのネットワークリクエストを監視
+- リクエスト・レスポンスの内容を自動キャプチャ
+- 履歴として保存（クリアボタンで削除可能）
+
+### インテリジェントなパスマッチング
+
+- フルURL（`https://api.example.com/users/123?key=value`）に対応
+- パスパラメータ（`/users/{userId}`）を自動抽出
+- クエリパラメータを自動除去
+
+### リアルタイムバリデーション
+
 - リクエストボディのスキーマ検証
 - レスポンスボディのスキーマ検証
+- ステータスコード別の検証
+- 詳細なエラーメッセージ
 
-### サンプルテストケース
+### 永続的なストレージ
 
-`sample-api.yaml` を使用したテスト例：
+- Chrome Storageを使用
+- 一度読み込んだ仕様書は別のページでも利用可能
+- ブラウザを再起動しても保持
 
-**例1: GET /users/123**
-- リクエストURL: `/users/123` または `https://api.example.com/users/123`
-- HTTPメソッド: `GET`
-- レスポンスボディ:
-```json
-{
-  "id": 123,
-  "name": "山田太郎",
-  "email": "yamada@example.com"
-}
-```
-- ステータスコード: `200`
+## 🔧 開発
 
-**例2: POST /users**
-- リクエストURL: `/users`
-- HTTPメソッド: `POST`
-- リクエストボディ:
-```json
-{
-  "name": "佐藤花子",
-  "email": "sato@example.com",
-  "age": 25
-}
-```
-- レスポンスボディ:
-```json
-{
-  "id": 456,
-  "name": "佐藤花子",
-  "email": "sato@example.com",
-  "age": 25
-}
-```
-- ステータスコード: `201`
-
-## 技術スタック
-
-- **TypeScript**: 型安全なコード
-- **Rollup**: モジュールバンドラー
-- **ESLint**: コード品質チェック
-- **js-yaml**: YAML/JSONパーサー
-- **LocalStorage**: 仕様書の永続化
-
-## プロジェクト構造
+### プロジェクト構成
 
 ```
+valid-dog/
+├── manifest.json          # Chrome拡張機能マニフェスト
+├── devtools.html          # DevToolsエントリーポイント
+├── panel.html             # パネルHTML（2パネル構造）
+├── styles-panel.css       # パネル用CSS
 ├── src/
-│   ├── main.ts           # エントリーポイント
-│   ├── types.ts          # 型定義
-│   ├── storage.ts        # LocalStorage操作
-│   ├── fileLoader.ts     # ファイル読み込み
-│   ├── pathMatcher.ts    # パスマッチング
-│   ├── validator.ts      # バリデーションロジック
-│   └── ui.ts             # UI操作
-├── dist/                 # ビルド出力
-├── index.html            # メインHTML
-├── styles.css            # スタイルシート
-├── package.json
-├── tsconfig.json
-├── rollup.config.js
-└── .eslintrc.json
+│   ├── devtools.ts        # DevTools起動スクリプト
+│   ├── panel.ts           # パネルメインロジック
+│   ├── chromeStorage.ts   # Chrome Storage API
+│   ├── fileLoader.ts      # YAML/JSONローダー
+│   ├── pathMatcher.ts     # URLパスマッチング
+│   ├── validator.ts       # バリデーションロジック
+│   └── types.ts           # 型定義
+└── dist/
+    ├── devtools.js        # ビルド済みDevToolsスクリプト
+    ├── panel.js           # ビルド済みパネルスクリプト
+    └── bundle.js          # スタンドアロン版（後方互換）
 ```
 
-## 注意事項
+### コマンド
 
-- `$ref` による参照解決には対応していません
-- OpenAPI 2.0 (Swagger) および OpenAPI 3.x に対応しています
-- バリデーションは基本的なスキーマチェックのみを行います
+```bash
+# ビルド
+npm run build
 
-## ライセンス
+# クリーンビルド
+npm run rebuild
+
+# 開発モード（ウォッチ）
+npm run dev
+
+# 型チェック
+npm run type-check
+
+# リント
+npm run lint
+```
+
+### 開発時の注意点
+
+1. コードを変更したら `npm run build` を実行
+2. Chromeの拡張機能ページで「更新」ボタンをクリック
+3. DevToolsを閉じて再度開く
+
+## 🆚 スタンドアロン版との違い
+
+このプロジェクトは2つの使用方法に対応しています：
+
+### Chrome拡張機能版（推奨）
+
+- DevToolsとして動作
+- 自動ネットワーク監視
+- リアルタイムバリデーション
+- Chrome Storage使用
+
+### スタンドアロン版
+
+- `index.html` をブラウザで開く
+- 手動でURL・ボディを入力
+- LocalStorage使用
+- `npm run preview` でサーバー起動可能
+
+## 📝 使用例
+
+### APIテスト中の利用
+
+1. 開発中のAPIをブラウザでテスト
+2. ValidDogが自動でリクエストをキャプチャ
+3. スキーマ違反を即座に検出
+4. 詳細なエラー情報で問題箇所を特定
+
+### フロントエンド開発中の利用
+
+1. React/Vue等のSPAを開発
+2. APIとの通信を自動監視
+3. バックエンドとの仕様整合性を確認
+4. 不正なリクエスト・レスポンスを早期発見
+
+## 🐛 トラブルシューティング
+
+### 拡張機能が表示されない
+
+- ビルドが完了しているか確認
+- `dist/` ディレクトリにファイルが生成されているか確認
+- Chromeの拡張機能ページで「エラー」を確認
+
+### 仕様書が読み込めない
+
+- YAML/JSON形式が正しいか確認
+- OpenAPI 2.0/3.x形式に準拠しているか確認
+- コンソールにエラーが出ていないか確認
+
+### リクエストが表示されない
+
+- DevToolsを開いた**後**のリクエストが対象
+- ページをリロードしてリクエストを再生成
+- ネットワークタブでリクエストが発生しているか確認
+
+### バリデーションが実行されない
+
+- 仕様書が正しく読み込まれているか確認
+- URLパターンが仕様書と一致しているか確認
+- HTTPメソッドが一致しているか確認
+
+## 📄 ライセンス
 
 MIT
 

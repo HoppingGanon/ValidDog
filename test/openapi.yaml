@@ -1,0 +1,779 @@
+openapi: 3.0.3
+info:
+  title: テスト用API仕様書
+  description: Validkunのテスト用OpenAPI仕様書（全HTTPメソッドを含む）
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+    description: 本番環境
+  - url: https://staging-api.example.com/v1
+    description: ステージング環境
+
+tags:
+  - name: Users
+    description: ユーザー管理API
+  - name: Posts
+    description: 投稿管理API
+
+paths:
+  /users:
+    get:
+      summary: ユーザー一覧取得
+      description: クエリパラメータでフィルタリング可能なユーザー一覧を取得
+      operationId: getUsers
+      tags:
+        - Users
+      parameters:
+        - name: page
+          in: query
+          description: ページ番号
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: 1ページあたりの件数
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: status
+          in: query
+          description: ユーザーステータス
+          required: false
+          schema:
+            type: string
+            enum: [active, inactive, suspended]
+        - name: sort
+          in: query
+          description: ソート順
+          required: false
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, name]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: ユーザー作成
+      description: 新しいユーザーを作成
+      operationId: createUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: メールアドレス
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: ユーザー名
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                  description: パスワード
+                age:
+                  type: integer
+                  minimum: 0
+                  maximum: 150
+                  description: 年齢
+                phoneNumber:
+                  type: string
+                  pattern: '^\+?[1-9]\d{1,14}$'
+                  description: 電話番号
+                address:
+                  type: object
+                  properties:
+                    postalCode:
+                      type: string
+                      pattern: '^\d{3}-\d{4}$'
+                    prefecture:
+                      type: string
+                    city:
+                      type: string
+                    street:
+                      type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: タグリスト
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userId}:
+    get:
+      summary: ユーザー詳細取得
+      description: パスパラメータで指定したユーザーの詳細情報を取得
+      operationId: getUserById
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザーID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: includeDetails
+          in: query
+          description: 詳細情報を含めるか
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: ユーザーが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: ユーザー情報更新（完全置換）
+      description: パスパラメータで指定したユーザーの情報を完全に置き換える
+      operationId: updateUser
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザーID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: メールアドレス
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: ユーザー名
+                age:
+                  type: integer
+                  minimum: 0
+                  maximum: 150
+                  description: 年齢
+                phoneNumber:
+                  type: string
+                  pattern: '^\+?[1-9]\d{1,14}$'
+                  description: 電話番号
+                address:
+                  type: object
+                  properties:
+                    postalCode:
+                      type: string
+                      pattern: '^\d{3}-\d{4}$'
+                    prefecture:
+                      type: string
+                    city:
+                      type: string
+                    street:
+                      type: string
+                status:
+                  type: string
+                  enum: [active, inactive, suspended]
+                  description: ユーザーステータス
+                preferences:
+                  type: object
+                  properties:
+                    newsletter:
+                      type: boolean
+                    language:
+                      type: string
+                      enum: [ja, en, zh]
+                    timezone:
+                      type: string
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: ユーザーが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: ユーザー情報部分更新
+      description: パスパラメータで指定したユーザーの一部の情報を更新
+      operationId: patchUser
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザーID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: notifyUser
+          in: query
+          description: ユーザーに通知するか
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: メールアドレス
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: ユーザー名
+                age:
+                  type: integer
+                  minimum: 0
+                  maximum: 150
+                  description: 年齢
+                phoneNumber:
+                  type: string
+                  pattern: '^\+?[1-9]\d{1,14}$'
+                  description: 電話番号
+                address:
+                  type: object
+                  properties:
+                    postalCode:
+                      type: string
+                    prefecture:
+                      type: string
+                    city:
+                      type: string
+                    street:
+                      type: string
+                status:
+                  type: string
+                  enum: [active, inactive, suspended]
+                  description: ユーザーステータス
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    delete:
+      summary: ユーザー削除
+      description: パスパラメータで指定したユーザーを削除
+      operationId: deleteUser
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザーID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: permanent
+          in: query
+          description: 完全削除するか（論理削除ではなく）
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: reason
+          in: query
+          description: 削除理由
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+      responses:
+        '204':
+          description: 削除成功
+        '404':
+          description: ユーザーが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userId}/profile:
+    patch:
+      summary: ユーザープロフィール更新
+      description: ユーザーのプロフィール情報を部分更新
+      operationId: patchUserProfile
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ユーザーID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bio:
+                  type: string
+                  maxLength: 1000
+                  description: 自己紹介
+                avatarUrl:
+                  type: string
+                  format: uri
+                  description: アバター画像URL
+                socialLinks:
+                  type: object
+                  properties:
+                    twitter:
+                      type: string
+                    github:
+                      type: string
+                    linkedin:
+                      type: string
+                skills:
+                  type: array
+                  items:
+                    type: string
+                  maxItems: 20
+                  description: スキルリスト
+      responses:
+        '200':
+          description: 更新成功
+
+  /posts:
+    post:
+      summary: 投稿作成
+      description: 新しい投稿を作成
+      operationId: createPost
+      tags:
+        - Posts
+      parameters:
+        - name: draft
+          in: query
+          description: 下書きとして保存するか
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - authorId
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  description: 投稿タイトル
+                content:
+                  type: string
+                  minLength: 1
+                  description: 投稿内容
+                authorId:
+                  type: string
+                  format: uuid
+                  description: 著者ID
+                categoryIds:
+                  type: array
+                  items:
+                    type: integer
+                  description: カテゴリIDリスト
+                metadata:
+                  type: object
+                  properties:
+                    readingTime:
+                      type: integer
+                      description: 読了時間（分）
+                    keywords:
+                      type: array
+                      items:
+                        type: string
+                    featured:
+                      type: boolean
+                publishedAt:
+                  type: string
+                  format: date-time
+                  description: 公開日時
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+  /posts/{postId}:
+    put:
+      summary: 投稿情報更新（完全置換）
+      description: パスパラメータで指定した投稿の情報を完全に置き換える
+      operationId: updatePost
+      tags:
+        - Posts
+      parameters:
+        - name: postId
+          in: path
+          description: 投稿ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  description: 投稿タイトル
+                content:
+                  type: string
+                  minLength: 1
+                  description: 投稿内容
+                categoryIds:
+                  type: array
+                  items:
+                    type: integer
+                  description: カテゴリIDリスト
+                metadata:
+                  type: object
+                  properties:
+                    readingTime:
+                      type: integer
+                      description: 読了時間（分）
+                    keywords:
+                      type: array
+                      items:
+                        type: string
+                    featured:
+                      type: boolean
+                status:
+                  type: string
+                  enum: [draft, published, archived]
+                  description: 投稿ステータス
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+    delete:
+      summary: 投稿削除
+      description: パスパラメータで指定した投稿を削除
+      operationId: deletePost
+      tags:
+        - Posts
+      parameters:
+        - name: postId
+          in: path
+          description: 投稿ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: 削除成功
+        '404':
+          description: 投稿が見つかりません
+
+  /posts/{postId}/status:
+    patch:
+      summary: 投稿ステータス更新
+      description: 投稿のステータスのみを更新
+      operationId: patchPostStatus
+      tags:
+        - Posts
+      parameters:
+        - name: postId
+          in: path
+          description: 投稿ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: reason
+          in: query
+          description: 変更理由
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [draft, published, archived]
+                  description: 投稿ステータス
+                comment:
+                  type: string
+                  maxLength: 500
+                  description: 変更コメント
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+  /posts/{postId}/comments/{commentId}:
+    delete:
+      summary: コメント削除
+      description: 複数のパスパラメータで指定したコメントを削除
+      operationId: deleteComment
+      tags:
+        - Posts
+      parameters:
+        - name: postId
+          in: path
+          description: 投稿ID
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: commentId
+          in: path
+          description: コメントID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: notifyAuthor
+          in: query
+          description: 著者に通知するか
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '204':
+          description: 削除成功
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ユーザーID
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+        name:
+          type: string
+          description: ユーザー名
+        age:
+          type: integer
+          description: 年齢
+        phoneNumber:
+          type: string
+          description: 電話番号
+        address:
+          type: object
+          properties:
+            postalCode:
+              type: string
+            prefecture:
+              type: string
+            city:
+              type: string
+            street:
+              type: string
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+          description: ユーザーステータス
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 投稿ID
+        title:
+          type: string
+          description: 投稿タイトル
+        content:
+          type: string
+          description: 投稿内容
+        authorId:
+          type: string
+          format: uuid
+          description: 著者ID
+        categoryIds:
+          type: array
+          items:
+            type: integer
+          description: カテゴリIDリスト
+        metadata:
+          type: object
+          properties:
+            readingTime:
+              type: integer
+            keywords:
+              type: array
+              items:
+                type: string
+            featured:
+              type: boolean
+        status:
+          type: string
+          enum: [draft, published, archived]
+          description: 投稿ステータス
+        createdAt:
+          type: string
+          format: date-time
+          description: 作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新日時
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: 現在のページ
+        limit:
+          type: integer
+          description: 1ページあたりの件数
+        total:
+          type: integer
+          description: 総件数
+        totalPages:
+          type: integer
+          description: 総ページ数
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: エラーコード
+        message:
+          type: string
+          description: エラーメッセージ
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+          description: 詳細エラー情報

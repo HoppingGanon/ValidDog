@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validkun テストフロントエンド</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 0 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-danger {
+      background: #ff6b6b;
+      color: white;
+    }
+
+    .stats {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 15px 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      color: #666;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-success { color: #51cf66; }
+    .stat-error { color: #ff6b6b; }
+    .stat-total { color: #667eea; }
+
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .method {
+      font-weight: bold;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      letter-spacing: 0.5px;
+    }
+
+    .method-get { background: #e3f2fd; color: #1976d2; }
+    .method-post { background: #e8f5e9; color: #388e3c; }
+    .method-put { background: #fff3e0; color: #f57c00; }
+    .method-patch { background: #f3e5f5; color: #7b1fa2; }
+    .method-delete { background: #ffebee; color: #c62828; }
+
+    .status {
+      font-weight: bold;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+    }
+
+    .status-success { background: #d4edda; color: #155724; }
+    .status-error { background: #f8d7da; color: #721c24; }
+
+    .endpoint {
+      font-family: 'Courier New', monospace;
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+
+    .test-type {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .test-normal { background: #e3f2fd; color: #1976d2; }
+    .test-error { background: #fff3e0; color: #e65100; }
+
+    .description {
+      color: #555;
+      font-size: 0.95em;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .response-section {
+      margin-top: 12px;
+    }
+
+    .response-title {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 0.9em;
+    }
+
+    .response-body {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      border-left: 4px solid #667eea;
+    }
+
+    .loading {
+      text-align: center;
+      color: white;
+      font-size: 1.2em;
+      padding: 40px;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error-details {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      font-size: 0.85em;
+    }
+
+    .timestamp {
+      color: #999;
+      font-size: 0.8em;
+      margin-top: 10px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🐕 Validkun テストフロントエンド</h1>
+    <p class="subtitle">OpenAPI仕様書に基づいた自動テスト実行</p>
+    
+    <div class="controls">
+      <button class="btn" onclick="runAllTests()">🔄 全テスト再実行</button>
+      <button class="btn btn-danger" onclick="clearResults()">🗑️ クリア</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-number stat-total" id="totalRequests">0</div>
+        <div class="stat-label">総リクエスト数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number stat-success" id="successRequests">0</div>
+        <div class="stat-label">成功</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number stat-error" id="errorRequests">0</div>
+        <div class="stat-label">エラー</div>
+      </div>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:3001/v1';
+    let totalCount = 0;
+    let successCount = 0;
+    let errorCount = 0;
+
+    // 統計を更新
+    function updateStats() {
+      document.getElementById('totalRequests').textContent = totalCount;
+      document.getElementById('successRequests').textContent = successCount;
+      document.getElementById('errorRequests').textContent = errorCount;
+    }
+
+    // 結果を表示
+    function displayResult(method, endpoint, status, testType, description, responseData, responseStatus) {
+      const resultsDiv = document.getElementById('results');
+      const resultCard = document.createElement('div');
+      resultCard.className = 'result-card';
+
+      const isSuccess = responseStatus >= 200 && responseStatus < 300;
+      const statusClass = isSuccess ? 'status-success' : 'status-error';
+      const testTypeClass = testType === 'normal' ? 'test-normal' : 'test-error';
+      const testTypeText = testType === 'normal' ? '✅ 正常系' : '⚠️ 異常系';
+
+      totalCount++;
+      if (isSuccess) {
+        successCount++;
+      } else {
+        errorCount++;
+      }
+      updateStats();
+
+      resultCard.innerHTML = `
+        <div class="result-header">
+          <span class="method method-${method.toLowerCase()}">${method}</span>
+          <span class="status ${statusClass}">${responseStatus}</span>
+        </div>
+        <div class="test-type ${testTypeClass}">${testTypeText}</div>
+        <div class="endpoint">${endpoint}</div>
+        <div class="description">${description}</div>
+        <div class="response-section">
+          <div class="response-title">レスポンス:</div>
+          <div class="response-body">${JSON.stringify(responseData, null, 2)}</div>
+        </div>
+        <div class="timestamp">${new Date().toLocaleTimeString('ja-JP')}</div>
+      `;
+
+      resultsDiv.insertBefore(resultCard, resultsDiv.firstChild);
+    }
+
+    // APIリクエストを実行
+    async function makeRequest(method, endpoint, body = null, queryParams = '', testType = 'normal', description = '') {
+      const url = `${API_BASE_URL}${endpoint}${queryParams}`;
+      
+      try {
+        const options = {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        };
+
+        if (body) {
+          options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url, options);
+        let responseData;
+
+        if (response.status === 204) {
+          responseData = { message: 'No Content' };
+        } else {
+          responseData = await response.json();
+        }
+
+        displayResult(method, endpoint, response.statusText, testType, description, responseData, response.status);
+      } catch (error) {
+        displayResult(method, endpoint, 'Error', testType, description, { error: error.message }, 0);
+      }
+    }
+
+    // 全テストを実行
+    async function runAllTests() {
+      console.log('Starting all tests...');
+
+      // GET系テスト
+      await makeRequest('GET', '/users', null, '?page=1&limit=10', 'normal', 'ユーザー一覧取得（ページネーション付き）');
+      await makeRequest('GET', '/users', null, '?status=active&sort=name', 'normal', 'ユーザー一覧取得（フィルタとソート）');
+      await makeRequest('GET', '/users/123e4567-e89b-12d3-a456-426614174000', null, '', 'normal', 'ユーザー詳細取得（正常）');
+      await makeRequest('GET', '/users/invalid-uuid', null, '', 'error', 'ユーザー詳細取得（無効なUUID形式）');
+      await makeRequest('GET', '/users/999e9999-e99b-99d9-a999-999999999999', null, '', 'error', 'ユーザー詳細取得（存在しないユーザー）');
+
+      // POST系テスト - 正常系
+      await makeRequest('POST', '/users', {
+        email: 'newuser@example.com',
+        name: '新規ユーザー',
+        password: 'securePassword123',
+        age: 28,
+        phoneNumber: '+819087654321',
+        address: {
+          postalCode: '150-0001',
+          prefecture: '東京都',
+          city: '渋谷区',
+          street: '神宮前1-1-1'
+        },
+        tags: ['developer', 'designer']
+      }, '', 'normal', 'ユーザー作成（全フィールド正常）');
+
+      // POST系テスト - 異常系
+      await makeRequest('POST', '/users', {
+        name: 'テストユーザー',
+        password: 'pass123'
+      }, '', 'error', 'ユーザー作成（emailフィールド欠落）');
+
+      await makeRequest('POST', '/users', {
+        email: 'invalid-email',
+        name: 'テストユーザー',
+        password: 'password123'
+      }, '', 'error', 'ユーザー作成（無効なメール形式）');
+
+      await makeRequest('POST', '/users', {
+        email: 'test@example.com',
+        name: 'テストユーザー',
+        password: 'short'
+      }, '', 'error', 'ユーザー作成（パスワードが短すぎる）');
+
+      await makeRequest('POST', '/users', {
+        email: 'test@example.com',
+        name: 'テストユーザー',
+        password: 'password123',
+        age: 200
+      }, '', 'error', 'ユーザー作成（年齢が範囲外）');
+
+      await makeRequest('POST', '/users', {
+        email: 'test@example.com',
+        name: 'テストユーザー',
+        password: 'password123',
+        phoneNumber: 'invalid-phone'
+      }, '', 'error', 'ユーザー作成（無効な電話番号形式）');
+
+      await makeRequest('POST', '/users', {
+        email: 'test@example.com',
+        name: 'テストユーザー',
+        password: 'password123',
+        address: {
+          postalCode: '1234567'
+        }
+      }, '', 'error', 'ユーザー作成（無効な郵便番号形式）');
+
+      // POST /posts テスト - 正常系
+      await makeRequest('POST', '/posts', {
+        title: '素晴らしい記事',
+        content: 'これは素晴らしい内容の記事です。長文のコンテンツがここに入ります。',
+        authorId: '123e4567-e89b-12d3-a456-426614174000',
+        categoryIds: [1, 2, 3],
+        metadata: {
+          readingTime: 10,
+          keywords: ['tech', 'programming', 'javascript'],
+          featured: true
+        }
+      }, '?draft=false', 'normal', '投稿作成（公開）');
+
+      await makeRequest('POST', '/posts', {
+        title: '下書き記事',
+        content: 'これは下書きの記事です。',
+        authorId: '123e4567-e89b-12d3-a456-426614174000'
+      }, '?draft=true', 'normal', '投稿作成（下書き）');
+
+      // POST /posts テスト - 異常系
+      await makeRequest('POST', '/posts', {
+        content: 'タイトルなし',
+        authorId: '123e4567-e89b-12d3-a456-426614174000'
+      }, '', 'error', '投稿作成（タイトル欠落）');
+
+      await makeRequest('POST', '/posts', {
+        title: 'コンテンツなし記事',
+        authorId: '123e4567-e89b-12d3-a456-426614174000'
+      }, '', 'error', '投稿作成（コンテンツ欠落）');
+
+      await makeRequest('POST', '/posts', {
+        title: '著者IDなし記事',
+        content: 'コンテンツです'
+      }, '', 'error', '投稿作成（著者ID欠落）');
+
+      await makeRequest('POST', '/posts', {
+        title: 'テスト記事',
+        content: 'コンテンツです',
+        authorId: 'invalid-uuid'
+      }, '', 'error', '投稿作成（無効な著者ID形式）');
+
+      // PUT系テスト - 正常系
+      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        email: 'updated@example.com',
+        name: '更新ユーザー',
+        age: 35,
+        status: 'active',
+        preferences: {
+          newsletter: true,
+          language: 'ja',
+          timezone: 'Asia/Tokyo'
+        }
+      }, '', 'normal', 'ユーザー情報完全更新（正常）');
+
+      // PUT系テスト - 異常系
+      await makeRequest('PUT', '/users/invalid-uuid', {
+        email: 'test@example.com',
+        name: 'テストユーザー'
+      }, '', 'error', 'ユーザー情報更新（無効なUUID）');
+
+      await makeRequest('PUT', '/users/999e9999-e99b-99d9-a999-999999999999', {
+        email: 'test@example.com',
+        name: 'テストユーザー'
+      }, '', 'error', 'ユーザー情報更新（存在しないユーザー）');
+
+      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        name: 'テストユーザー'
+      }, '', 'error', 'ユーザー情報更新（email欠落）');
+
+      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        email: 'invalid-email',
+        name: 'テストユーザー'
+      }, '', 'error', 'ユーザー情報更新（無効なメール形式）');
+
+      // PUT /posts テスト
+      await makeRequest('PUT', '/posts/1', {
+        title: '更新された投稿タイトル',
+        content: '更新された投稿内容です。',
+        categoryIds: [4, 5],
+        status: 'published'
+      }, '', 'normal', '投稿情報完全更新（正常）');
+
+      await makeRequest('PUT', '/posts/999', {
+        title: 'テスト',
+        content: 'テスト'
+      }, '', 'error', '投稿情報更新（存在しない投稿）');
+
+      await makeRequest('PUT', '/posts/1', {
+        content: 'コンテンツのみ'
+      }, '', 'error', '投稿情報更新（タイトル欠落）');
+
+      // PATCH系テスト - 正常系
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        age: 31,
+        phoneNumber: '+819098765432'
+      }, '?notifyUser=true', 'normal', 'ユーザー情報部分更新（正常）');
+
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        status: 'inactive'
+      }, '', 'normal', 'ユーザーステータス更新（正常）');
+
+      // PATCH系テスト - 異常系
+      await makeRequest('PATCH', '/users/invalid-uuid', {
+        name: '更新テスト'
+      }, '', 'error', 'ユーザー情報部分更新（無効なUUID）');
+
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        email: 'not-an-email'
+      }, '', 'error', 'ユーザー情報部分更新（無効なメール形式）');
+
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        name: ''
+      }, '', 'error', 'ユーザー情報部分更新（空の名前）');
+
+      // PATCH /posts/{postId}/status テスト
+      await makeRequest('PATCH', '/posts/1/status', {
+        status: 'archived',
+        comment: 'アーカイブ処理'
+      }, '?reason=outdated', 'normal', '投稿ステータス更新（正常）');
+
+      await makeRequest('PATCH', '/posts/999/status', {
+        status: 'published'
+      }, '', 'error', '投稿ステータス更新（存在しない投稿）');
+
+      await makeRequest('PATCH', '/posts/1/status', {
+        comment: 'コメントのみ'
+      }, '', 'error', '投稿ステータス更新（ステータス欠落）');
+
+      await makeRequest('PATCH', '/posts/1/status', {
+        status: 'invalid-status'
+      }, '', 'error', '投稿ステータス更新（無効なステータス値）');
+
+      // PATCH /users/{userId}/profile テスト
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000/profile', {
+        bio: 'フルスタックエンジニアです。',
+        avatarUrl: 'https://example.com/avatar.jpg',
+        socialLinks: {
+          twitter: '@testuser',
+          github: 'testuser',
+          linkedin: 'testuser'
+        },
+        skills: ['JavaScript', 'TypeScript', 'React', 'Node.js']
+      }, '', 'normal', 'ユーザープロフィール更新（正常）');
+
+      await makeRequest('PATCH', '/users/invalid-uuid/profile', {
+        bio: 'テスト'
+      }, '', 'error', 'プロフィール更新（無効なUUID）');
+
+      // DELETE系テスト - 正常系
+      await makeRequest('DELETE', '/posts/1/comments/111e1111-e11b-11d1-a111-111111111111', null, '?notifyAuthor=true', 'normal', 'コメント削除（正常）');
+
+      // DELETE系テスト - 異常系
+      await makeRequest('DELETE', '/users/invalid-uuid', null, '', 'error', 'ユーザー削除（無効なUUID）');
+      await makeRequest('DELETE', '/users/999e9999-e99b-99d9-a999-999999999999', null, '', 'error', 'ユーザー削除（存在しないユーザー）');
+      await makeRequest('DELETE', '/posts/999', null, '', 'error', '投稿削除（存在しない投稿）');
+      await makeRequest('DELETE', '/posts/999/comments/111e1111-e11b-11d1-a111-111111111111', null, '', 'error', 'コメント削除（存在しない投稿）');
+      await makeRequest('DELETE', '/posts/1/comments/invalid-uuid', null, '', 'error', 'コメント削除（無効なコメントID）');
+
+      console.log('All tests completed!');
+    }
+
+    // 結果をクリア
+    function clearResults() {
+      document.getElementById('results').innerHTML = '';
+      totalCount = 0;
+      successCount = 0;
+      errorCount = 0;
+      updateStats();
+    }
+
+    // ページ読み込み時に自動実行
+    window.addEventListener('load', () => {
+      console.log('Page loaded. Starting tests in 1 second...');
+      setTimeout(() => {
+        runAllTests();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
+

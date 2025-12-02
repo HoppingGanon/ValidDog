@@ -1,0 +1,10 @@
+extends: ["spectral:oas", "spectral:asyncapi"]
+rules:
+  info-contact: false
+  info-description: true
+  info-license: false
+  operation-description: false
+  operation-operationId: true
+  operation-tags: false
+  operation-tag-defined: true
+

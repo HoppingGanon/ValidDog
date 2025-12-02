@@ -84,7 +84,10 @@ let posts = [
   }
 ];
 
+// ==========================================
 // GET /users - ユーザー一覧取得
+// OpenAPI: getUsers
+// ==========================================
 app.get('/v1/users', (req, res) => {
   const { page = 1, limit = 20, status, sort } = req.query;
   
@@ -118,8 +121,11 @@ app.get('/v1/users', (req, res) => {
   });
 });
 
-// GET /users/{userId} - ユーザー詳細取得
-app.get('/v1/users/:userId', (req, res) => {
+// ==========================================
+// POST /users - ユーザー作成
+// OpenAPI: createUser
+// ==========================================
+app.post('/v1/users', (req, res) => {
   const { userId } = req.params;
   
   // UUIDバリデーション
@@ -144,8 +150,11 @@ app.get('/v1/users/:userId', (req, res) => {
   res.json(user);
 });
 
-// POST /users - ユーザー作成
-app.post('/v1/users', (req, res) => {
+// ==========================================
+// GET /users/{userId} - ユーザー詳細取得
+// OpenAPI: getUserById
+// ==========================================
+app.get('/v1/users/:userId', (req, res) => {
   const { email, name, password, age, phoneNumber, address, tags } = req.body;
   
   // バリデーション
@@ -208,8 +217,11 @@ app.post('/v1/users', (req, res) => {
   res.status(201).json(newUser);
 });
 
-// POST /posts - 投稿作成
-app.post('/v1/posts', (req, res) => {
+// ==========================================
+// PUT /users/{userId} - ユーザー情報更新（完全置換）
+// OpenAPI: updateUser
+// ==========================================
+app.put('/v1/users/:userId', (req, res) => {
   const { title, content, authorId, categoryIds, metadata, publishedAt } = req.body;
   const { draft } = req.query;
   
@@ -261,8 +273,11 @@ app.post('/v1/posts', (req, res) => {
   res.status(201).json(newPost);
 });
 
-// PUT /users/{userId} - ユーザー情報更新（完全置換）
-app.put('/v1/users/:userId', (req, res) => {
+// ==========================================
+// PATCH /users/{userId} - ユーザー情報部分更新
+// OpenAPI: patchUser
+// ==========================================
+app.patch('/v1/users/:userId', (req, res) => {
   const { userId } = req.params;
   const { email, name, age, phoneNumber, address, status, preferences } = req.body;
   
@@ -324,8 +339,11 @@ app.put('/v1/users/:userId', (req, res) => {
   res.json(users[userIndex]);
 });
 
-// PUT /posts/{postId} - 投稿情報更新（完全置換）
-app.put('/v1/posts/:postId', (req, res) => {
+// ==========================================
+// DELETE /users/{userId} - ユーザー削除
+// OpenAPI: deleteUser
+// ==========================================
+app.delete('/v1/users/:userId', (req, res) => {
   const { postId } = req.params;
   const { title, content, categoryIds, metadata, status } = req.body;
   
@@ -371,8 +389,11 @@ app.put('/v1/posts/:postId', (req, res) => {
   res.json(posts[postIndex]);
 });
 
-// PATCH /users/{userId} - ユーザー情報部分更新
-app.patch('/v1/users/:userId', (req, res) => {
+// ==========================================
+// PATCH /users/{userId}/profile - ユーザープロフィール更新
+// OpenAPI: patchUserProfile
+// ==========================================
+app.patch('/v1/users/:userId/profile', (req, res) => {
   const { userId } = req.params;
   const updates = req.body;
   
@@ -424,8 +445,11 @@ app.patch('/v1/users/:userId', (req, res) => {
   res.json(users[userIndex]);
 });
 
-// PATCH /posts/{postId}/status - 投稿ステータス更新
-app.patch('/v1/posts/:postId/status', (req, res) => {
+// ==========================================
+// POST /posts - 投稿作成
+// OpenAPI: createPost
+// ==========================================
+app.post('/v1/posts', (req, res) => {
   const { postId } = req.params;
   const { status, comment } = req.body;
   
@@ -463,8 +487,11 @@ app.patch('/v1/posts/:postId/status', (req, res) => {
   res.json(posts[postIndex]);
 });
 
-// PATCH /users/{userId}/profile - ユーザープロフィール更新
-app.patch('/v1/users/:userId/profile', (req, res) => {
+// ==========================================
+// PUT /posts/{postId} - 投稿情報更新（完全置換）
+// OpenAPI: updatePost
+// ==========================================
+app.put('/v1/posts/:postId', (req, res) => {
   const { userId } = req.params;
   const { bio, avatarUrl, socialLinks, skills } = req.body;
   
@@ -502,8 +529,11 @@ app.patch('/v1/users/:userId/profile', (req, res) => {
   res.json({ message: 'Profile updated successfully' });
 });
 
-// DELETE /users/{userId} - ユーザー削除
-app.delete('/v1/users/:userId', (req, res) => {
+// ==========================================
+// DELETE /posts/{postId} - 投稿削除
+// OpenAPI: deletePost
+// ==========================================
+app.delete('/v1/posts/:postId', (req, res) => {
   const { userId } = req.params;
   const { permanent, reason } = req.query;
   
@@ -538,8 +568,11 @@ app.delete('/v1/users/:userId', (req, res) => {
   res.status(204).send();
 });
 
-// DELETE /posts/{postId} - 投稿削除
-app.delete('/v1/posts/:postId', (req, res) => {
+// ==========================================
+// PATCH /posts/{postId}/status - 投稿ステータス更新
+// OpenAPI: patchPostStatus
+// ==========================================
+app.patch('/v1/posts/:postId/status', (req, res) => {
   const { postId } = req.params;
   
   const postIndex = posts.findIndex(p => p.id === parseInt(postId));
@@ -557,7 +590,10 @@ app.delete('/v1/posts/:postId', (req, res) => {
   res.status(204).send();
 });
 
+// ==========================================
 // DELETE /posts/{postId}/comments/{commentId} - コメント削除
+// OpenAPI: deleteComment
+// ==========================================
 app.delete('/v1/posts/:postId/comments/:commentId', (req, res) => {
   const { postId, commentId } = req.params;
   const { notifyAuthor } = req.query;

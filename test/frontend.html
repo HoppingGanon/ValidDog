@@ -367,18 +367,21 @@
       }
     }
 
-    // 全テストを実行
+    // 全テストを実行（OpenAPI仕様書のパス順序に準拠）
     async function runAllTests() {
       console.log('Starting all tests...');
 
-      // GET系テスト
+      // ===========================================
+      // GET /users - ユーザー一覧取得
+      // ===========================================
       await makeRequest('GET', '/users', null, '?page=1&limit=10', 'normal', 'ユーザー一覧取得（ページネーション付き）');
       await makeRequest('GET', '/users', null, '?status=active&sort=name', 'normal', 'ユーザー一覧取得（フィルタとソート）');
-      await makeRequest('GET', '/users/123e4567-e89b-12d3-a456-426614174000', null, '', 'normal', 'ユーザー詳細取得（正常）');
-      await makeRequest('GET', '/users/invalid-uuid', null, '', 'error', 'ユーザー詳細取得（無効なUUID形式）');
-      await makeRequest('GET', '/users/999e9999-e99b-99d9-a999-999999999999', null, '', 'error', 'ユーザー詳細取得（存在しないユーザー）');
+      
+      // ===========================================
+      // POST /users - ユーザー作成
+      // ===========================================
 
-      // POST系テスト - 正常系
+      // 正常系
       await makeRequest('POST', '/users', {
         email: 'newuser@example.com',
         name: '新規ユーザー',
@@ -394,7 +397,7 @@
         tags: ['developer', 'designer']
       }, '', 'normal', 'ユーザー作成（全フィールド正常）');
 
-      // POST系テスト - 異常系
+      // 異常系
       await makeRequest('POST', '/users', {
         name: 'テストユーザー',
         password: 'pass123'
@@ -435,7 +438,98 @@
         }
       }, '', 'error', 'ユーザー作成（無効な郵便番号形式）');
 
-      // POST /posts テスト - 正常系
+      // ===========================================
+      // GET /users/{userId} - ユーザー詳細取得
+      // ===========================================
+      await makeRequest('GET', '/users/123e4567-e89b-12d3-a456-426614174000', null, '', 'normal', 'ユーザー詳細取得（正常）');
+      await makeRequest('GET', '/users/invalid-uuid', null, '', 'error', 'ユーザー詳細取得（無効なUUID形式）');
+      await makeRequest('GET', '/users/999e9999-e99b-99d9-a999-999999999999', null, '', 'error', 'ユーザー詳細取得（存在しないユーザー）');
+
+      // ===========================================
+      // PUT /users/{userId} - ユーザー情報完全更新
+      // ===========================================
+      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        email: 'updated@example.com',
+        name: '更新ユーザー',
+        age: 35,
+        status: 'active',
+        preferences: {
+          newsletter: true,
+          language: 'ja',
+          timezone: 'Asia/Tokyo'
+        }
+      }, '', 'normal', 'ユーザー情報完全更新（正常）');
+      
+      await makeRequest('PUT', '/users/invalid-uuid', {
+        email: 'test@example.com',
+        name: 'テストユーザー'
+      }, '', 'error', 'ユーザー情報更新（無効なUUID）');
+      
+      await makeRequest('PUT', '/users/999e9999-e99b-99d9-a999-999999999999', {
+        email: 'test@example.com',
+        name: 'テストユーザー'
+      }, '', 'error', 'ユーザー情報更新（存在しないユーザー）');
+      
+      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        name: 'テストユーザー'
+      }, '', 'error', 'ユーザー情報更新（email欠落）');
+      
+      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        email: 'invalid-email',
+        name: 'テストユーザー'
+      }, '', 'error', 'ユーザー情報更新（無効なメール形式）');
+
+      // ===========================================
+      // PATCH /users/{userId} - ユーザー情報部分更新
+      // ===========================================
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        age: 31,
+        phoneNumber: '+819098765432'
+      }, '?notifyUser=true', 'normal', 'ユーザー情報部分更新（正常）');
+      
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        status: 'inactive'
+      }, '', 'normal', 'ユーザーステータス更新（正常）');
+      
+      await makeRequest('PATCH', '/users/invalid-uuid', {
+        name: '更新テスト'
+      }, '', 'error', 'ユーザー情報部分更新（無効なUUID）');
+      
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        email: 'not-an-email'
+      }, '', 'error', 'ユーザー情報部分更新（無効なメール形式）');
+      
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
+        name: ''
+      }, '', 'error', 'ユーザー情報部分更新（空の名前）');
+
+      // ===========================================
+      // DELETE /users/{userId} - ユーザー削除
+      // ===========================================
+      await makeRequest('DELETE', '/users/invalid-uuid', null, '', 'error', 'ユーザー削除（無効なUUID）');
+      await makeRequest('DELETE', '/users/999e9999-e99b-99d9-a999-999999999999', null, '', 'error', 'ユーザー削除（存在しないユーザー）');
+
+      // ===========================================
+      // PATCH /users/{userId}/profile - プロフィール更新
+      // ===========================================
+      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000/profile', {
+        bio: 'フルスタックエンジニアです。',
+        avatarUrl: 'https://example.com/avatar.jpg',
+        socialLinks: {
+          twitter: '@testuser',
+          github: 'testuser',
+          linkedin: 'testuser'
+        },
+        skills: ['JavaScript', 'TypeScript', 'React', 'Node.js']
+      }, '', 'normal', 'ユーザープロフィール更新（正常）');
+      
+      await makeRequest('PATCH', '/users/invalid-uuid/profile', {
+        bio: 'テスト'
+      }, '', 'error', 'プロフィール更新（無効なUUID）');
+
+      // ===========================================
+      // POST /posts - 投稿作成
+      // ===========================================
       await makeRequest('POST', '/posts', {
         title: '素晴らしい記事',
         content: 'これは素晴らしい内容の記事です。長文のコンテンツがここに入ります。',
@@ -454,7 +548,7 @@
         authorId: '123e4567-e89b-12d3-a456-426614174000'
       }, '?draft=true', 'normal', '投稿作成（下書き）');
 
-      // POST /posts テスト - 異常系
+      // 異常系
       await makeRequest('POST', '/posts', {
         content: 'タイトルなし',
         authorId: '123e4567-e89b-12d3-a456-426614174000'
@@ -476,40 +570,9 @@
         authorId: 'invalid-uuid'
       }, '', 'error', '投稿作成（無効な著者ID形式）');
 
-      // PUT系テスト - 正常系
-      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
-        email: 'updated@example.com',
-        name: '更新ユーザー',
-        age: 35,
-        status: 'active',
-        preferences: {
-          newsletter: true,
-          language: 'ja',
-          timezone: 'Asia/Tokyo'
-        }
-      }, '', 'normal', 'ユーザー情報完全更新（正常）');
-
-      // PUT系テスト - 異常系
-      await makeRequest('PUT', '/users/invalid-uuid', {
-        email: 'test@example.com',
-        name: 'テストユーザー'
-      }, '', 'error', 'ユーザー情報更新（無効なUUID）');
-
-      await makeRequest('PUT', '/users/999e9999-e99b-99d9-a999-999999999999', {
-        email: 'test@example.com',
-        name: 'テストユーザー'
-      }, '', 'error', 'ユーザー情報更新（存在しないユーザー）');
-
-      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
-        name: 'テストユーザー'
-      }, '', 'error', 'ユーザー情報更新（email欠落）');
-
-      await makeRequest('PUT', '/users/123e4567-e89b-12d3-a456-426614174000', {
-        email: 'invalid-email',
-        name: 'テストユーザー'
-      }, '', 'error', 'ユーザー情報更新（無効なメール形式）');
-
-      // PUT /posts テスト
+      // ===========================================
+      // PUT /posts/{postId} - 投稿情報完全更新
+      // ===========================================
       await makeRequest('PUT', '/posts/1', {
         title: '更新された投稿タイトル',
         content: '更新された投稿内容です。',
@@ -526,30 +589,14 @@
         content: 'コンテンツのみ'
       }, '', 'error', '投稿情報更新（タイトル欠落）');
 
-      // PATCH系テスト - 正常系
-      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
-        age: 31,
-        phoneNumber: '+819098765432'
-      }, '?notifyUser=true', 'normal', 'ユーザー情報部分更新（正常）');
+      // ===========================================
+      // DELETE /posts/{postId} - 投稿削除
+      // ===========================================
+      await makeRequest('DELETE', '/posts/999', null, '', 'error', '投稿削除（存在しない投稿）');
 
-      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
-        status: 'inactive'
-      }, '', 'normal', 'ユーザーステータス更新（正常）');
-
-      // PATCH系テスト - 異常系
-      await makeRequest('PATCH', '/users/invalid-uuid', {
-        name: '更新テスト'
-      }, '', 'error', 'ユーザー情報部分更新（無効なUUID）');
-
-      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
-        email: 'not-an-email'
-      }, '', 'error', 'ユーザー情報部分更新（無効なメール形式）');
-
-      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000', {
-        name: ''
-      }, '', 'error', 'ユーザー情報部分更新（空の名前）');
-
-      // PATCH /posts/{postId}/status テスト
+      // ===========================================
+      // PATCH /posts/{postId}/status - 投稿ステータス更新
+      // ===========================================
       await makeRequest('PATCH', '/posts/1/status', {
         status: 'archived',
         comment: 'アーカイブ処理'
@@ -567,29 +614,10 @@
         status: 'invalid-status'
       }, '', 'error', '投稿ステータス更新（無効なステータス値）');
 
-      // PATCH /users/{userId}/profile テスト
-      await makeRequest('PATCH', '/users/123e4567-e89b-12d3-a456-426614174000/profile', {
-        bio: 'フルスタックエンジニアです。',
-        avatarUrl: 'https://example.com/avatar.jpg',
-        socialLinks: {
-          twitter: '@testuser',
-          github: 'testuser',
-          linkedin: 'testuser'
-        },
-        skills: ['JavaScript', 'TypeScript', 'React', 'Node.js']
-      }, '', 'normal', 'ユーザープロフィール更新（正常）');
-
-      await makeRequest('PATCH', '/users/invalid-uuid/profile', {
-        bio: 'テスト'
-      }, '', 'error', 'プロフィール更新（無効なUUID）');
-
-      // DELETE系テスト - 正常系
+      // ===========================================
+      // DELETE /posts/{postId}/comments/{commentId} - コメント削除
+      // ===========================================
       await makeRequest('DELETE', '/posts/1/comments/111e1111-e11b-11d1-a111-111111111111', null, '?notifyAuthor=true', 'normal', 'コメント削除（正常）');
-
-      // DELETE系テスト - 異常系
-      await makeRequest('DELETE', '/users/invalid-uuid', null, '', 'error', 'ユーザー削除（無効なUUID）');
-      await makeRequest('DELETE', '/users/999e9999-e99b-99d9-a999-999999999999', null, '', 'error', 'ユーザー削除（存在しないユーザー）');
-      await makeRequest('DELETE', '/posts/999', null, '', 'error', '投稿削除（存在しない投稿）');
       await makeRequest('DELETE', '/posts/999/comments/111e1111-e11b-11d1-a111-111111111111', null, '', 'error', 'コメント削除（存在しない投稿）');
       await makeRequest('DELETE', '/posts/1/comments/invalid-uuid', null, '', 'error', 'コメント削除（無効なコメントID）');
 

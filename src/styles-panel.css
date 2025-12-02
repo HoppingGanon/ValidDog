@@ -239,11 +239,10 @@ body {
     font-size: 13px;
     font-weight: 500;
     color: #333;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+    white-space: normal;
     word-break: break-all;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .request-meta {
@@ -455,6 +454,8 @@ body {
 .error-path {
     font-weight: 600;
     color: #721c24;
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 
 .no-match-warning {

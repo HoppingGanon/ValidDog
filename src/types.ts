@@ -117,6 +117,9 @@ export interface NetworkRequest {
   validationResult?: {
     request: ValidationResult | null;
     response: ValidationResult | null;
+    parameters: ValidationResult | null;
   };
+  queryParams?: { [key: string]: string };
+  pathParams?: { [key: string]: string };
   hasSchemaViolation: boolean;
 }

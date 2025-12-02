@@ -290,3 +290,97 @@ function getJsonType(value: unknown): string {
   return typeof value;
 }
 
+/**
+ * パラメータのバリデーション（パス、クエリ、ヘッダー）
+ */
+export function validateParameters(
+  matchedPath: MatchedPath,
+  pathParams: { [key: string]: string },
+  queryParams: { [key: string]: string },
+  headers: { [key: string]: string }
+): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  if (!matchedPath.operation.parameters) {
+    return { valid: true, errors };
+  }
+
+  for (const param of matchedPath.operation.parameters) {
+    let value: string | undefined;
+    let paramLocation = '';
+
+    // パラメータの値を取得
+    switch (param.in) {
+      case 'path':
+        value = pathParams[param.name];
+        paramLocation = 'path';
+        break;
+      case 'query':
+        value = queryParams[param.name];
+        paramLocation = 'query';
+        break;
+      case 'header': {
+        // ヘッダー名は大文字小文字を区別しないので、小文字で比較
+        const headerKey = Object.keys(headers).find(
+          k => k.toLowerCase() === param.name.toLowerCase()
+        );
+        value = headerKey ? headers[headerKey] : undefined;
+        paramLocation = 'header';
+        break;
+      }
+      case 'cookie':
+        // Cookieは今回はスキップ
+        continue;
+    }
+
+    // 必須チェック
+    if (param.required && (value === undefined || value === '')) {
+      errors.push({
+        path: `${paramLocation}.${param.name}`,
+        message: `必須パラメータ "${param.name}" が存在しません`
+      });
+      continue;
+    }
+
+    // 値が存在し、スキーマが定義されている場合はバリデーション
+    if (value !== undefined && param.schema) {
+      const convertedValue = convertStringToType(value, param.schema.type);
+      const schemaErrors = validateAgainstSchema(
+        convertedValue,
+        param.schema,
+        `${paramLocation}.${param.name}`
+      );
+      errors.push(...schemaErrors);
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+/**
+ * 文字列を指定された型に変換
+ */
+function convertStringToType(value: string, type?: string): unknown {
+  if (!type || type === 'string') {
+    return value;
+  }
+
+  if (type === 'integer' || type === 'number') {
+    const num = Number(value);
+    return isNaN(num) ? value : num;
+  }
+
+  if (type === 'boolean') {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  }
+
+  if (type === 'array') {
+    // カンマ区切りの配列として扱う
+    return value.split(',').map(v => v.trim());
+  }
+
+  return value;
+}
+

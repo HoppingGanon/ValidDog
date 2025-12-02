@@ -1,7 +1,7 @@
 import { loadSpecFromFile } from './fileLoader';
 import { saveSpec, loadSpec } from './chromeStorage';
 import { matchPath } from './pathMatcher';
-import { validateRequestBody, validateResponseBody } from './validator';
+import { validateRequestBody, validateResponseBody, validateParameters } from './validator';
 import { NetworkRequest, OpenAPISpec, ValidationResult } from './types';
 import { setLanguage, getCurrentLanguage, t, type Language } from './i18n';
 
@@ -342,6 +342,22 @@ function convertHeaders(headers: NetworkHeader[]): { [key: string]: string } {
 }
 
 /**
+ * URLからクエリパラメータを抽出
+ */
+function extractQueryParams(url: string): { [key: string]: string } {
+  const params: { [key: string]: string } = {};
+  try {
+    const urlObj = new URL(url);
+    urlObj.searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
+  } catch {
+    // URLのパースに失敗した場合は空のオブジェクトを返す
+  }
+  return params;
+}
+
+/**
  * ネットワークリクエストのバリデーション
  */
 function validateNetworkRequest(request: NetworkRequest): void {
@@ -359,6 +375,24 @@ function validateNetworkRequest(request: NetworkRequest): void {
 
   request.matched = true;
   request.matchedPath = matched.path;
+  request.pathParams = matched.pathParams;
+
+  // クエリパラメータを抽出
+  const queryParams = extractQueryParams(request.url);
+  request.queryParams = queryParams;
+
+  // パラメータのバリデーション（パス、クエリ、ヘッダー）
+  let parametersResult: ValidationResult | null = null;
+  try {
+    parametersResult = validateParameters(
+      matched,
+      matched.pathParams,
+      queryParams,
+      request.requestHeaders || {}
+    );
+  } catch (error) {
+    console.error('Parameters validation error:', error);
+  }
 
   // リクエストボディのバリデーション
   let requestResult: ValidationResult | null = null;
@@ -382,11 +416,13 @@ function validateNetworkRequest(request: NetworkRequest): void {
 
   request.validationResult = {
     request: requestResult,
-    response: responseResult
+    response: responseResult,
+    parameters: parametersResult
   };
 
   // スキーマ違反のチェック
   request.hasSchemaViolation = 
+    (parametersResult && !parametersResult.valid) ||
     (requestResult && !requestResult.valid) || 
     (responseResult && !responseResult.valid) || 
     false;
@@ -549,9 +585,55 @@ function showRequestDetail(request: NetworkRequest): void {
     `;
   }
 
+  // パラメータ情報の表示
+  if (request.pathParams && Object.keys(request.pathParams).length > 0) {
+    html += `<div class="detail-section">
+      <h3>Path Parameters</h3>`;
+    Object.entries(request.pathParams).forEach(([key, value]) => {
+      html += `<div class="detail-row">
+        <span class="detail-label">${key}:</span>
+        <span class="detail-value"><code>${value}</code></span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (request.queryParams && Object.keys(request.queryParams).length > 0) {
+    html += `<div class="detail-section">
+      <h3>Query Parameters</h3>`;
+    Object.entries(request.queryParams).forEach(([key, value]) => {
+      html += `<div class="detail-row">
+        <span class="detail-label">${key}:</span>
+        <span class="detail-value"><code>${value}</code></span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
   // バリデーション結果
   if (request.validationResult) {
-    const { request: reqResult, response: resResult } = request.validationResult;
+    const { request: reqResult, response: resResult, parameters: paramResult } = request.validationResult;
+
+    // パラメータのバリデーション結果
+    if (paramResult) {
+      const validClass = paramResult.valid ? 'success' : 'error';
+      const validText = paramResult.valid ? `✓ ${t('valid')}` : `✗ ${t('invalid')}`;
+      
+      html += `
+        <div class="validation-result ${validClass}">
+          <h4>Parameters: ${validText}</h4>
+      `;
+      
+      if (paramResult.errors.length > 0) {
+        html += '<ul class="error-list">';
+        paramResult.errors.forEach(error => {
+          html += `<li><span class="error-path">${error.path}</span>: ${error.message}</li>`;
+        });
+        html += '</ul>';
+      }
+      
+      html += '</div>';
+    }
 
     if (reqResult) {
       const validClass = reqResult.valid ? 'success' : 'error';

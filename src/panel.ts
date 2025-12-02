@@ -9,6 +9,7 @@ let currentSpec: OpenAPISpec | null = null;
 let requests: NetworkRequest[] = [];
 let selectedRequestId: string | null = null;
 let filterMatchedOnly = false;
+let scrollPinned = true; // スクロール位置固定フラグ（デフォルトはオン）
 
 const FILTER_STORAGE_KEY = 'filter_matched_only';
 const LANGUAGE_STORAGE_KEY = 'language';
@@ -41,6 +42,12 @@ async function init(): Promise<void> {
  * イベントリスナーの設定
  */
 function setupEventListeners(): void {
+  // リクエストリストのスクロール監視
+  const requestList = document.getElementById('request-list');
+  if (requestList) {
+    requestList.addEventListener('scroll', handleScroll);
+  }
+
   // 言語選択
   const languageSelect = document.getElementById('language-select') as HTMLSelectElement;
   if (languageSelect) {
@@ -295,8 +302,8 @@ async function handleNetworkRequest(har: chrome.devtools.network.Request): Promi
       validateNetworkRequest(networkRequest);
     }
 
-    // リクエストを追加
-    requests.unshift(networkRequest); // 新しいものを先頭に
+    // リクエストを追加（新しいものを末尾に）
+    requests.push(networkRequest);
     updateRequestList();
   } catch (error) {
     console.error('Error handling network request:', error);
@@ -445,6 +452,32 @@ function revalidateAllRequests(): void {
 }
 
 /**
+ * スクロールイベントハンドラー
+ */
+function handleScroll(): void {
+  const listElement = document.getElementById('request-list');
+  if (!listElement) return;
+
+  const scrollTop = listElement.scrollTop;
+  const scrollHeight = listElement.scrollHeight;
+  const clientHeight = listElement.clientHeight;
+
+  // スクロールが一番下にいるかチェック（余裕を持って10px以内）
+  const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
+  scrollPinned = isAtBottom;
+}
+
+/**
+ * スクロールを一番下に移動
+ */
+function scrollToBottom(): void {
+  const listElement = document.getElementById('request-list');
+  if (listElement) {
+    listElement.scrollTop = listElement.scrollHeight;
+  }
+}
+
+/**
  * リクエスト一覧の更新
  */
 function updateRequestList(): void {
@@ -472,6 +505,7 @@ function updateRequestList(): void {
         </div>
       `;
     }
+    scrollPinned = true; // 空の時は固定フラグをオンに
     return;
   }
 
@@ -480,6 +514,12 @@ function updateRequestList(): void {
     const item = createRequestItem(request);
     listElement.appendChild(item);
   });
+
+  // スクロール位置固定フラグがオンなら、一番下にスクロール
+  if (scrollPinned) {
+    // DOMの更新後にスクロール
+    setTimeout(() => scrollToBottom(), 0);
+  }
 }
 
 /**

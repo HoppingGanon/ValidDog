@@ -1,4 +1,4 @@
-# Validkun テスト環境
+# ValidDog テスト環境
 
 OpenAPI仕様書に基づいた簡易バックエンドとフロントエンドのテスト環境です。
 
@@ -6,12 +6,17 @@ OpenAPI仕様書に基づいた簡易バックエンドとフロントエンド�
 
 ```
 test/
-├── openapi.yaml         # OpenAPI 3.0.3 仕様書
-├── .spectral.yaml       # OpenAPI仕様書のlintルール設定
-├── backend-server.js    # Express製バックエンドサーバー
-├── frontend.html        # 自動テスト実行フロントエンド
-├── package.json         # Node.js依存関係
-└── README.md           # このファイル
+├── openapi.yaml           # OpenAPI 3.0.3 仕様書
+├── .spectral.yaml         # OpenAPI仕様書のlintルール設定
+├── backend-server.js      # Express製バックエンドサーバー（正常動作版）
+├── backend-server-miss.js # Express製バックエンドサーバー（意図的にOpenAPI違反を含む版）
+├── test.html              # テスト実行フロントエンド
+├── test-cases.js          # テストケース定義（CommonJS）
+├── test-cases.mjs         # テストケース定義（ESM）
+├── api-test.js            # APIテストスクリプト（CommonJS）
+├── api-test.mjs           # APIテストスクリプト（ESM）
+├── package.json           # Node.js依存関係
+└── README.md              # このファイル
 ```
 
 ## 🚀 セットアップと起動
@@ -34,29 +39,38 @@ OpenAPI仕様書が正しく記述されているかチェックします。
 ### 3. バックエンドサーバーの起動
 
 ```bash
+# 正常動作版
 npm start
+
+# 意図的にOpenAPI違反を含む版（拡張機能のエラー検出テスト用）
+npm run miss
 ```
 
 サーバーは `http://localhost:3001` で起動します。
 
 ### 4. フロントエンドの起動
 
-ブラウザで `frontend.html` を開いてください。
-
 ```bash
-# macOS
-open frontend.html
-
-# Windows
-start frontend.html
-
-# Linux
-xdg-open frontend.html
+npm run serve
 ```
+
+ブラウザで `http://localhost:3000/test.html` を開いてください。
 
 ページが開いたら：
 - **個別実行**: 左側のテストボタン一覧から任意のテストケースをクリックして1つずつ実行
 - **一括実行**: 「▶️ 全テスト実行」ボタンをクリックして全テストを連続実行
+
+### 5. CLIでのテスト実行
+
+```bash
+# 全テスト実行
+npm test
+
+# カテゴリ別実行
+npm run test:users   # ユーザー関連テスト
+npm run test:posts   # 投稿関連テスト
+npm run test:errors  # エラー系テスト
+```
 
 ## ✨ 機能
 
@@ -177,7 +191,7 @@ OpenAPI仕様書に定義された全エンドポイントを実装:
 const PORT = 3001; // お好みのポート番号に変更
 ```
 
-`frontend.html` の `API_BASE_URL` も合わせて変更:
+`test.html` の `API_BASE_URL` も合わせて変更:
 
 ```javascript
 const API_BASE_URL = 'http://localhost:3001/v1';
@@ -185,11 +199,7 @@ const API_BASE_URL = 'http://localhost:3001/v1';
 
 ### 新しいテストケースの追加
 
-`frontend.html` の `runAllTests()` 関数内に追加:
-
-```javascript
-await makeRequest('GET', '/your-endpoint', null, '', 'normal', '説明文');
-```
+`test-cases.mjs` にテストケースを追加してください。
 
 ### ダミーデータの変更
 
@@ -227,15 +237,3 @@ await makeRequest('GET', '/your-endpoint', null, '', 'normal', '説明文');
 - [OpenAPI Specification 3.0.3](https://swagger.io/specification/)
 - [Express.js Documentation](https://expressjs.com/)
 - [Fetch API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
-
-## 🎯 次のステップ
-
-1. **Chrome拡張機能との連携**: このテスト環境を使ってValidkunの機能をテスト
-2. **追加のテストケース**: より複雑なシナリオの追加
-3. **自動化**: CI/CDパイプラインへの統合
-4. **パフォーマンステスト**: 大量リクエストの負荷テスト
-
----
-
-Happy Testing! 🐕✨
-

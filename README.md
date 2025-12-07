@@ -23,9 +23,9 @@ DevContainerを使用しています。
 
 ```
 .
-├── src/          # Chrome拡張機能のソースコード
-├── test/         # テスト用ファイル群
-├── dist/         # ビルド出力（npm run build で生成）
+├── src/           # Chrome拡張機能のソースコード
+├── test/          # テスト用ファイル群（詳細は test/README.md を参照）
+├── dist/          # ビルド出力（npm run build で生成）
 └── .devcontainer/ # 開発環境設定
 ```
 
@@ -37,4 +37,8 @@ npm run build
 ```
 
 ビルド後、`dist/` フォルダをChromeの拡張機能として読み込んでください。
+
+## テスト
+
+テスト環境の詳細は [test/README.md](./test/README.md) を参照してください。
 

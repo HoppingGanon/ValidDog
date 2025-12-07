@@ -3,7 +3,7 @@
  */
 
 import type { TrafficEntry, ExtensionMessage, Language, ValidationResult } from './types';
-import { t, setLanguage, toggleLanguage, type TranslationKey } from './i18n';
+import { t, setLanguage, getLanguage, toggleLanguage, type TranslationKey } from './i18n';
 import { OpenAPIValidator } from './validator';
 
 // =============================================================================
@@ -265,6 +265,13 @@ function updateUI(): void {
       el.textContent = t(key);
     }
   });
+  
+  // 言語切り替えボタンのラベルを更新
+  const langLabel = document.getElementById('langLabel');
+  if (langLabel) {
+    const currentLang = getLanguage();
+    langLabel.textContent = currentLang === 'ja' ? '🇯🇵日本語' : '🇺🇸English';
+  }
 }
 
 function updateSpecStatus(loaded: boolean): void {

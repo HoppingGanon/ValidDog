@@ -127,7 +127,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 };
 
 /** 現在の言語 */
-let currentLanguage: Language = 'ja';
+let currentLanguage: Language = 'en';
 
 /**
  * 言語を設定

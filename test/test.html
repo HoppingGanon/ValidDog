@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenAPI テスト</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; font-size: 14px; }
+    
+    .container { display: flex; height: 100vh; }
+    
+    .left { width: 50%; padding: 10px; overflow-y: auto; border-right: 1px solid #ccc; }
+    .right { width: 50%; padding: 10px; display: flex; flex-direction: column; }
+    
+    h1 { font-size: 16px; margin-bottom: 10px; }
+    h2 { font-size: 14px; margin: 15px 0 5px; padding-top: 10px; border-top: 1px solid #ddd; }
+    h2:first-of-type { border-top: none; margin-top: 10px; }
+    
+    .test-item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; }
+    .test-item:nth-child(odd) { background: #f5f5f5; }
+    .test-item:nth-child(even) { background: #fff; }
+    
+    .method { font-size: 11px; font-weight: bold; color: #fff; padding: 2px 6px; min-width: 55px; text-align: center; }
+    .method.get { background: #61affe; }
+    .method.post { background: #49cc90; }
+    .method.put { background: #fca130; }
+    .method.patch { background: #50e3c2; }
+    .method.delete { background: #f93e3e; }
+    
+    .test-title { flex: 1; font-size: 12px; }
+    .test-desc { font-size: 10px; color: #666; margin-left: 63px; padding: 0 6px 4px; }
+    
+    button { padding: 3px 10px; font-size: 12px; cursor: pointer; }
+    
+    .clear-btn { margin-bottom: 8px; }
+    
+    #result {
+      flex: 1;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-y: auto;
+    }
+    #result .info { color: #9cdcfe; }
+    #result .success { color: #4ec9b0; }
+    #result .error { color: #f14c4c; }
+    #result .url { color: #ce9178; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h1>OpenAPI テスト</h1>
+      <p>Server: <code id="baseurl-display"></code></p>
+
+      <h2>Users API</h2>
+      <div id="users-tests"></div>
+
+      <h2>Posts API</h2>
+      <div id="posts-tests"></div>
+
+      <h2>Error Cases</h2>
+      <div id="error-tests"></div>
+    </div>
+    <div class="right">
+      <button class="clear-btn" onclick="clearResult()">Clear</button>
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <script>
+    const BASEURL = "http://localhost:3001";
+    document.getElementById('baseurl-display').textContent = BASEURL;
+
+    const SAMPLE_USER_ID = '550e8400-e29b-41d4-a716-446655440001';
+    const SAMPLE_POST_ID = 1;
+    const SAMPLE_COMMENT_ID = '660e8400-e29b-41d4-a716-446655440001';
+
+    const resultDiv = document.getElementById('result');
+
+    function log(text, className = '') {
+      const span = document.createElement('span');
+      span.className = className;
+      span.textContent = text + '\n';
+      resultDiv.appendChild(span);
+      resultDiv.scrollTop = resultDiv.scrollHeight;
+    }
+
+    function clearResult() {
+      resultDiv.innerHTML = '';
+    }
+
+    async function runTest(method, path, body = null, description = '') {
+      const url = BASEURL + path;
+      
+      log('─'.repeat(50));
+      log(description, 'info');
+      log(`${method} ${url}`, 'url');
+      
+      if (body) {
+        log('Request Body:');
+        log(JSON.stringify(body, null, 2));
+      }
+
+      const options = {
+        method,
+        headers: { 'Content-Type': 'application/json' }
+      };
+      if (body) options.body = JSON.stringify(body);
+
+      try {
+        const res = await fetch(url, options);
+        const status = res.status;
+        
+        log(`\nResponse: ${status} ${res.statusText}`, status >= 400 ? 'error' : 'success');
+        
+        if (status !== 204) {
+          const data = await res.json();
+          log(JSON.stringify(data, null, 2));
+        } else {
+          log('(No Content)');
+        }
+      } catch (err) {
+        log(`Error: ${err.message}`, 'error');
+      }
+      log('');
+    }
+
+    const usersTests = [
+      { title: 'GET /users', method: 'GET', desc: 'ユーザー一覧取得', run: () => runTest('GET', '/users', null, 'ユーザー一覧取得') },
+      { title: 'GET /users (query)', method: 'GET', desc: 'ユーザー一覧（フィルタ付き）', run: () => runTest('GET', '/users?page=1&limit=10&status=active&sort=name', null, 'ユーザー一覧（フィルタ付き）') },
+      { title: 'GET /users/:id', method: 'GET', desc: 'ユーザー詳細取得', run: () => runTest('GET', `/users/${SAMPLE_USER_ID}`, null, 'ユーザー詳細取得') },
+      { title: 'GET /users/:id (details)', method: 'GET', desc: 'ユーザー詳細（詳細情報込み）', run: () => runTest('GET', `/users/${SAMPLE_USER_ID}?includeDetails=true`, null, 'ユーザー詳細（詳細情報込み）') },
+      { title: 'POST /users', method: 'POST', desc: 'ユーザー作成', run: () => runTest('POST', '/users', {
+          email: 'newuser@example.com', name: '新規ユーザー', password: 'password123', age: 28,
+          phoneNumber: '+819099998888',
+          address: { postalCode: '150-0001', prefecture: '東京都', city: '渋谷区', street: '渋谷1-1-1' },
+          tags: ['新規', 'テスト']
+        }, 'ユーザー作成') },
+      { title: 'PUT /users/:id', method: 'PUT', desc: 'ユーザー更新（完全置換）', run: () => runTest('PUT', `/users/${SAMPLE_USER_ID}`, {
+          email: 'updated@example.com', name: '更新された名前', age: 31, phoneNumber: '+819012345678',
+          address: { postalCode: '100-0001', prefecture: '東京都', city: '千代田区', street: '丸の内2-2-2' },
+          status: 'active', preferences: { newsletter: false, language: 'en', timezone: 'UTC' }
+        }, 'ユーザー更新（完全置換）') },
+      { title: 'PATCH /users/:id', method: 'PATCH', desc: 'ユーザー部分更新', run: () => runTest('PATCH', `/users/${SAMPLE_USER_ID}?notifyUser=true`, {
+          name: '部分更新された名前', status: 'inactive'
+        }, 'ユーザー部分更新') },
+      { title: 'PATCH /users/:id/profile', method: 'PATCH', desc: 'プロフィール更新', run: () => runTest('PATCH', `/users/${SAMPLE_USER_ID}/profile`, {
+          bio: '更新されたプロフィール', avatarUrl: 'https://example.com/new-avatar.png',
+          socialLinks: { twitter: '@updated_user', github: 'updated-github' },
+          skills: ['JavaScript', 'TypeScript', 'Node.js', 'React']
+        }, 'プロフィール更新') },
+      { title: 'DELETE /users/:id', method: 'DELETE', desc: 'ユーザー削除（論理削除）', run: () => runTest('DELETE', `/users/${SAMPLE_USER_ID}?permanent=false&reason=テスト削除`, null, 'ユーザー削除（論理削除）') }
+    ];
+
+    const postsTests = [
+      { title: 'POST /posts', method: 'POST', desc: '投稿作成', run: () => runTest('POST', '/posts', {
+          title: '新しい投稿タイトル', content: 'これは新しい投稿の内容です。', authorId: SAMPLE_USER_ID,
+          categoryIds: [1, 2, 3], metadata: { readingTime: 10, keywords: ['テスト', '新規'], featured: true },
+          publishedAt: new Date().toISOString()
+        }, '投稿作成') },
+      { title: 'POST /posts (draft)', method: 'POST', desc: '投稿作成（下書き）', run: () => runTest('POST', '/posts?draft=true', {
+          title: '下書きタイトル', content: '下書きの内容です', authorId: SAMPLE_USER_ID
+        }, '投稿作成（下書き）') },
+      { title: 'PUT /posts/:id', method: 'PUT', desc: '投稿更新（完全置換）', run: () => runTest('PUT', `/posts/${SAMPLE_POST_ID}`, {
+          title: '更新されたタイトル', content: '更新された内容です', categoryIds: [4, 5],
+          metadata: { readingTime: 15, keywords: ['更新済み'], featured: false }, status: 'published'
+        }, '投稿更新（完全置換）') },
+      { title: 'PATCH /posts/:id/status', method: 'PATCH', desc: '投稿ステータス更新', run: () => runTest('PATCH', `/posts/${SAMPLE_POST_ID}/status?reason=テスト変更`, {
+          status: 'archived', comment: 'アーカイブに変更'
+        }, '投稿ステータス更新') },
+      { title: 'DELETE /posts/:postId/comments/:commentId', method: 'DELETE', desc: 'コメント削除', run: () => runTest('DELETE', `/posts/${SAMPLE_POST_ID}/comments/${SAMPLE_COMMENT_ID}?notifyAuthor=true`, null, 'コメント削除') },
+      { title: 'DELETE /posts/:id', method: 'DELETE', desc: '投稿削除', run: () => runTest('DELETE', `/posts/${SAMPLE_POST_ID}`, null, '投稿削除') }
+    ];
+
+    const errorTests = [
+      // 存在しないリソース
+      { title: 'GET /helloworld (404)', method: 'GET', desc: '存在しないパス', run: () => runTest('GET', '/helloworld', null, '存在しないパス') },
+      { title: 'GET /users/:id (not found)', method: 'GET', desc: '存在しないユーザー', run: () => runTest('GET', '/users/00000000-0000-0000-0000-000000000000', null, '存在しないユーザー') },
+      { title: 'PUT /posts/:id (not found)', method: 'PUT', desc: '存在しない投稿の更新', run: () => runTest('PUT', '/posts/99999', { title: 'タイトル', content: '内容' }, '存在しない投稿の更新') },
+
+      // 必須項目不足
+      { title: 'POST /users (required missing)', method: 'POST', desc: '必須項目不足: email, password', run: () => runTest('POST', '/users', { name: 'テスト' }, '必須項目不足: email, password') },
+      { title: 'POST /posts (required missing)', method: 'POST', desc: '必須項目不足: content, authorId', run: () => runTest('POST', '/posts', { title: 'タイトルのみ' }, '必須項目不足: content, authorId') },
+
+      // 型が違う (integer -> string)
+      { title: 'POST /users (age: string)', method: 'POST', desc: '型エラー: age に文字列', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: 'テスト', password: 'password123',
+          age: '二十八'  // integer型にstring
+        }, '型エラー: age に文字列') },
+      { title: 'POST /posts (categoryIds: strings)', method: 'POST', desc: '型エラー: categoryIds に文字列配列', run: () => runTest('POST', '/posts', {
+          title: 'タイトル', content: '内容', authorId: SAMPLE_USER_ID,
+          categoryIds: ['one', 'two', 'three']  // integer配列にstring配列
+        }, '型エラー: categoryIds に文字列配列') },
+
+      // 数値型を文字列で送信
+      { title: 'POST /users (age: "28")', method: 'POST', desc: '数値を文字列で送信: age="28"', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: 'テスト', password: 'password123',
+          age: '28'  // integer型に数値文字列
+        }, '数値を文字列で送信: age="28"') },
+      { title: 'PUT /posts/:id (postId: string)', method: 'PUT', desc: 'パスパラメータに文字列: postId="abc"', run: () => runTest('PUT', '/posts/abc', {
+          title: 'タイトル', content: '内容'
+        }, 'パスパラメータに文字列: postId="abc"') },
+
+      // 長さが違う (minLength/maxLength)
+      { title: 'POST /users (name too long)', method: 'POST', desc: '長さエラー: name が101文字以上', run: () => runTest('POST', '/users', {
+          email: 'test@example.com',
+          name: 'あ'.repeat(150),  // maxLength: 100
+          password: 'password123'
+        }, '長さエラー: name が101文字以上') },
+      { title: 'POST /users (password too short)', method: 'POST', desc: '長さエラー: password が8文字未満', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: 'テスト',
+          password: 'short'  // minLength: 8
+        }, '長さエラー: password が8文字未満') },
+      { title: 'POST /users (name empty)', method: 'POST', desc: '長さエラー: name が空文字', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: '', password: 'password123'
+        }, '長さエラー: name が空文字') },
+
+      // タイポ (フィールド名の間違い)
+      { title: 'POST /users (typo: emal)', method: 'POST', desc: 'タイポ: emal (email)', run: () => runTest('POST', '/users', {
+          emal: 'test@example.com',  // email のtypo
+          name: 'テスト', password: 'password123'
+        }, 'タイポ: emal (email)') },
+      { title: 'POST /users (typo: nmae)', method: 'POST', desc: 'タイポ: nmae (name)', run: () => runTest('POST', '/users', {
+          email: 'test@example.com',
+          nmae: 'テスト',  // name のtypo
+          password: 'password123'
+        }, 'タイポ: nmae (name)') },
+      { title: 'POST /posts (typo: titel)', method: 'POST', desc: 'タイポ: titel (title)', run: () => runTest('POST', '/posts', {
+          titel: 'タイトル',  // title のtypo
+          content: '内容', authorId: SAMPLE_USER_ID
+        }, 'タイポ: titel (title)') },
+
+      // オブジェクトの階層が違う
+      { title: 'POST /users (flat address)', method: 'POST', desc: '階層エラー: address内のフィールドをフラットに', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: 'テスト', password: 'password123',
+          postalCode: '100-0001',  // address.postalCode をフラットに
+          prefecture: '東京都',
+          city: '千代田区',
+          street: '丸の内1-1-1'
+        }, '階層エラー: address内のフィールドをフラットに') },
+      { title: 'POST /posts (nested metadata)', method: 'POST', desc: '階層エラー: metadata に余分なネスト', run: () => runTest('POST', '/posts', {
+          title: 'タイトル', content: '内容', authorId: SAMPLE_USER_ID,
+          metadata: { info: { readingTime: 10, keywords: ['test'] } }  // 余分なネスト
+        }, '階層エラー: metadata に余分なネスト') },
+      { title: 'PATCH /users/:id/profile (flat socialLinks)', method: 'PATCH', desc: '階層エラー: socialLinks内のフィールドをフラットに', run: () => runTest('PATCH', `/users/${SAMPLE_USER_ID}/profile`, {
+          twitter: '@test',  // socialLinks.twitter をフラットに
+          github: 'test-user'
+        }, '階層エラー: socialLinks内のフィールドをフラットに') },
+
+      // 文字列型が配列になっている
+      { title: 'POST /users (email: array)', method: 'POST', desc: '型エラー: email が配列', run: () => runTest('POST', '/users', {
+          email: ['test@example.com', 'test2@example.com'],  // string型に配列
+          name: 'テスト', password: 'password123'
+        }, '型エラー: email が配列') },
+      { title: 'POST /users (name: array)', method: 'POST', desc: '型エラー: name が配列', run: () => runTest('POST', '/users', {
+          email: 'test@example.com',
+          name: ['田中', '太郎'],  // string型に配列
+          password: 'password123'
+        }, '型エラー: name が配列') },
+      { title: 'POST /posts (title: array)', method: 'POST', desc: '型エラー: title が配列', run: () => runTest('POST', '/posts', {
+          title: ['タイトル1', 'タイトル2'],  // string型に配列
+          content: '内容', authorId: SAMPLE_USER_ID
+        }, '型エラー: title が配列') },
+
+      // enum違反
+      { title: 'PATCH /users/:id (invalid status)', method: 'PATCH', desc: 'enum違反: status="deleted"', run: () => runTest('PATCH', `/users/${SAMPLE_USER_ID}`, {
+          status: 'deleted'  // enum: [active, inactive, suspended]
+        }, 'enum違反: status="deleted"') },
+      { title: 'PATCH /posts/:id/status (invalid status)', method: 'PATCH', desc: 'enum違反: status="pending"', run: () => runTest('PATCH', `/posts/${SAMPLE_POST_ID}/status`, {
+          status: 'pending'  // enum: [draft, published, archived]
+        }, 'enum違反: status="pending"') },
+
+      // format違反
+      { title: 'POST /users (invalid email)', method: 'POST', desc: 'format違反: email形式でない', run: () => runTest('POST', '/users', {
+          email: 'not-an-email',  // format: email
+          name: 'テスト', password: 'password123'
+        }, 'format違反: email形式でない') },
+      { title: 'POST /users (invalid uuid)', method: 'POST', desc: 'format違反: authorId がUUID形式でない', run: () => runTest('POST', '/posts', {
+          title: 'タイトル', content: '内容',
+          authorId: 'not-a-uuid'  // format: uuid
+        }, 'format違反: authorId がUUID形式でない') },
+
+      // pattern違反
+      { title: 'POST /users (invalid phone)', method: 'POST', desc: 'pattern違反: phoneNumber形式が不正', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: 'テスト', password: 'password123',
+          phoneNumber: '090-1234-5678'  // pattern: ^\+?[1-9]\d{1,14}$
+        }, 'pattern違反: phoneNumber形式が不正') },
+      { title: 'POST /users (invalid postalCode)', method: 'POST', desc: 'pattern違反: postalCode形式が不正', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: 'テスト', password: 'password123',
+          address: { postalCode: '1000001' }  // pattern: ^\d{3}-\d{4}$
+        }, 'pattern違反: postalCode形式が不正') },
+
+      // 範囲違反 (minimum/maximum)
+      { title: 'POST /users (age negative)', method: 'POST', desc: '範囲違反: age が負の値', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: 'テスト', password: 'password123',
+          age: -5  // minimum: 0
+        }, '範囲違反: age が負の値') },
+      { title: 'POST /users (age too large)', method: 'POST', desc: '範囲違反: age が151以上', run: () => runTest('POST', '/users', {
+          email: 'test@example.com', name: 'テスト', password: 'password123',
+          age: 200  // maximum: 150
+        }, '範囲違反: age が151以上') },
+      { title: 'GET /users (limit too large)', method: 'GET', desc: '範囲違反: limit が101以上', run: () => runTest('GET', '/users?page=1&limit=500', null, '範囲違反: limit が101以上') },
+      { title: 'GET /users (page zero)', method: 'GET', desc: '範囲違反: page が0', run: () => runTest('GET', '/users?page=0', null, '範囲違反: page が0') }
+    ];
+
+    function createTestUI(tests, containerId) {
+      const container = document.getElementById(containerId);
+      tests.forEach(test => {
+        const item = document.createElement('div');
+        item.className = 'test-item';
+        
+        const method = document.createElement('span');
+        method.className = `method ${test.method.toLowerCase()}`;
+        method.textContent = test.method;
+        
+        const title = document.createElement('span');
+        title.className = 'test-title';
+        title.textContent = test.title;
+        
+        const btn = document.createElement('button');
+        btn.textContent = '実行';
+        btn.onclick = test.run;
+        
+        item.appendChild(method);
+        item.appendChild(title);
+        item.appendChild(btn);
+        container.appendChild(item);
+
+        if (test.desc) {
+          const desc = document.createElement('div');
+          desc.className = 'test-desc';
+          desc.textContent = test.desc;
+          container.appendChild(desc);
+        }
+      });
+    }
+
+    createTestUI(usersTests, 'users-tests');
+    createTestUI(postsTests, 'posts-tests');
+    createTestUI(errorTests, 'error-tests');
+  </script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
+const path = require('path');
 
 const app = express();
 const PORT = 3001;
@@ -8,640 +10,572 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-// リクエストログ
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  console.log('Query:', req.query);
-  console.log('Body:', req.body);
-  next();
-});
+// 静的ファイル配信（test.htmlなど）
+app.use(express.static(path.join(__dirname)));
 
-// バリデーションヘルパー
-const validateEmail = (email) => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-};
+// =============================================================================
+// モックデータ
+// =============================================================================
 
-const validateUUID = (uuid) => {
-  const re = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return re.test(uuid);
-};
-
-const validatePostalCode = (code) => {
-  const re = /^\d{3}-\d{4}$/;
-  return re.test(code);
-};
-
-const validatePhoneNumber = (phone) => {
-  const re = /^\+?[1-9]\d{1,14}$/;
-  return re.test(phone);
-};
-
-// ダミーデータ
-let users = [
+// ユーザーデータ
+const users = [
   {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    email: 'user1@example.com',
-    name: '山田太郎',
+    id: '550e8400-e29b-41d4-a716-446655440001',
+    email: 'tanaka@example.com',
+    name: '田中太郎',
     age: 30,
     phoneNumber: '+819012345678',
     address: {
       postalCode: '100-0001',
       prefecture: '東京都',
       city: '千代田区',
-      street: '千代田1-1'
+      street: '丸の内1-1-1'
     },
     status: 'active',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    preferences: {
+      newsletter: true,
+      language: 'ja',
+      timezone: 'Asia/Tokyo'
+    },
+    profile: {
+      bio: 'ソフトウェアエンジニアです',
+      avatarUrl: 'https://example.com/avatars/tanaka.png',
+      socialLinks: {
+        twitter: '@tanaka',
+        github: 'tanaka'
+      },
+      skills: ['JavaScript', 'TypeScript', 'React']
+    },
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
   },
   {
-    id: '223e4567-e89b-12d3-a456-426614174001',
-    email: 'user2@example.com',
-    name: '佐藤花子',
+    id: '550e8400-e29b-41d4-a716-446655440002',
+    email: 'suzuki@example.com',
+    name: '鈴木花子',
     age: 25,
+    phoneNumber: '+819087654321',
+    address: {
+      postalCode: '530-0001',
+      prefecture: '大阪府',
+      city: '大阪市北区',
+      street: '梅田1-1-1'
+    },
     status: 'active',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    preferences: {
+      newsletter: false,
+      language: 'ja',
+      timezone: 'Asia/Tokyo'
+    },
+    profile: {
+      bio: 'デザイナーです',
+      avatarUrl: 'https://example.com/avatars/suzuki.png',
+      socialLinks: {
+        twitter: '@suzuki'
+      },
+      skills: ['Figma', 'Photoshop', 'Illustrator']
+    },
+    createdAt: '2024-02-01T00:00:00Z',
+    updatedAt: '2024-02-01T00:00:00Z'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440003',
+    email: 'sato@example.com',
+    name: '佐藤一郎',
+    age: 35,
+    phoneNumber: '+819011112222',
+    address: {
+      postalCode: '460-0001',
+      prefecture: '愛知県',
+      city: '名古屋市中区',
+      street: '栄1-1-1'
+    },
+    status: 'inactive',
+    preferences: {
+      newsletter: true,
+      language: 'en',
+      timezone: 'Asia/Tokyo'
+    },
+    profile: {
+      bio: 'プロジェクトマネージャーです',
+      avatarUrl: null,
+      socialLinks: {},
+      skills: ['Project Management', 'Agile']
+    },
+    createdAt: '2024-03-01T00:00:00Z',
+    updatedAt: '2024-03-01T00:00:00Z'
   }
 ];
 
-let posts = [
+// 投稿データ
+const posts = [
   {
     id: 1,
-    title: '初めての投稿',
-    content: 'これはテスト投稿です。',
-    authorId: '123e4567-e89b-12d3-a456-426614174000',
+    title: 'はじめてのブログ投稿',
+    content: 'これは最初のブログ投稿です。よろしくお願いします。',
+    authorId: '550e8400-e29b-41d4-a716-446655440001',
     categoryIds: [1, 2],
     metadata: {
       readingTime: 5,
-      keywords: ['test', 'first'],
+      keywords: ['初投稿', 'ブログ'],
+      featured: false
+    },
+    status: 'published',
+    createdAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-01-15T10:00:00Z'
+  },
+  {
+    id: 2,
+    title: 'TypeScriptの基本',
+    content: 'TypeScriptの基本的な使い方を解説します。',
+    authorId: '550e8400-e29b-41d4-a716-446655440001',
+    categoryIds: [3],
+    metadata: {
+      readingTime: 15,
+      keywords: ['TypeScript', 'プログラミング'],
       featured: true
     },
     status: 'published',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: '2024-02-01T14:30:00Z',
+    updatedAt: '2024-02-10T09:00:00Z'
+  },
+  {
+    id: 3,
+    title: 'デザインシステムの作り方',
+    content: 'デザインシステムを構築する方法について説明します。',
+    authorId: '550e8400-e29b-41d4-a716-446655440002',
+    categoryIds: [4, 5],
+    metadata: {
+      readingTime: 20,
+      keywords: ['デザイン', 'UI/UX'],
+      featured: false
+    },
+    status: 'draft',
+    createdAt: '2024-03-01T08:00:00Z',
+    updatedAt: '2024-03-01T08:00:00Z'
   }
 ];
 
-// ==========================================
+// コメントデータ
+const comments = [
+  {
+    id: '660e8400-e29b-41d4-a716-446655440001',
+    postId: 1,
+    authorId: '550e8400-e29b-41d4-a716-446655440002',
+    content: '素晴らしい投稿ですね！',
+    createdAt: '2024-01-16T12:00:00Z'
+  },
+  {
+    id: '660e8400-e29b-41d4-a716-446655440002',
+    postId: 2,
+    authorId: '550e8400-e29b-41d4-a716-446655440003',
+    content: 'とても参考になりました。',
+    createdAt: '2024-02-05T15:30:00Z'
+  }
+];
+
+// =============================================================================
+// ヘルパー関数
+// =============================================================================
+
+// UUIDを生成
+const generateUUID = () => crypto.randomUUID();
+
+// 現在時刻をISO文字列で取得
+const now = () => new Date().toISOString();
+
+// エラーレスポンスを生成
+const errorResponse = (code, message, details = null) => {
+  const error = { code, message };
+  if (details) error.details = details;
+  return error;
+};
+
+// =============================================================================
+// Users API
+// =============================================================================
+
 // GET /users - ユーザー一覧取得
-// OpenAPI: getUsers
-// ==========================================
-app.get('/v1/users', (req, res) => {
+app.get('/users', (req, res) => {
   const { page = 1, limit = 20, status, sort } = req.query;
-  
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+
+  // バリデーション
+  if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'パラメータが無効です',
+      [{ field: 'page or limit', message: 'pageは1以上、limitは1〜100の範囲で指定してください' }]
+    ));
+  }
+
+  // フィルタリング
   let filteredUsers = [...users];
-  
-  // ステータスでフィルタ
   if (status) {
     filteredUsers = filteredUsers.filter(u => u.status === status);
   }
-  
+
   // ソート
-  if (sort === 'name') {
-    filteredUsers.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (sort === 'createdAt') {
-    filteredUsers.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  if (sort) {
+    filteredUsers.sort((a, b) => {
+      if (sort === 'name') return a.name.localeCompare(b.name);
+      if (sort === 'createdAt') return new Date(a.createdAt) - new Date(b.createdAt);
+      if (sort === 'updatedAt') return new Date(a.updatedAt) - new Date(b.updatedAt);
+      return 0;
+    });
   }
-  
+
   // ページネーション
-  const start = (parseInt(page) - 1) * parseInt(limit);
-  const end = start + parseInt(limit);
-  const paginatedUsers = filteredUsers.slice(start, end);
-  
+  const total = filteredUsers.length;
+  const totalPages = Math.ceil(total / limitNum);
+  const start = (pageNum - 1) * limitNum;
+  const paginatedUsers = filteredUsers.slice(start, start + limitNum);
+
   res.json({
-    users: paginatedUsers,
+    users: paginatedUsers.map(({ profile, preferences, ...user }) => user),
     pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      total: filteredUsers.length,
-      totalPages: Math.ceil(filteredUsers.length / parseInt(limit))
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages
     }
   });
 });
 
-// ==========================================
 // POST /users - ユーザー作成
-// OpenAPI: createUser
-// ==========================================
-app.post('/v1/users', (req, res) => {
-  const { userId } = req.params;
-  
-  // UUIDバリデーション
-  if (!validateUUID(userId)) {
-    return res.status(400).json({
-      code: 'INVALID_UUID',
-      message: 'Invalid user ID format',
-      details: [{ field: 'userId', message: 'Must be a valid UUID' }]
-    });
-  }
-  
-  const user = users.find(u => u.id === userId);
-  
-  if (!user) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'User not found',
-      details: []
-    });
-  }
-  
-  res.json(user);
-});
-
-// ==========================================
-// GET /users/{userId} - ユーザー詳細取得
-// OpenAPI: getUserById
-// ==========================================
-app.get('/v1/users/:userId', (req, res) => {
+app.post('/users', (req, res) => {
   const { email, name, password, age, phoneNumber, address, tags } = req.body;
-  
-  // バリデーション
+
+  // 必須フィールドのバリデーション
   const errors = [];
-  
-  if (!email) {
-    errors.push({ field: 'email', message: 'Email is required' });
-  } else if (!validateEmail(email)) {
-    errors.push({ field: 'email', message: 'Invalid email format' });
-  }
-  
-  if (!name) {
-    errors.push({ field: 'name', message: 'Name is required' });
-  } else if (name.length < 1 || name.length > 100) {
-    errors.push({ field: 'name', message: 'Name must be between 1 and 100 characters' });
-  }
-  
-  if (!password) {
-    errors.push({ field: 'password', message: 'Password is required' });
-  } else if (password.length < 8 || password.length > 128) {
-    errors.push({ field: 'password', message: 'Password must be between 8 and 128 characters' });
-  }
-  
-  if (age !== undefined && (age < 0 || age > 150)) {
-    errors.push({ field: 'age', message: 'Age must be between 0 and 150' });
-  }
-  
-  if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
-    errors.push({ field: 'phoneNumber', message: 'Invalid phone number format' });
-  }
-  
-  if (address && address.postalCode && !validatePostalCode(address.postalCode)) {
-    errors.push({ field: 'address.postalCode', message: 'Invalid postal code format (expected: 123-4567)' });
-  }
-  
+  if (!email) errors.push({ field: 'email', message: 'メールアドレスは必須です' });
+  if (!name) errors.push({ field: 'name', message: 'ユーザー名は必須です' });
+  if (!password) errors.push({ field: 'password', message: 'パスワードは必須です' });
+
   if (errors.length > 0) {
-    return res.status(400).json({
-      code: 'VALIDATION_ERROR',
-      message: 'Validation failed',
-      details: errors
-    });
+    return res.status(400).json(errorResponse('VALIDATION_ERROR', 'バリデーションエラー', errors));
   }
-  
-  // 新しいユーザーを作成
+
+  // 新規ユーザー作成
   const newUser = {
-    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: generateUUID(),
     email,
     name,
-    age,
-    phoneNumber,
-    address,
-    tags,
+    age: age || null,
+    phoneNumber: phoneNumber || null,
+    address: address || null,
     status: 'active',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    tags: tags || [],
+    createdAt: now(),
+    updatedAt: now()
   };
-  
+
   users.push(newUser);
-  
   res.status(201).json(newUser);
 });
 
-// ==========================================
-// PUT /users/{userId} - ユーザー情報更新（完全置換）
-// OpenAPI: updateUser
-// ==========================================
-app.put('/v1/users/:userId', (req, res) => {
-  const { title, content, authorId, categoryIds, metadata, publishedAt } = req.body;
-  const { draft } = req.query;
-  
-  // バリデーション
-  const errors = [];
-  
-  if (!title) {
-    errors.push({ field: 'title', message: 'Title is required' });
-  } else if (title.length < 1 || title.length > 200) {
-    errors.push({ field: 'title', message: 'Title must be between 1 and 200 characters' });
+// GET /users/:userId - ユーザー詳細取得
+app.get('/users/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { includeDetails } = req.query;
+
+  const user = users.find(u => u.id === userId);
+  if (!user) {
+    return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
-  
-  if (!content) {
-    errors.push({ field: 'content', message: 'Content is required' });
-  } else if (content.length < 1) {
-    errors.push({ field: 'content', message: 'Content must not be empty' });
+
+  if (includeDetails === 'true') {
+    res.json(user);
+  } else {
+    const { profile, preferences, ...basicUser } = user;
+    res.json(basicUser);
   }
-  
-  if (!authorId) {
-    errors.push({ field: 'authorId', message: 'Author ID is required' });
-  } else if (!validateUUID(authorId)) {
-    errors.push({ field: 'authorId', message: 'Invalid author ID format' });
-  }
-  
-  if (errors.length > 0) {
-    return res.status(400).json({
-      code: 'VALIDATION_ERROR',
-      message: 'Validation failed',
-      details: errors
-    });
-  }
-  
-  // 新しい投稿を作成
-  const newPost = {
-    id: posts.length + 1,
-    title,
-    content,
-    authorId,
-    categoryIds,
-    metadata,
-    publishedAt,
-    status: draft === 'true' ? 'draft' : 'published',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  posts.push(newPost);
-  
-  res.status(201).json(newPost);
 });
 
-// ==========================================
-// PATCH /users/{userId} - ユーザー情報部分更新
-// OpenAPI: patchUser
-// ==========================================
-app.patch('/v1/users/:userId', (req, res) => {
+// PUT /users/:userId - ユーザー情報更新（完全置換）
+app.put('/users/:userId', (req, res) => {
   const { userId } = req.params;
   const { email, name, age, phoneNumber, address, status, preferences } = req.body;
-  
-  // UUIDバリデーション
-  if (!validateUUID(userId)) {
-    return res.status(400).json({
-      code: 'INVALID_UUID',
-      message: 'Invalid user ID format',
-      details: [{ field: 'userId', message: 'Must be a valid UUID' }]
-    });
-  }
-  
+
   const userIndex = users.findIndex(u => u.id === userId);
-  
   if (userIndex === -1) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'User not found',
-      details: []
-    });
+    return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
-  
-  // バリデーション
+
+  // 必須フィールドのバリデーション
   const errors = [];
-  
-  if (!email) {
-    errors.push({ field: 'email', message: 'Email is required' });
-  } else if (!validateEmail(email)) {
-    errors.push({ field: 'email', message: 'Invalid email format' });
-  }
-  
-  if (!name) {
-    errors.push({ field: 'name', message: 'Name is required' });
-  } else if (name.length < 1 || name.length > 100) {
-    errors.push({ field: 'name', message: 'Name must be between 1 and 100 characters' });
-  }
-  
+  if (!email) errors.push({ field: 'email', message: 'メールアドレスは必須です' });
+  if (!name) errors.push({ field: 'name', message: 'ユーザー名は必須です' });
+
   if (errors.length > 0) {
-    return res.status(400).json({
-      code: 'VALIDATION_ERROR',
-      message: 'Validation failed',
-      details: errors
-    });
+    return res.status(400).json(errorResponse('VALIDATION_ERROR', 'バリデーションエラー', errors));
   }
-  
-  // ユーザーを更新
-  users[userIndex] = {
+
+  // 完全置換
+  const updatedUser = {
     ...users[userIndex],
     email,
     name,
-    age,
-    phoneNumber,
-    address,
-    status,
-    preferences,
-    updatedAt: new Date().toISOString()
+    age: age || null,
+    phoneNumber: phoneNumber || null,
+    address: address || null,
+    status: status || 'active',
+    preferences: preferences || null,
+    updatedAt: now()
   };
-  
-  res.json(users[userIndex]);
+
+  users[userIndex] = updatedUser;
+  const { profile, ...responseUser } = updatedUser;
+  res.json(responseUser);
 });
 
-// ==========================================
-// DELETE /users/{userId} - ユーザー削除
-// OpenAPI: deleteUser
-// ==========================================
-app.delete('/v1/users/:userId', (req, res) => {
-  const { postId } = req.params;
-  const { title, content, categoryIds, metadata, status } = req.body;
-  
-  const postIndex = posts.findIndex(p => p.id === parseInt(postId));
-  
-  if (postIndex === -1) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'Post not found',
-      details: []
-    });
-  }
-  
-  // バリデーション
-  const errors = [];
-  
-  if (!title) {
-    errors.push({ field: 'title', message: 'Title is required' });
-  }
-  if (!content) {
-    errors.push({ field: 'content', message: 'Content is required' });
-  }
-  
-  if (errors.length > 0) {
-    return res.status(400).json({
-      code: 'VALIDATION_ERROR',
-      message: 'Validation failed',
-      details: errors
-    });
-  }
-  
-  // 投稿を更新
-  posts[postIndex] = {
-    ...posts[postIndex],
-    title,
-    content,
-    categoryIds,
-    metadata,
-    status,
-    updatedAt: new Date().toISOString()
-  };
-  
-  res.json(posts[postIndex]);
-});
-
-// ==========================================
-// PATCH /users/{userId}/profile - ユーザープロフィール更新
-// OpenAPI: patchUserProfile
-// ==========================================
-app.patch('/v1/users/:userId/profile', (req, res) => {
+// PATCH /users/:userId - ユーザー情報部分更新
+app.patch('/users/:userId', (req, res) => {
   const { userId } = req.params;
+  const { notifyUser } = req.query;
   const updates = req.body;
-  
-  // UUIDバリデーション
-  if (!validateUUID(userId)) {
-    return res.status(400).json({
-      code: 'INVALID_UUID',
-      message: 'Invalid user ID format',
-      details: [{ field: 'userId', message: 'Must be a valid UUID' }]
-    });
-  }
-  
+
   const userIndex = users.findIndex(u => u.id === userId);
-  
   if (userIndex === -1) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'User not found',
-      details: []
-    });
+    return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
-  
-  // バリデーション
-  const errors = [];
-  
-  if (updates.email && !validateEmail(updates.email)) {
-    errors.push({ field: 'email', message: 'Invalid email format' });
-  }
-  
-  if (updates.name && (updates.name.length < 1 || updates.name.length > 100)) {
-    errors.push({ field: 'name', message: 'Name must be between 1 and 100 characters' });
-  }
-  
-  if (errors.length > 0) {
-    return res.status(400).json({
-      code: 'VALIDATION_ERROR',
-      message: 'Validation failed',
-      details: errors
-    });
-  }
-  
-  // ユーザーを部分更新
-  users[userIndex] = {
+
+  // 部分更新
+  const updatedUser = {
     ...users[userIndex],
     ...updates,
-    updatedAt: new Date().toISOString()
+    updatedAt: now()
   };
-  
-  res.json(users[userIndex]);
+
+  users[userIndex] = updatedUser;
+
+  // 通知フラグがtrueの場合（実際には何もしない）
+  if (notifyUser === 'true') {
+    console.log(`ユーザー ${userId} に通知を送信しました`);
+  }
+
+  const { profile, preferences, ...responseUser } = updatedUser;
+  res.json(responseUser);
 });
 
-// ==========================================
-// POST /posts - 投稿作成
-// OpenAPI: createPost
-// ==========================================
-app.post('/v1/posts', (req, res) => {
-  const { postId } = req.params;
-  const { status, comment } = req.body;
-  
-  const postIndex = posts.findIndex(p => p.id === parseInt(postId));
-  
-  if (postIndex === -1) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'Post not found',
-      details: []
-    });
-  }
-  
-  // バリデーション
-  if (!status) {
-    return res.status(400).json({
-      code: 'VALIDATION_ERROR',
-      message: 'Status is required',
-      details: [{ field: 'status', message: 'Status is required' }]
-    });
-  }
-  
-  if (!['draft', 'published', 'archived'].includes(status)) {
-    return res.status(400).json({
-      code: 'VALIDATION_ERROR',
-      message: 'Invalid status value',
-      details: [{ field: 'status', message: 'Must be one of: draft, published, archived' }]
-    });
-  }
-  
-  // ステータスを更新
-  posts[postIndex].status = status;
-  posts[postIndex].updatedAt = new Date().toISOString();
-  
-  res.json(posts[postIndex]);
-});
-
-// ==========================================
-// PUT /posts/{postId} - 投稿情報更新（完全置換）
-// OpenAPI: updatePost
-// ==========================================
-app.put('/v1/posts/:postId', (req, res) => {
-  const { userId } = req.params;
-  const { bio, avatarUrl, socialLinks, skills } = req.body;
-  
-  // UUIDバリデーション
-  if (!validateUUID(userId)) {
-    return res.status(400).json({
-      code: 'INVALID_UUID',
-      message: 'Invalid user ID format',
-      details: [{ field: 'userId', message: 'Must be a valid UUID' }]
-    });
-  }
-  
-  const userIndex = users.findIndex(u => u.id === userId);
-  
-  if (userIndex === -1) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'User not found',
-      details: []
-    });
-  }
-  
-  // プロフィールを更新
-  if (!users[userIndex].profile) {
-    users[userIndex].profile = {};
-  }
-  
-  if (bio !== undefined) users[userIndex].profile.bio = bio;
-  if (avatarUrl !== undefined) users[userIndex].profile.avatarUrl = avatarUrl;
-  if (socialLinks !== undefined) users[userIndex].profile.socialLinks = socialLinks;
-  if (skills !== undefined) users[userIndex].profile.skills = skills;
-  
-  users[userIndex].updatedAt = new Date().toISOString();
-  
-  res.json({ message: 'Profile updated successfully' });
-});
-
-// ==========================================
-// DELETE /posts/{postId} - 投稿削除
-// OpenAPI: deletePost
-// ==========================================
-app.delete('/v1/posts/:postId', (req, res) => {
+// DELETE /users/:userId - ユーザー削除
+app.delete('/users/:userId', (req, res) => {
   const { userId } = req.params;
   const { permanent, reason } = req.query;
-  
-  // UUIDバリデーション
-  if (!validateUUID(userId)) {
-    return res.status(400).json({
-      code: 'INVALID_UUID',
-      message: 'Invalid user ID format',
-      details: [{ field: 'userId', message: 'Must be a valid UUID' }]
-    });
-  }
-  
+
   const userIndex = users.findIndex(u => u.id === userId);
-  
   if (userIndex === -1) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'User not found',
-      details: []
-    });
+    return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
-  
+
   if (permanent === 'true') {
     // 完全削除
     users.splice(userIndex, 1);
+    console.log(`ユーザー ${userId} を完全削除しました（理由: ${reason || '未指定'}）`);
   } else {
     // 論理削除
-    users[userIndex].status = 'deleted';
-    users[userIndex].deletedAt = new Date().toISOString();
+    users[userIndex].status = 'suspended';
+    users[userIndex].updatedAt = now();
+    console.log(`ユーザー ${userId} を論理削除しました（理由: ${reason || '未指定'}）`);
   }
-  
+
   res.status(204).send();
 });
 
-// ==========================================
-// PATCH /posts/{postId}/status - 投稿ステータス更新
-// OpenAPI: patchPostStatus
-// ==========================================
-app.patch('/v1/posts/:postId/status', (req, res) => {
-  const { postId } = req.params;
-  
-  const postIndex = posts.findIndex(p => p.id === parseInt(postId));
-  
+// PATCH /users/:userId/profile - ユーザープロフィール更新
+app.patch('/users/:userId/profile', (req, res) => {
+  const { userId } = req.params;
+  const { bio, avatarUrl, socialLinks, skills } = req.body;
+
+  const userIndex = users.findIndex(u => u.id === userId);
+  if (userIndex === -1) {
+    return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
+  }
+
+  // プロフィールの部分更新
+  const currentProfile = users[userIndex].profile || {};
+  users[userIndex].profile = {
+    ...currentProfile,
+    ...(bio !== undefined && { bio }),
+    ...(avatarUrl !== undefined && { avatarUrl }),
+    ...(socialLinks !== undefined && { socialLinks: { ...currentProfile.socialLinks, ...socialLinks } }),
+    ...(skills !== undefined && { skills })
+  };
+  users[userIndex].updatedAt = now();
+
+  res.json({ message: 'プロフィールを更新しました', profile: users[userIndex].profile });
+});
+
+// =============================================================================
+// Posts API
+// =============================================================================
+
+// POST /posts - 投稿作成
+app.post('/posts', (req, res) => {
+  const { draft } = req.query;
+  const { title, content, authorId, categoryIds, metadata, publishedAt } = req.body;
+
+  // 必須フィールドのバリデーション
+  const errors = [];
+  if (!title) errors.push({ field: 'title', message: 'タイトルは必須です' });
+  if (!content) errors.push({ field: 'content', message: '内容は必須です' });
+  if (!authorId) errors.push({ field: 'authorId', message: '著者IDは必須です' });
+
+  if (errors.length > 0) {
+    return res.status(400).json(errorResponse('VALIDATION_ERROR', 'バリデーションエラー', errors));
+  }
+
+  // 新規投稿作成
+  const newPost = {
+    id: posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1,
+    title,
+    content,
+    authorId,
+    categoryIds: categoryIds || [],
+    metadata: metadata || null,
+    status: draft === 'true' ? 'draft' : 'published',
+    publishedAt: draft === 'true' ? null : (publishedAt || now()),
+    createdAt: now(),
+    updatedAt: now()
+  };
+
+  posts.push(newPost);
+  res.status(201).json(newPost);
+});
+
+// PUT /posts/:postId - 投稿情報更新（完全置換）
+app.put('/posts/:postId', (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const { title, content, categoryIds, metadata, status } = req.body;
+
+  const postIndex = posts.findIndex(p => p.id === postId);
   if (postIndex === -1) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'Post not found',
-      details: []
-    });
+    return res.status(404).json(errorResponse('NOT_FOUND', '投稿が見つかりません'));
   }
-  
+
+  // 必須フィールドのバリデーション
+  const errors = [];
+  if (!title) errors.push({ field: 'title', message: 'タイトルは必須です' });
+  if (!content) errors.push({ field: 'content', message: '内容は必須です' });
+
+  if (errors.length > 0) {
+    return res.status(400).json(errorResponse('VALIDATION_ERROR', 'バリデーションエラー', errors));
+  }
+
+  // 完全置換（authorIdは変更不可）
+  const updatedPost = {
+    ...posts[postIndex],
+    title,
+    content,
+    categoryIds: categoryIds || [],
+    metadata: metadata || null,
+    status: status || posts[postIndex].status,
+    updatedAt: now()
+  };
+
+  posts[postIndex] = updatedPost;
+  res.json(updatedPost);
+});
+
+// DELETE /posts/:postId - 投稿削除
+app.delete('/posts/:postId', (req, res) => {
+  const postId = parseInt(req.params.postId);
+
+  const postIndex = posts.findIndex(p => p.id === postId);
+  if (postIndex === -1) {
+    return res.status(404).json(errorResponse('NOT_FOUND', '投稿が見つかりません'));
+  }
+
   posts.splice(postIndex, 1);
-  
   res.status(204).send();
 });
 
-// ==========================================
-// DELETE /posts/{postId}/comments/{commentId} - コメント削除
-// OpenAPI: deleteComment
-// ==========================================
-app.delete('/v1/posts/:postId/comments/:commentId', (req, res) => {
-  const { postId, commentId } = req.params;
+// PATCH /posts/:postId/status - 投稿ステータス更新
+app.patch('/posts/:postId/status', (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const { reason } = req.query;
+  const { status, comment } = req.body;
+
+  const postIndex = posts.findIndex(p => p.id === postId);
+  if (postIndex === -1) {
+    return res.status(404).json(errorResponse('NOT_FOUND', '投稿が見つかりません'));
+  }
+
+  // 必須フィールドのバリデーション
+  if (!status) {
+    return res.status(400).json(errorResponse('VALIDATION_ERROR', 'バリデーションエラー', [
+      { field: 'status', message: 'ステータスは必須です' }
+    ]));
+  }
+
+  // ステータス更新
+  posts[postIndex].status = status;
+  posts[postIndex].updatedAt = now();
+
+  // 公開時にpublishedAtを設定
+  if (status === 'published' && !posts[postIndex].publishedAt) {
+    posts[postIndex].publishedAt = now();
+  }
+
+  console.log(`投稿 ${postId} のステータスを ${status} に変更しました（理由: ${reason || '未指定'}, コメント: ${comment || 'なし'}）`);
+
+  res.json(posts[postIndex]);
+});
+
+// DELETE /posts/:postId/comments/:commentId - コメント削除
+app.delete('/posts/:postId/comments/:commentId', (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const { commentId } = req.params;
   const { notifyAuthor } = req.query;
-  
-  const post = posts.find(p => p.id === parseInt(postId));
-  
+
+  // 投稿の存在確認
+  const post = posts.find(p => p.id === postId);
   if (!post) {
-    return res.status(404).json({
-      code: 'NOT_FOUND',
-      message: 'Post not found',
-      details: []
-    });
+    return res.status(404).json(errorResponse('NOT_FOUND', '投稿が見つかりません'));
   }
-  
-  // UUIDバリデーション
-  if (!validateUUID(commentId)) {
-    return res.status(400).json({
-      code: 'INVALID_UUID',
-      message: 'Invalid comment ID format',
-      details: [{ field: 'commentId', message: 'Must be a valid UUID' }]
-    });
+
+  // コメントの存在確認
+  const commentIndex = comments.findIndex(c => c.id === commentId && c.postId === postId);
+  if (commentIndex === -1) {
+    return res.status(404).json(errorResponse('NOT_FOUND', 'コメントが見つかりません'));
   }
-  
-  // コメント削除の処理（ダミー）
-  console.log(`Deleting comment ${commentId} from post ${postId}, notifyAuthor: ${notifyAuthor}`);
-  
+
+  // 削除前に著者情報を取得
+  const comment = comments[commentIndex];
+
+  // コメント削除
+  comments.splice(commentIndex, 1);
+
+  // 通知フラグがtrueの場合（実際には何もしない）
+  if (notifyAuthor !== 'false') {
+    console.log(`コメント著者 ${comment.authorId} に削除通知を送信しました`);
+  }
+
   res.status(204).send();
 });
 
+// =============================================================================
 // サーバー起動
-app.listen(PORT, () => {
-  console.log(`\n========================================`);
-  console.log(`テストサーバーが起動しました`);
-  console.log(`URL: http://localhost:${PORT}`);
-  console.log(`========================================\n`);
-  console.log(`利用可能なエンドポイント:`);
-  console.log(`  GET    /v1/users`);
-  console.log(`  GET    /v1/users/:userId`);
-  console.log(`  POST   /v1/users`);
-  console.log(`  PUT    /v1/users/:userId`);
-  console.log(`  PATCH  /v1/users/:userId`);
-  console.log(`  PATCH  /v1/users/:userId/profile`);
-  console.log(`  DELETE /v1/users/:userId`);
-  console.log(`  POST   /v1/posts`);
-  console.log(`  PUT    /v1/posts/:postId`);
-  console.log(`  PATCH  /v1/posts/:postId/status`);
-  console.log(`  DELETE /v1/posts/:postId`);
-  console.log(`  DELETE /v1/posts/:postId/comments/:commentId`);
-  console.log(`\n========================================\n`);
-});
+// =============================================================================
 
+app.listen(PORT, () => {
+  console.log(`テストサーバーが起動しました: http://localhost:${PORT}`);
+  console.log('');
+  console.log('利用可能なエンドポイント:');
+  console.log('  [Users]');
+  console.log('    GET    /users              - ユーザー一覧取得');
+  console.log('    POST   /users              - ユーザー作成');
+  console.log('    GET    /users/:userId      - ユーザー詳細取得');
+  console.log('    PUT    /users/:userId      - ユーザー情報更新（完全置換）');
+  console.log('    PATCH  /users/:userId      - ユーザー情報部分更新');
+  console.log('    DELETE /users/:userId      - ユーザー削除');
+  console.log('    PATCH  /users/:userId/profile - ユーザープロフィール更新');
+  console.log('');
+  console.log('  [Posts]');
+  console.log('    POST   /posts              - 投稿作成');
+  console.log('    PUT    /posts/:postId      - 投稿情報更新（完全置換）');
+  console.log('    DELETE /posts/:postId      - 投稿削除');
+  console.log('    PATCH  /posts/:postId/status - 投稿ステータス更新');
+  console.log('    DELETE /posts/:postId/comments/:commentId - コメント削除');
+});

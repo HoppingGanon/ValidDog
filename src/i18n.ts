@@ -29,7 +29,6 @@ export type TranslationKey =
   | 'errors'
   | 'importSpec'
   | 'importFile'
-  | 'import'
   | 'clearSpec'
   | 'close'
   | 'specCleared'
@@ -71,7 +70,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     errors: 'エラー',
     importSpec: 'OpenAPI仕様書をインポート',
     importFile: 'ファイルを選択 (YAML/JSON):',
-    import: 'インポート',
     clearSpec: '仕様書を削除',
     close: '閉じる',
     specCleared: '仕様書を削除しました',
@@ -111,7 +109,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     errors: 'Errors',
     importSpec: 'Import OpenAPI Spec',
     importFile: 'Select file (YAML/JSON):',
-    import: 'Import',
     clearSpec: 'Clear Spec',
     close: 'Close',
     specCleared: 'Spec cleared',

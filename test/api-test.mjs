@@ -19,8 +19,11 @@ import {
   DEFAULT_BASE_URL,
   usersTests,
   postsTests,
+  headerTests,
+  pathParamTests,
   errorTests,
   getTestBody,
+  getTestHeaders,
   getTotalTestCount,
 } from './test-cases.mjs';
 
@@ -70,11 +73,20 @@ const log = {
 async function runTest(testCase) {
   const { method, path, desc } = testCase;
   const body = getTestBody(testCase);
+  const customHeaders = getTestHeaders(testCase);
   const url = BASEURL + path;
 
   console.log('\n' + '─'.repeat(60));
   log.info(desc);
   console.log(`${log.method(method)} ${colors.yellow}${url}${colors.reset}`);
+
+  // カスタムヘッダーの表示
+  if (Object.keys(customHeaders).length > 0) {
+    log.dim('Request Headers:');
+    for (const [key, value] of Object.entries(customHeaders)) {
+      console.log(`  ${key}: ${value}`);
+    }
+  }
 
   if (body) {
     log.dim('Request Body:');
@@ -83,7 +95,7 @@ async function runTest(testCase) {
 
   const options = {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...customHeaders },
   };
   if (body) options.body = JSON.stringify(body);
 
@@ -93,6 +105,16 @@ async function runTest(testCase) {
 
     const statusColor = status >= 400 ? colors.red : colors.green;
     console.log(`\n${statusColor}Response: ${status} ${res.statusText}${colors.reset}`);
+
+    // レスポンスヘッダーの表示（カスタムヘッダーがあった場合のみ）
+    if (Object.keys(customHeaders).length > 0) {
+      log.dim('Response Headers:');
+      for (const [key, value] of res.headers.entries()) {
+        if (key.startsWith('aaa-res-')) {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
+    }
 
     if (status !== 204) {
       try {
@@ -147,16 +169,18 @@ async function main() {
     console.log(`
 OpenAPI テストスクリプト（Node.js版）
 
-共通テストケース（test-cases.js）を使用しています。
+共通テストケース（test-cases.mjs）を使用しています。
 ブラウザ版（test.html）と同じテストケースが実行されます。
 
 使用方法:
-  node api-test.js [オプション]
+  node api-test.mjs [オプション]
 
 オプション:
   --all       すべてのテストを実行（デフォルト）
   --users     Users APIのテストのみ実行
   --posts     Posts APIのテストのみ実行
+  --headers   ヘッダーバリデーションテストのみ実行
+  --pathparams パスパラメータテストのみ実行
   --errors    エラーケースのテストのみ実行
   --help      ヘルプを表示
 
@@ -164,15 +188,18 @@ OpenAPI テストスクリプト（Node.js版）
   API_URL     APIのベースURL（デフォルト: ${DEFAULT_BASE_URL}）
 
 例:
-  node api-test.js --all
-  node api-test.js --users --posts
-  API_URL=http://localhost:3002 node api-test.js --all
+  node api-test.mjs --all
+  node api-test.mjs --users --posts
+  node api-test.mjs --headers --pathparams
+  API_URL=http://localhost:3002 node api-test.mjs --all
 
 テストケース数:
-  Users API:  ${usersTests.length}件
-  Posts API:  ${postsTests.length}件
-  Errors:     ${errorTests.length}件
-  合計:       ${getTotalTestCount()}件
+  Users API:     ${usersTests.length}件
+  Posts API:     ${postsTests.length}件
+  Headers:       ${headerTests.length}件
+  Path Params:   ${pathParamTests.length}件
+  Errors:        ${errorTests.length}件
+  合計:          ${getTotalTestCount()}件
 `);
     process.exit(0);
   }
@@ -186,6 +213,8 @@ OpenAPI テストスクリプト（Node.js版）
   const runAll = args.length === 0 || args.includes('--all');
   const runUsers = runAll || args.includes('--users');
   const runPosts = runAll || args.includes('--posts');
+  const runHeaders = runAll || args.includes('--headers');
+  const runPathParams = runAll || args.includes('--pathparams');
   const runErrors = runAll || args.includes('--errors');
 
   const results = [];
@@ -196,6 +225,14 @@ OpenAPI テストスクリプト（Node.js版）
 
   if (runPosts) {
     results.push(await runTestGroup(postsTests, 'Posts API テスト'));
+  }
+
+  if (runHeaders) {
+    results.push(await runTestGroup(headerTests, 'Headers バリデーションテスト'));
+  }
+
+  if (runPathParams) {
+    results.push(await runTestGroup(pathParamTests, 'Path Parameters テスト'));
   }
 
   if (runErrors) {

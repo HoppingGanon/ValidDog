@@ -559,6 +559,249 @@ app.delete('/posts/:postId/comments/:commentId', (req, res) => {
 });
 
 // =============================================================================
+// Headers API（ヘッダーバリデーションテスト用）
+// =============================================================================
+
+// GET /header/hissu - 必須/任意ヘッダーテスト
+app.get('/header/hissu', (req, res) => {
+  const reqHitsuyou = req.headers['aaa-req-hitsuyou'];
+  const reqNini = req.headers['aaa-req-nini'];
+
+  // 必須ヘッダーのバリデーション
+  if (!reqHitsuyou) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      '必須ヘッダー aaa-req-hitsuyou が不足しています',
+      [{ field: 'aaa-req-hitsuyou', message: '必須ヘッダーが指定されていません' }]
+    ));
+  }
+
+  // レスポンスヘッダーを設定
+  res.set('aaa-res-hitsuyou', 'response-required-value');
+  res.set('aaa-res-nini', 'response-optional-value');
+
+  res.json({
+    message: 'ヘッダーバリデーション成功',
+    receivedHeaders: {
+      'aaa-req-hitsuyou': reqHitsuyou,
+      'aaa-req-nini': reqNini || null
+    }
+  });
+});
+
+// GET /header/uuid - UUIDフォーマットヘッダーテスト
+app.get('/header/uuid', (req, res) => {
+  const reqUuid = req.headers['aaa-req-uuid'];
+
+  // 必須ヘッダーのバリデーション
+  if (!reqUuid) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      '必須ヘッダー aaa-req-uuid が不足しています',
+      [{ field: 'aaa-req-uuid', message: '必須ヘッダーが指定されていません' }]
+    ));
+  }
+
+  // UUID形式のバリデーション
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(reqUuid)) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'aaa-req-uuid がUUID形式ではありません',
+      [{ field: 'aaa-req-uuid', message: `値 "${reqUuid}" はUUID形式ではありません` }]
+    ));
+  }
+
+  // レスポンスヘッダーを設定
+  res.set('aaa-res-uuid', generateUUID());
+
+  res.json({
+    message: 'UUIDヘッダーバリデーション成功',
+    receivedUuid: reqUuid
+  });
+});
+
+// GET /header/regexp - 正規表現フォーマットヘッダーテスト
+app.get('/header/regexp', (req, res) => {
+  const reqRegexp = req.headers['aaa-req-regexp'];
+
+  // 必須ヘッダーのバリデーション
+  if (!reqRegexp) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      '必須ヘッダー aaa-req-regexp が不足しています',
+      [{ field: 'aaa-req-regexp', message: '必須ヘッダーが指定されていません' }]
+    ));
+  }
+
+  // パターンバリデーション（ABC-数字3桁）
+  const pattern = /^ABC-[0-9]{3}$/;
+  if (!pattern.test(reqRegexp)) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'aaa-req-regexp がパターン ^ABC-[0-9]{3}$ に一致しません',
+      [{ field: 'aaa-req-regexp', message: `値 "${reqRegexp}" はパターンに一致しません` }]
+    ));
+  }
+
+  // レスポンスヘッダーを設定（XYZ-英字3文字）
+  res.set('aaa-res-regexp', 'XYZ-ABC');
+
+  res.json({
+    message: '正規表現ヘッダーバリデーション成功',
+    receivedRegexp: reqRegexp
+  });
+});
+
+// GET /header/datetime - date-timeフォーマットヘッダーテスト
+app.get('/header/datetime', (req, res) => {
+  const reqDatetime = req.headers['aaa-req-datetime'];
+
+  // 必須ヘッダーのバリデーション
+  if (!reqDatetime) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      '必須ヘッダー aaa-req-datetime が不足しています',
+      [{ field: 'aaa-req-datetime', message: '必須ヘッダーが指定されていません' }]
+    ));
+  }
+
+  // date-time形式のバリデーション（ISO 8601）
+  const date = new Date(reqDatetime);
+  if (isNaN(date.getTime()) || !reqDatetime.includes('T')) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'aaa-req-datetime がdate-time形式（ISO 8601）ではありません',
+      [{ field: 'aaa-req-datetime', message: `値 "${reqDatetime}" はdate-time形式ではありません` }]
+    ));
+  }
+
+  // レスポンスヘッダーを設定
+  res.set('aaa-res-datetime', now());
+
+  res.json({
+    message: 'date-timeヘッダーバリデーション成功',
+    receivedDatetime: reqDatetime,
+    parsedDate: date.toISOString()
+  });
+});
+
+// =============================================================================
+// Path Parameters API（パスパラメータバリデーションテスト用）
+// =============================================================================
+
+// GET /path/uuid/:uuid - UUIDパスパラメータテスト
+app.get('/path/uuid/:uuid', (req, res) => {
+  const { uuid } = req.params;
+
+  // UUID形式のバリデーション
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(uuid)) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'uuid がUUID形式ではありません',
+      [{ field: 'uuid', message: `値 "${uuid}" はUUID形式ではありません` }]
+    ));
+  }
+
+  res.json({
+    uuid,
+    message: 'UUIDパスパラメータバリデーション成功'
+  });
+});
+
+// GET /path/regexp/:code - 正規表現パスパラメータテスト
+app.get('/path/regexp/:code', (req, res) => {
+  const { code } = req.params;
+
+  // パターンバリデーション（ITEM-数字4桁）
+  const pattern = /^ITEM-[0-9]{4}$/;
+  if (!pattern.test(code)) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'code がパターン ^ITEM-[0-9]{4}$ に一致しません',
+      [{ field: 'code', message: `値 "${code}" はパターンに一致しません` }]
+    ));
+  }
+
+  res.json({
+    code,
+    message: '正規表現パスパラメータバリデーション成功'
+  });
+});
+
+// GET /path/datetime/:datetime - date-timeパスパラメータテスト
+app.get('/path/datetime/:datetime', (req, res) => {
+  const { datetime } = req.params;
+  const decodedDatetime = decodeURIComponent(datetime);
+
+  // date-time形式のバリデーション（ISO 8601）
+  const date = new Date(decodedDatetime);
+  if (isNaN(date.getTime()) || !decodedDatetime.includes('T')) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'datetime がdate-time形式（ISO 8601）ではありません',
+      [{ field: 'datetime', message: `値 "${decodedDatetime}" はdate-time形式ではありません` }]
+    ));
+  }
+
+  res.json({
+    datetime: date.toISOString(),
+    message: 'date-timeパスパラメータバリデーション成功'
+  });
+});
+
+// GET /path/encoded/:text - URIエンコーディングパスパラメータテスト
+app.get('/path/encoded/:text', (req, res) => {
+  const { text } = req.params;
+  const decodedText = decodeURIComponent(text);
+
+  // 長さバリデーション
+  if (decodedText.length < 1 || decodedText.length > 100) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'text の長さが範囲外です（1〜100文字）',
+      [{ field: 'text', message: `長さ ${decodedText.length} は範囲外です` }]
+    ));
+  }
+
+  res.json({
+    text: decodedText,
+    encoded: text,
+    message: 'URIエンコーディングパスパラメータバリデーション成功'
+  });
+});
+
+// GET /path/integer/:num - 整数パスパラメータテスト
+app.get('/path/integer/:num', (req, res) => {
+  const { num } = req.params;
+  const numInt = parseInt(num, 10);
+
+  // 整数バリデーション
+  if (isNaN(numInt) || num !== String(numInt)) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'num が整数ではありません',
+      [{ field: 'num', message: `値 "${num}" は整数ではありません` }]
+    ));
+  }
+
+  // 範囲バリデーション（1〜9999）
+  if (numInt < 1 || numInt > 9999) {
+    return res.status(400).json(errorResponse(
+      'VALIDATION_ERROR',
+      'num が範囲外です（1〜9999）',
+      [{ field: 'num', message: `値 ${numInt} は範囲外です` }]
+    ));
+  }
+
+  res.json({
+    num: numInt,
+    message: '整数パスパラメータバリデーション成功'
+  });
+});
+
+// =============================================================================
 // サーバー起動
 // =============================================================================
 
@@ -581,4 +824,17 @@ app.listen(PORT, () => {
   console.log('    DELETE /posts/:postId      - 投稿削除');
   console.log('    PATCH  /posts/:postId/status - 投稿ステータス更新');
   console.log('    DELETE /posts/:postId/comments/:commentId - コメント削除');
+  console.log('');
+  console.log('  [Headers]');
+  console.log('    GET    /header/hissu       - 必須/任意ヘッダーテスト');
+  console.log('    GET    /header/uuid        - UUIDフォーマットヘッダーテスト');
+  console.log('    GET    /header/regexp      - 正規表現フォーマットヘッダーテスト');
+  console.log('    GET    /header/datetime    - date-timeフォーマットヘッダーテスト');
+  console.log('');
+  console.log('  [Path Parameters]');
+  console.log('    GET    /path/uuid/:uuid     - UUIDパスパラメータテスト');
+  console.log('    GET    /path/regexp/:code   - 正規表現パスパラメータテスト');
+  console.log('    GET    /path/datetime/:dt   - date-timeパスパラメータテスト');
+  console.log('    GET    /path/encoded/:text  - URIエンコーディングテスト');
+  console.log('    GET    /path/integer/:num   - 整数パスパラメータテスト');
 });

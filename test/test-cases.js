@@ -11,6 +11,7 @@
 export const SAMPLE_USER_ID = '550e8400-e29b-41d4-a716-446655440001';
 export const SAMPLE_POST_ID = 1;
 export const SAMPLE_COMMENT_ID = '660e8400-e29b-41d4-a716-446655440001';
+export const SAMPLE_UUID = '770e8400-e29b-41d4-a716-446655440002';
 
 // デフォルトのベースURL（各プラットフォームで上書き可能）
 export const DEFAULT_BASE_URL = 'http://localhost:3001';
@@ -178,6 +179,334 @@ export const postsTests = [
     path: `/posts/${SAMPLE_POST_ID}`,
     body: null,
     desc: '投稿削除',
+  },
+];
+
+/**
+ * ヘッダーバリデーション テストケース
+ */
+export const headerTests = [
+  // === 必須/任意ヘッダーテスト ===
+  {
+    title: 'GET /header/hissu (valid)',
+    method: 'GET',
+    path: '/header/hissu',
+    headers: {
+      'aaa-req-hitsuyou': 'required-value',
+      'aaa-req-nini': 'optional-value',
+    },
+    body: null,
+    desc: 'ヘッダー必須/任意テスト（正常系）',
+  },
+  {
+    title: 'GET /header/hissu (required only)',
+    method: 'GET',
+    path: '/header/hissu',
+    headers: {
+      'aaa-req-hitsuyou': 'required-value',
+    },
+    body: null,
+    desc: 'ヘッダー必須のみ（任意ヘッダー省略）',
+  },
+  {
+    title: 'GET /header/hissu (missing required)',
+    method: 'GET',
+    path: '/header/hissu',
+    headers: {
+      'aaa-req-nini': 'optional-only',
+    },
+    body: null,
+    desc: 'ヘッダー必須欠落（エラー想定）',
+  },
+  {
+    title: 'GET /header/hissu (no headers)',
+    method: 'GET',
+    path: '/header/hissu',
+    headers: {},
+    body: null,
+    desc: 'ヘッダーなし（エラー想定）',
+  },
+
+  // === UUIDフォーマットヘッダーテスト ===
+  {
+    title: 'GET /header/uuid (valid)',
+    method: 'GET',
+    path: '/header/uuid',
+    headers: {
+      'aaa-req-uuid': SAMPLE_UUID,
+    },
+    body: null,
+    desc: 'UUIDヘッダーテスト（正常系）',
+  },
+  {
+    title: 'GET /header/uuid (invalid format)',
+    method: 'GET',
+    path: '/header/uuid',
+    headers: {
+      'aaa-req-uuid': 'not-a-uuid',
+    },
+    body: null,
+    desc: 'UUIDヘッダーテスト（不正フォーマット）',
+  },
+  {
+    title: 'GET /header/uuid (empty)',
+    method: 'GET',
+    path: '/header/uuid',
+    headers: {
+      'aaa-req-uuid': '',
+    },
+    body: null,
+    desc: 'UUIDヘッダーテスト（空文字）',
+  },
+
+  // === 正規表現ヘッダーテスト ===
+  {
+    title: 'GET /header/regexp (valid)',
+    method: 'GET',
+    path: '/header/regexp',
+    headers: {
+      'aaa-req-regexp': 'ABC-123',
+    },
+    body: null,
+    desc: '正規表現ヘッダーテスト（正常系: ABC-数字3桁）',
+  },
+  {
+    title: 'GET /header/regexp (invalid pattern)',
+    method: 'GET',
+    path: '/header/regexp',
+    headers: {
+      'aaa-req-regexp': 'XYZ-456',
+    },
+    body: null,
+    desc: '正規表現ヘッダーテスト（パターン不一致）',
+  },
+  {
+    title: 'GET /header/regexp (wrong length)',
+    method: 'GET',
+    path: '/header/regexp',
+    headers: {
+      'aaa-req-regexp': 'ABC-12',
+    },
+    body: null,
+    desc: '正規表現ヘッダーテスト（桁数不足）',
+  },
+
+  // === date-timeヘッダーテスト ===
+  {
+    title: 'GET /header/datetime (valid)',
+    method: 'GET',
+    path: '/header/datetime',
+    getHeaders: () => ({
+      'aaa-req-datetime': new Date().toISOString(),
+    }),
+    body: null,
+    desc: 'date-timeヘッダーテスト（正常系）',
+  },
+  {
+    title: 'GET /header/datetime (valid fixed)',
+    method: 'GET',
+    path: '/header/datetime',
+    headers: {
+      'aaa-req-datetime': '2024-12-07T10:30:00Z',
+    },
+    body: null,
+    desc: 'date-timeヘッダーテスト（固定日時）',
+  },
+  {
+    title: 'GET /header/datetime (invalid format)',
+    method: 'GET',
+    path: '/header/datetime',
+    headers: {
+      'aaa-req-datetime': '2024-12-07',
+    },
+    body: null,
+    desc: 'date-timeヘッダーテスト（日付のみ）',
+  },
+  {
+    title: 'GET /header/datetime (invalid string)',
+    method: 'GET',
+    path: '/header/datetime',
+    headers: {
+      'aaa-req-datetime': 'not-a-datetime',
+    },
+    body: null,
+    desc: 'date-timeヘッダーテスト（不正文字列）',
+  },
+];
+
+/**
+ * パスパラメータバリデーション テストケース
+ */
+export const pathParamTests = [
+  // === UUIDパスパラメータテスト ===
+  {
+    title: 'GET /path/uuid/:uuid (valid)',
+    method: 'GET',
+    path: `/path/uuid/${SAMPLE_UUID}`,
+    body: null,
+    desc: 'UUIDパスパラメータテスト（正常系）',
+  },
+  {
+    title: 'GET /path/uuid/:uuid (invalid)',
+    method: 'GET',
+    path: '/path/uuid/not-a-valid-uuid',
+    body: null,
+    desc: 'UUIDパスパラメータテスト（不正フォーマット）',
+  },
+  {
+    title: 'GET /path/uuid/:uuid (short)',
+    method: 'GET',
+    path: '/path/uuid/12345',
+    body: null,
+    desc: 'UUIDパスパラメータテスト（短すぎる値）',
+  },
+
+  // === 正規表現パスパラメータテスト ===
+  {
+    title: 'GET /path/regexp/:code (valid)',
+    method: 'GET',
+    path: '/path/regexp/ITEM-1234',
+    body: null,
+    desc: '正規表現パスパラメータテスト（正常系: ITEM-数字4桁）',
+  },
+  {
+    title: 'GET /path/regexp/:code (invalid prefix)',
+    method: 'GET',
+    path: '/path/regexp/PROD-1234',
+    body: null,
+    desc: '正規表現パスパラメータテスト（プレフィックス不一致）',
+  },
+  {
+    title: 'GET /path/regexp/:code (wrong length)',
+    method: 'GET',
+    path: '/path/regexp/ITEM-12',
+    body: null,
+    desc: '正規表現パスパラメータテスト（桁数不足）',
+  },
+  {
+    title: 'GET /path/regexp/:code (letters)',
+    method: 'GET',
+    path: '/path/regexp/ITEM-ABCD',
+    body: null,
+    desc: '正規表現パスパラメータテスト（数字ではなく英字）',
+  },
+
+  // === date-timeパスパラメータテスト ===
+  {
+    title: 'GET /path/datetime/:datetime (valid)',
+    method: 'GET',
+    path: `/path/datetime/${encodeURIComponent('2024-12-07T10:30:00Z')}`,
+    body: null,
+    desc: 'date-timeパスパラメータテスト（正常系）',
+  },
+  {
+    title: 'GET /path/datetime/:datetime (invalid)',
+    method: 'GET',
+    path: '/path/datetime/not-a-datetime',
+    body: null,
+    desc: 'date-timeパスパラメータテスト（不正形式）',
+  },
+  {
+    title: 'GET /path/datetime/:datetime (date only)',
+    method: 'GET',
+    path: '/path/datetime/2024-12-07',
+    body: null,
+    desc: 'date-timeパスパラメータテスト（日付のみ）',
+  },
+
+  // === URIエンコーディングパスパラメータテスト ===
+  {
+    title: 'GET /path/encoded/:text (japanese)',
+    method: 'GET',
+    path: `/path/encoded/${encodeURIComponent('日本語テスト')}`,
+    body: null,
+    desc: 'URIエンコーディングテスト（日本語）',
+  },
+  {
+    title: 'GET /path/encoded/:text (emoji)',
+    method: 'GET',
+    path: `/path/encoded/${encodeURIComponent('絵文字🎉テスト')}`,
+    body: null,
+    desc: 'URIエンコーディングテスト（絵文字含む）',
+  },
+  {
+    title: 'GET /path/encoded/:text (special chars)',
+    method: 'GET',
+    path: `/path/encoded/${encodeURIComponent('特殊文字!@#$%^&*()')}`,
+    body: null,
+    desc: 'URIエンコーディングテスト（特殊文字）',
+  },
+  {
+    title: 'GET /path/encoded/:text (mixed)',
+    method: 'GET',
+    path: `/path/encoded/${encodeURIComponent('日本語 & English 混在テスト')}`,
+    body: null,
+    desc: 'URIエンコーディングテスト（日本語と英語混在）',
+  },
+  {
+    title: 'GET /path/encoded/:text (spaces)',
+    method: 'GET',
+    path: `/path/encoded/${encodeURIComponent('スペース 区切り テスト')}`,
+    body: null,
+    desc: 'URIエンコーディングテスト（スペース含む）',
+  },
+  {
+    title: 'GET /path/encoded/:text (ascii)',
+    method: 'GET',
+    path: '/path/encoded/simple-ascii-text',
+    body: null,
+    desc: 'URIエンコーディングテスト（ASCIIのみ）',
+  },
+
+  // === 整数パスパラメータテスト ===
+  {
+    title: 'GET /path/integer/:num (valid)',
+    method: 'GET',
+    path: '/path/integer/42',
+    body: null,
+    desc: '整数パスパラメータテスト（正常系）',
+  },
+  {
+    title: 'GET /path/integer/:num (max)',
+    method: 'GET',
+    path: '/path/integer/9999',
+    body: null,
+    desc: '整数パスパラメータテスト（最大値）',
+  },
+  {
+    title: 'GET /path/integer/:num (min)',
+    method: 'GET',
+    path: '/path/integer/1',
+    body: null,
+    desc: '整数パスパラメータテスト（最小値）',
+  },
+  {
+    title: 'GET /path/integer/:num (zero)',
+    method: 'GET',
+    path: '/path/integer/0',
+    body: null,
+    desc: '整数パスパラメータテスト（範囲外: 0）',
+  },
+  {
+    title: 'GET /path/integer/:num (over max)',
+    method: 'GET',
+    path: '/path/integer/10000',
+    body: null,
+    desc: '整数パスパラメータテスト（範囲外: 10000）',
+  },
+  {
+    title: 'GET /path/integer/:num (negative)',
+    method: 'GET',
+    path: '/path/integer/-1',
+    body: null,
+    desc: '整数パスパラメータテスト（負の値）',
+  },
+  {
+    title: 'GET /path/integer/:num (string)',
+    method: 'GET',
+    path: '/path/integer/abc',
+    body: null,
+    desc: '整数パスパラメータテスト（文字列）',
   },
 ];
 
@@ -532,6 +861,8 @@ export const errorTests = [
 export const allTestCases = {
   users: usersTests,
   posts: postsTests,
+  headers: headerTests,
+  pathParams: pathParamTests,
   errors: errorTests,
 };
 
@@ -548,10 +879,22 @@ export function getTestBody(testCase) {
 }
 
 /**
+ * テストケースからリクエストヘッダーを取得するヘルパー関数
+ * @param {object} testCase - テストケース
+ * @returns {object} - リクエストヘッダー
+ */
+export function getTestHeaders(testCase) {
+  if (testCase.getHeaders) {
+    return testCase.getHeaders();
+  }
+  return testCase.headers || {};
+}
+
+/**
  * テストケースの総数を取得
  * @returns {number} - テストケースの総数
  */
 export function getTotalTestCount() {
-  return usersTests.length + postsTests.length + errorTests.length;
+  return usersTests.length + postsTests.length + headerTests.length + pathParamTests.length + errorTests.length;
 }
 

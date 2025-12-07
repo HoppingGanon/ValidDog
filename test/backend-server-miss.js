@@ -591,6 +591,188 @@ app.delete('/posts/:postId/comments/:commentId', (req, res) => {
 });
 
 // =============================================================================
+// Headers API（ヘッダーバリデーションテスト用 - 違反バージョン）
+// =============================================================================
+
+// GET /header/hissu - 必須/任意ヘッダーテスト（違反レスポンス）
+app.get('/header/hissu', (req, res) => {
+  const violations = [
+    'レスポンスヘッダー aaa-res-hitsuyou: 必須なのに設定されていない',
+    'レスポンスヘッダー aaa-res-nini: 整数値を設定（string型違反）',
+    'message: string型のところarray型',
+    'receivedHeaders: スキーマにないフィールド'
+  ];
+  logViolations('GET /header/hissu', violations);
+
+  // aaa-res-hitsuyou は必須だが設定しない（違反）
+  // aaa-res-nini に整数値を設定（型違反）
+  res.set('aaa-res-nini', '12345');
+
+  res.json({
+    // message: string -> array違反
+    message: ['ヘッダーバリデーション', '成功'],
+    // 余分なフィールド
+    receivedHeaders: {
+      all: req.headers
+    },
+    // タイポ
+    mesage: 'typo field'
+  });
+});
+
+// GET /header/uuid - UUIDフォーマットヘッダーテスト（違反レスポンス）
+app.get('/header/uuid', (req, res) => {
+  const violations = [
+    'レスポンスヘッダー aaa-res-uuid: UUID形式でない値を設定（format: uuid違反）',
+    'message: string型のところobject型',
+    'receivedUuid: string型のところarray型'
+  ];
+  logViolations('GET /header/uuid', violations);
+
+  // aaa-res-uuid にUUID形式でない値を設定（違反）
+  res.set('aaa-res-uuid', 'not-a-valid-uuid-format');
+
+  res.json({
+    // message: string -> object違反
+    message: { text: 'UUIDヘッダーバリデーション成功', code: 200 },
+    // receivedUuid: string -> array違反
+    receivedUuid: [req.headers['aaa-req-uuid'], 'extra-value']
+  });
+});
+
+// GET /header/regexp - 正規表現フォーマットヘッダーテスト（違反レスポンス）
+app.get('/header/regexp', (req, res) => {
+  const violations = [
+    'レスポンスヘッダー aaa-res-regexp: パターン ^XYZ-[A-Z]{3}$ に一致しない値（pattern違反）',
+    'message: string型のところnumber型',
+    'receivedRegexp: スキーマにないフィールド'
+  ];
+  logViolations('GET /header/regexp', violations);
+
+  // aaa-res-regexp にパターンに一致しない値を設定（違反）
+  res.set('aaa-res-regexp', 'ABC-123');  // XYZ-でなくABC-
+
+  res.json({
+    // message: string -> number違反
+    message: 200,
+    // 余分なフィールド
+    receivedRegexp: req.headers['aaa-req-regexp'],
+    // タイポ
+    recievedRegexp: 'typo'
+  });
+});
+
+// GET /header/datetime - date-timeフォーマットヘッダーテスト（違反レスポンス）
+app.get('/header/datetime', (req, res) => {
+  const violations = [
+    'レスポンスヘッダー aaa-res-datetime: date-time形式でない値（format: date-time違反）',
+    'message: string型のところboolean型',
+    'parsedDate: date-time形式でない（format違反）'
+  ];
+  logViolations('GET /header/datetime', violations);
+
+  // aaa-res-datetime にdate-time形式でない値を設定（違反）
+  res.set('aaa-res-datetime', '2024年12月7日 10:30');
+
+  res.json({
+    // message: string -> boolean違反
+    message: true,
+    receivedDatetime: req.headers['aaa-req-datetime'],
+    // parsedDate: date-time形式でない
+    parsedDate: '昨日の10時30分'
+  });
+});
+
+// =============================================================================
+// Path Parameters API（パスパラメータバリデーションテスト用 - 違反バージョン）
+// =============================================================================
+
+// GET /path/uuid/:uuid - UUIDパスパラメータテスト（違反レスポンス）
+app.get('/path/uuid/:uuid', (req, res) => {
+  const violations = [
+    'uuid: string型のところobject型',
+    'message: string型のところarray型'
+  ];
+  logViolations('GET /path/uuid/:uuid', violations);
+
+  res.json({
+    // uuid: string -> object違反
+    uuid: { value: req.params.uuid, type: 'uuid' },
+    // message: string -> array違反
+    message: ['UUID', 'パスパラメータ', 'バリデーション成功']
+  });
+});
+
+// GET /path/regexp/:code - 正規表現パスパラメータテスト（違反レスポンス）
+app.get('/path/regexp/:code', (req, res) => {
+  const violations = [
+    'code: string型のところinteger型',
+    'message: string型のところnull'
+  ];
+  logViolations('GET /path/regexp/:code', violations);
+
+  res.json({
+    // code: string -> integer違反
+    code: 1234,
+    // message: string -> null違反
+    message: null
+  });
+});
+
+// GET /path/datetime/:datetime - date-timeパスパラメータテスト（違反レスポンス）
+app.get('/path/datetime/:datetime', (req, res) => {
+  const violations = [
+    'datetime: date-time形式でない（format違反）',
+    'message: string型のところobject型'
+  ];
+  logViolations('GET /path/datetime/:datetime', violations);
+
+  res.json({
+    // datetime: date-time形式でない
+    datetime: '今日の午後3時',
+    // message: string -> object違反
+    message: { status: 'success', code: 200 }
+  });
+});
+
+// GET /path/encoded/:text - URIエンコーディングパスパラメータテスト（違反レスポンス）
+app.get('/path/encoded/:text', (req, res) => {
+  const violations = [
+    'text: string型のところarray型',
+    'encoded: string型のところnumber型',
+    'message: string型のところboolean型'
+  ];
+  logViolations('GET /path/encoded/:text', violations);
+
+  const decodedText = decodeURIComponent(req.params.text);
+
+  res.json({
+    // text: string -> array違反
+    text: [decodedText, 'extra'],
+    // encoded: string -> number違反
+    encoded: 12345,
+    // message: string -> boolean違反
+    message: false
+  });
+});
+
+// GET /path/integer/:num - 整数パスパラメータテスト（違反レスポンス）
+app.get('/path/integer/:num', (req, res) => {
+  const violations = [
+    'num: integer型のところstring型',
+    'message: string型のところarray型'
+  ];
+  logViolations('GET /path/integer/:num', violations);
+
+  res.json({
+    // num: integer -> string違反
+    num: req.params.num + '個',
+    // message: string -> array違反
+    message: ['整数', 'パスパラメータ', 'バリデーション成功']
+  });
+});
+
+// =============================================================================
 // 400エラー用（バリデーションエラー）
 // =============================================================================
 
@@ -631,6 +813,7 @@ app.listen(PORT, () => {
   console.log('  - 範囲違反: minLength, 負の値');
   console.log('  - タイポ: emal, nmae, titel, contnet');
   console.log('  - 204にbody付与');
+  console.log('  - レスポンスヘッダー違反: 必須ヘッダー欠落、フォーマット違反');
   console.log('');
   console.log('利用可能なエンドポイント（すべて違反レスポンス）:');
   console.log('  [Users]');
@@ -648,5 +831,18 @@ app.listen(PORT, () => {
   console.log('    DELETE /posts/:postId      - 投稿削除');
   console.log('    PATCH  /posts/:postId/status - 投稿ステータス更新');
   console.log('    DELETE /posts/:postId/comments/:commentId - コメント削除');
+  console.log('');
+  console.log('  [Headers]（レスポンスヘッダー違反）');
+  console.log('    GET    /header/hissu       - 必須ヘッダー欠落');
+  console.log('    GET    /header/uuid        - UUID形式違反');
+  console.log('    GET    /header/regexp      - 正規表現パターン違反');
+  console.log('    GET    /header/datetime    - date-time形式違反');
+  console.log('');
+  console.log('  [Path Parameters]（レスポンスボディ違反）');
+  console.log('    GET    /path/uuid/:uuid     - 型違反（object）');
+  console.log('    GET    /path/regexp/:code   - 型違反（integer）');
+  console.log('    GET    /path/datetime/:dt   - format違反');
+  console.log('    GET    /path/encoded/:text  - 型違反（array/number）');
+  console.log('    GET    /path/integer/:num   - 型違反（string）');
   console.log('');
 });

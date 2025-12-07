@@ -64,6 +64,12 @@
       <h2>Posts API</h2>
       <div id="posts-tests"></div>
 
+      <h2>Headers Validation</h2>
+      <div id="header-tests"></div>
+
+      <h2>Path Parameters</h2>
+      <div id="pathparam-tests"></div>
+
       <h2>Error Cases</h2>
       <div id="error-tests"></div>
     </div>
@@ -79,8 +85,11 @@
       DEFAULT_BASE_URL,
       usersTests,
       postsTests,
+      headerTests,
+      pathParamTests,
       errorTests,
-      getTestBody
+      getTestBody,
+      getTestHeaders
     } from './test-cases.mjs';
 
     // ベースURL設定
@@ -111,11 +120,20 @@
     async function runTest(testCase) {
       const { method, path, desc } = testCase;
       const body = getTestBody(testCase);
+      const customHeaders = getTestHeaders(testCase);
       const url = BASEURL + path;
       
       log('─'.repeat(50));
       log(desc, 'info');
       log(`${method} ${url}`, 'url');
+      
+      // カスタムヘッダーの表示
+      if (Object.keys(customHeaders).length > 0) {
+        log('Request Headers:');
+        for (const [key, value] of Object.entries(customHeaders)) {
+          log(`  ${key}: ${value}`);
+        }
+      }
       
       if (body) {
         log('Request Body:');
@@ -124,7 +142,7 @@
 
       const options = {
         method,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', ...customHeaders }
       };
       if (body) options.body = JSON.stringify(body);
 
@@ -133,6 +151,16 @@
         const status = res.status;
         
         log(`\nResponse: ${status} ${res.statusText}`, status >= 400 ? 'error' : 'success');
+        
+        // レスポンスヘッダーの表示（カスタムヘッダーがあった場合のみ）
+        if (Object.keys(customHeaders).length > 0) {
+          log('Response Headers:');
+          for (const [key, value] of res.headers.entries()) {
+            if (key.startsWith('aaa-res-')) {
+              log(`  ${key}: ${value}`);
+            }
+          }
+        }
         
         if (status !== 204) {
           try {
@@ -193,6 +221,8 @@
     // UI初期化
     createTestUI(usersTests, 'users-tests');
     createTestUI(postsTests, 'posts-tests');
+    createTestUI(headerTests, 'header-tests');
+    createTestUI(pathParamTests, 'pathparam-tests');
     createTestUI(errorTests, 'error-tests');
   </script>
 </body>

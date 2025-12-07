@@ -14,6 +14,10 @@ tags:
     description: ユーザー管理API
   - name: Posts
     description: 投稿管理API
+  - name: Headers
+    description: ヘッダーバリデーションテスト用API
+  - name: PathParams
+    description: パスパラメータバリデーションテスト用API
 
 paths:
   /users:
@@ -650,6 +654,301 @@ paths:
       responses:
         '204':
           description: 削除成功
+
+  # ===========================================================================
+  # ヘッダーバリデーションテスト用API
+  # ===========================================================================
+  /header/hissu:
+    get:
+      summary: 必須/任意ヘッダーテスト
+      description: ヘッダーの必須・任意バリデーションをテスト
+      operationId: getHeaderHissu
+      tags:
+        - Headers
+      parameters:
+        - name: aaa-req-hitsuyou
+          in: header
+          description: リクエスト必須ヘッダー
+          required: true
+          schema:
+            type: string
+        - name: aaa-req-nini
+          in: header
+          description: リクエスト任意ヘッダー
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          headers:
+            aaa-res-hitsuyou:
+              description: レスポンス必須ヘッダー
+              required: true
+              schema:
+                type: string
+            aaa-res-nini:
+              description: レスポンス任意ヘッダー
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /header/uuid:
+    get:
+      summary: UUIDフォーマットヘッダーテスト
+      description: UUID形式のヘッダーバリデーションをテスト
+      operationId: getHeaderUuid
+      tags:
+        - Headers
+      parameters:
+        - name: aaa-req-uuid
+          in: header
+          description: UUID形式のリクエスト必須ヘッダー
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 成功
+          headers:
+            aaa-res-uuid:
+              description: UUID形式のレスポンス必須ヘッダー
+              required: true
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /header/regexp:
+    get:
+      summary: 正規表現フォーマットヘッダーテスト
+      description: 正規表現パターンのヘッダーバリデーションをテスト
+      operationId: getHeaderRegexp
+      tags:
+        - Headers
+      parameters:
+        - name: aaa-req-regexp
+          in: header
+          description: 正規表現パターン（ABC-数字3桁）のリクエスト必須ヘッダー
+          required: true
+          schema:
+            type: string
+            pattern: '^ABC-[0-9]{3}$'
+      responses:
+        '200':
+          description: 成功
+          headers:
+            aaa-res-regexp:
+              description: 正規表現パターン（XYZ-英字3文字）のレスポンス必須ヘッダー
+              required: true
+              schema:
+                type: string
+                pattern: '^XYZ-[A-Z]{3}$'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /header/datetime:
+    get:
+      summary: date-timeフォーマットヘッダーテスト
+      description: ISO 8601形式の日時ヘッダーバリデーションをテスト
+      operationId: getHeaderDatetime
+      tags:
+        - Headers
+      parameters:
+        - name: aaa-req-datetime
+          in: header
+          description: date-time形式のリクエスト必須ヘッダー
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: 成功
+          headers:
+            aaa-res-datetime:
+              description: date-time形式のレスポンス必須ヘッダー
+              required: true
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  # ===========================================================================
+  # パスパラメータバリデーションテスト用API
+  # ===========================================================================
+  /path/uuid/{uuid}:
+    get:
+      summary: UUIDパスパラメータテスト
+      description: UUID形式のパスパラメータバリデーションをテスト
+      operationId: getPathUuid
+      tags:
+        - PathParams
+      parameters:
+        - name: uuid
+          in: path
+          description: UUID形式のパスパラメータ
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+
+  /path/regexp/{code}:
+    get:
+      summary: 正規表現パスパラメータテスト
+      description: 正規表現パターンのパスパラメータバリデーションをテスト
+      operationId: getPathRegexp
+      tags:
+        - PathParams
+      parameters:
+        - name: code
+          in: path
+          description: 正規表現パターン（ITEM-数字4桁）のパスパラメータ
+          required: true
+          schema:
+            type: string
+            pattern: '^ITEM-[0-9]{4}$'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  message:
+                    type: string
+
+  /path/datetime/{datetime}:
+    get:
+      summary: date-timeパスパラメータテスト
+      description: ISO 8601形式の日時パスパラメータバリデーションをテスト
+      operationId: getPathDatetime
+      tags:
+        - PathParams
+      parameters:
+        - name: datetime
+          in: path
+          description: date-time形式のパスパラメータ（URLエンコード必須）
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  datetime:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+
+  /path/encoded/{text}:
+    get:
+      summary: URIエンコーディングパスパラメータテスト
+      description: 日本語などマルチバイト文字を含むURIエンコードされたパスパラメータのテスト
+      operationId: getPathEncoded
+      tags:
+        - PathParams
+      parameters:
+        - name: text
+          in: path
+          description: URIエンコードされたテキスト（日本語含む）
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: デコードされたテキスト
+                  encoded:
+                    type: string
+                    description: エンコードされたテキスト
+                  message:
+                    type: string
+
+  /path/integer/{num}:
+    get:
+      summary: 整数パスパラメータテスト
+      description: 整数型パスパラメータバリデーションをテスト
+      operationId: getPathInteger
+      tags:
+        - PathParams
+      parameters:
+        - name: num
+          in: path
+          description: 整数のパスパラメータ（1-9999の範囲）
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9999
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  num:
+                    type: integer
+                  message:
+                    type: string
 
 components:
   schemas:

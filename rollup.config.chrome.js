@@ -23,8 +23,7 @@ function copyStaticFiles() {
         'manifest.json',
         'devtools.html',
         'panel.html',
-        'styles-panel.css',
-        'test-validator.html'
+        'styles-panel.css'
       ];
 
       filesToCopy.forEach(file => {
@@ -141,39 +140,8 @@ const panelConfig = {
   ]
 };
 
-/**
- * Validator (スタンドアロン用)
- */
-const validatorConfig = {
-  input: 'src/validator.ts',
-  output: {
-    file: 'dist/validator.js',
-    format: 'iife',
-    sourcemap: true,
-    name: 'ValidatorModule',
-    footer: `
-// グローバル変数として公開
-if (typeof window !== 'undefined') {
-  window.OpenAPIValidator = ValidatorModule.OpenAPIValidator;
-  window.parseOpenAPISpec = ValidatorModule.parseOpenAPISpec;
-  window.matchPath = ValidatorModule.matchPath;
-  window.parseQueryString = ValidatorModule.parseQueryString;
-}
-`
-  },
-  plugins: [
-    ...commonPlugins,
-    typescript({
-      tsconfig: './tsconfig.json',
-      declaration: false,
-      declarationMap: false
-    })
-  ]
-};
-
 export default [
   backgroundConfig,
   devtoolsConfig,
-  panelConfig,
-  validatorConfig
+  panelConfig
 ];

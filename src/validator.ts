@@ -68,6 +68,12 @@ export interface ValidationError {
   message: string;
   errorCode?: string;
   location?: string;
+  /** 実際の値 */
+  actualValue?: unknown;
+  /** 実際の型 */
+  actualType?: string;
+  /** 期待される型/値 */
+  expected?: string;
 }
 
 /** HTTPメソッドの型 */
@@ -393,11 +399,33 @@ export class OpenAPIValidator {
       
       if (!result.valid) {
         for (const error of result.errors) {
+          // 期待される型/値を取得
+          let expected = '';
+          if (error.argument) {
+            if (Array.isArray(error.argument)) {
+              expected = error.argument.join(', ');
+            } else {
+              expected = String(error.argument);
+            }
+          } else if (error.schema && typeof error.schema === 'object') {
+            const schema = error.schema as Record<string, unknown>;
+            if (schema.type) {
+              expected = Array.isArray(schema.type) 
+                ? schema.type.join(' | ') 
+                : String(schema.type);
+            } else if (schema.enum && Array.isArray(schema.enum)) {
+              expected = schema.enum.join(' | ');
+            }
+          }
+          
           errors.push({
             path: error.property ? `${path}.${error.property.replace('instance.', '')}` : path,
             message: error.message,
             errorCode: error.name,
-            location: path
+            location: path,
+            actualValue: error.instance,
+            actualType: this.getTypeName(error.instance),
+            expected: expected || undefined
           });
         }
       }
@@ -408,6 +436,16 @@ export class OpenAPIValidator {
         errorCode: 'VALIDATION_ERROR'
       });
     }
+  }
+
+  /**
+   * 値の型名を取得
+   */
+  private getTypeName(value: unknown): string {
+    if (value === null) return 'null';
+    if (value === undefined) return 'undefined';
+    if (Array.isArray(value)) return 'array';
+    return typeof value;
   }
 
   /**

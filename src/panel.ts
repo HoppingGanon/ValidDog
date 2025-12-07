@@ -4,7 +4,7 @@
 
 import type { TrafficEntry, ExtensionMessage, Language, ValidationResult } from './types';
 import { t, setLanguage, getLanguage, toggleLanguage, type TranslationKey } from './i18n';
-import { OpenAPIValidator } from './validator';
+import { OpenAPIValidator, type ValidationError } from './validator';
 
 // =============================================================================
 // 状態管理
@@ -386,12 +386,9 @@ function renderValidation(validation: ValidationResult): void {
   `;
   
   if (validation.requestErrors.length > 0) {
-    elements.requestErrors.innerHTML = validation.requestErrors.map(err => `
-      <div class="validation-error-item">
-        ${err.path ? `<div class="validation-error-path">${err.path}</div>` : ''}
-        <div class="validation-error-message">${err.message}</div>
-      </div>
-    `).join('');
+    elements.requestErrors.innerHTML = validation.requestErrors.map(err => 
+      formatValidationError(err)
+    ).join('');
   } else {
     elements.requestErrors.innerHTML = '';
   }
@@ -404,15 +401,77 @@ function renderValidation(validation: ValidationResult): void {
   `;
   
   if (validation.responseErrors.length > 0) {
-    elements.responseErrors.innerHTML = validation.responseErrors.map(err => `
-      <div class="validation-error-item">
-        ${err.path ? `<div class="validation-error-path">${err.path}</div>` : ''}
-        <div class="validation-error-message">${err.message}</div>
-      </div>
-    `).join('');
+    elements.responseErrors.innerHTML = validation.responseErrors.map(err => 
+      formatValidationError(err)
+    ).join('');
   } else {
     elements.responseErrors.innerHTML = '';
   }
+}
+
+/**
+ * バリデーションエラーを整形して表示
+ */
+function formatValidationError(err: ValidationError): string {
+  const pathHtml = err.path ? `<div class="validation-error-path">${escapeHtml(err.path)}</div>` : '';
+  const messageHtml = `<div class="validation-error-message">${escapeHtml(err.message)}</div>`;
+  
+  // 詳細情報を構築
+  const details: string[] = [];
+  
+  if (err.expected) {
+    details.push(`<span class="error-detail-label">${t('expected')}:</span> <span class="error-detail-expected">${escapeHtml(err.expected)}</span>`);
+  }
+  
+  if (err.actualType) {
+    details.push(`<span class="error-detail-label">${t('actualType')}:</span> <span class="error-detail-actual">${escapeHtml(err.actualType)}</span>`);
+  }
+  
+  if (err.actualValue !== undefined) {
+    const valueStr = formatValue(err.actualValue);
+    details.push(`<span class="error-detail-label">${t('actualValue')}:</span> <span class="error-detail-actual">${escapeHtml(valueStr)}</span>`);
+  }
+  
+  const detailsHtml = details.length > 0 
+    ? `<div class="validation-error-details">${details.join('<br>')}</div>` 
+    : '';
+  
+  return `
+    <div class="validation-error-item">
+      ${pathHtml}
+      ${messageHtml}
+      ${detailsHtml}
+    </div>
+  `;
+}
+
+/**
+ * 値を表示用に整形
+ */
+function formatValue(value: unknown): string {
+  if (value === null) return 'null';
+  if (value === undefined) return 'undefined';
+  if (typeof value === 'string') {
+    // 長すぎる場合は省略
+    return value.length > 50 ? `"${value.substring(0, 50)}..."` : `"${value}"`;
+  }
+  if (typeof value === 'object') {
+    const str = JSON.stringify(value);
+    return str.length > 100 ? str.substring(0, 100) + '...' : str;
+  }
+  return String(value);
+}
+
+/**
+ * HTMLエスケープ
+ */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // =============================================================================

@@ -363,20 +363,44 @@ body {
 .validation-error-item {
   background: rgba(241, 76, 76, 0.1);
   border-left: 3px solid var(--error);
-  padding: 6px 10px;
-  margin-bottom: 4px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
   border-radius: 0 4px 4px 0;
   font-size: 11px;
 }
 
 .validation-error-path {
-  color: var(--text-secondary);
+  color: var(--accent);
   font-size: 10px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-weight: 600;
 }
 
 .validation-error-message {
   color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.validation-error-details {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1.6;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.error-detail-label {
+  color: var(--text-muted);
+}
+
+.error-detail-expected {
+  color: var(--success);
+}
+
+.error-detail-actual {
+  color: var(--warning);
 }
 
 /* モーダル */

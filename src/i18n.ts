@@ -34,7 +34,10 @@ export type TranslationKey =
   | 'clearSpec'
   | 'close'
   | 'or'
-  | 'specCleared';
+  | 'specCleared'
+  | 'expected'
+  | 'actualType'
+  | 'actualValue';
 
 /** 翻訳データ */
 const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -67,7 +70,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     clearSpec: '仕様書を削除',
     close: '閉じる',
     or: 'または',
-    specCleared: '仕様書を削除しました'
+    specCleared: '仕様書を削除しました',
+    expected: '期待',
+    actualType: '実際の型',
+    actualValue: '実際の値'
   },
   en: {
     title: 'ValidDog',
@@ -98,7 +104,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     clearSpec: 'Clear Spec',
     close: 'Close',
     or: 'or',
-    specCleared: 'Spec cleared'
+    specCleared: 'Spec cleared',
+    expected: 'Expected',
+    actualType: 'Actual type',
+    actualValue: 'Actual value'
   }
 };
 

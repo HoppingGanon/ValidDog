@@ -390,9 +390,9 @@ function scrollToBottom(element: HTMLElement): void {
  */
 function getFilteredTrafficList(): TrafficEntry[] {
   return trafficList.filter(entry => {
-    // 仕様書マッチフィルタ
+    // 仕様書マッチフィルタ（パス+メソッド）
     if (filterMatchSpec && validator) {
-      if (!matchesOpenAPISpec(entry.path)) {
+      if (!matchesOpenAPISpec(entry.url, entry.method)) {
         return false;
       }
     }
@@ -412,31 +412,18 @@ function getFilteredTrafficList(): TrafficEntry[] {
 }
 
 /**
- * パスがOpenAPI仕様書にマッチするかチェック（後方一致）
+ * パス+メソッドがOpenAPI仕様書にマッチするかチェック
+ * バリデーション側と同じロジックを使用して整合性を保つ
  */
-function matchesOpenAPISpec(requestPath: string): boolean {
+function matchesOpenAPISpec(url: string, method: TrafficEntry['method']): boolean {
   if (!validator) return false;
   
   // URLからパス部分を抽出
-  const pathWithoutQuery = requestPath.split('?')[0];
+  const urlObj = new URL(url);
+  const path = urlObj.pathname;
   
-  // OpenAPI仕様書のパスと後方一致でマッチング
-  const specPaths = validator.getPathPatterns();
-  
-  for (const specPath of specPaths) {
-    // パスパターンを正規表現に変換（パスパラメータ対応）
-    const regexPattern = specPath
-      .replace(/\{[^}]+\}/g, '[^/]+')  // {param} → [^/]+
-      .replace(/\//g, '\\/');          // / → \/
-    
-    // 後方一致でマッチ
-    const regex = new RegExp(`${regexPattern}$`);
-    if (regex.test(pathWithoutQuery)) {
-      return true;
-    }
-  }
-  
-  return false;
+  // バリデーション側と同じロジックでパス+メソッドの存在を確認
+  return validator.hasOperation(path, method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options' | 'head');
 }
 
 function selectEntry(id: string): void {

@@ -680,6 +680,22 @@ export class OpenAPIValidator {
   getPathPatterns(): string[] {
     return Object.keys(this.resolvedSpec.paths);
   }
+
+  /**
+   * パスとメソッドの組み合わせが仕様書に定義されているかを確認
+   * @param actualPath - 実際のリクエストパス（クエリ文字列を含んでも可）
+   * @param method - HTTPメソッド（小文字）
+   * @returns マッチする場合はtrue、しない場合はfalse
+   */
+  hasOperation(actualPath: string, method: HttpMethod): boolean {
+    const matched = this.findMatchingPath(actualPath);
+    if (!matched) {
+      return false;
+    }
+
+    const pathItem = this.resolvedSpec.paths[matched.pattern];
+    return !!pathItem[method];
+  }
 }
 
 // =============================================================================

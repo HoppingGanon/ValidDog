@@ -74,7 +74,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     actualType: '実際の型',
     actualValue: '実際の値',
     filterMatchSpec: '仕様書にマッチするもののみ',
-    filterErrorOnly: 'エラーのもののみ',
+    filterErrorOnly: 'バリデーションエラーのもののみ',
     noMatchingTraffic: 'フィルタに一致するトラフィックがありません'
   },
   en: {
@@ -109,7 +109,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     actualType: 'Actual type',
     actualValue: 'Actual value',
     filterMatchSpec: 'Spec matches only',
-    filterErrorOnly: 'Errors only',
+    filterErrorOnly: 'Validation errors only',
     noMatchingTraffic: 'No traffic matching filters'
   }
 };

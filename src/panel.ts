@@ -81,6 +81,9 @@ async function initialize(): Promise<void> {
   elements.filterMatchSpec.checked = filterMatchSpec;
   elements.filterErrorOnly.checked = filterErrorOnly;
   
+  // filterErrorOnlyはfilterMatchSpecがONの時のみ有効
+  updateFilterErrorOnlyState();
+  
   // 仕様書があれば読み込み
   if (stored.openApiSpec) {
     try {
@@ -623,15 +626,41 @@ function setupEventListeners(): void {
   elements.filterMatchSpec?.addEventListener('change', async (e) => {
     filterMatchSpec = (e.target as HTMLInputElement).checked;
     await chrome.storage.local.set({ filterMatchSpec });
+    
+    // filterMatchSpecがOFFになったらfilterErrorOnlyも無効化
+    updateFilterErrorOnlyState();
+    
     renderTrafficList();
   });
   
-  // フィルタ: エラーのもののみ
+  // フィルタ: バリデーションエラーのもののみ
   elements.filterErrorOnly?.addEventListener('change', async (e) => {
     filterErrorOnly = (e.target as HTMLInputElement).checked;
     await chrome.storage.local.set({ filterErrorOnly });
     renderTrafficList();
   });
+}
+
+/**
+ * filterErrorOnlyチェックボックスの状態を更新
+ * filterMatchSpecがONの時のみ有効
+ */
+function updateFilterErrorOnlyState(): void {
+  if (!elements.filterErrorOnly) return;
+  
+  if (filterMatchSpec) {
+    // filterMatchSpecがONなら有効化
+    elements.filterErrorOnly.disabled = false;
+    elements.filterErrorOnly.parentElement?.classList.remove('disabled');
+  } else {
+    // filterMatchSpecがOFFなら無効化してOFFにする
+    elements.filterErrorOnly.disabled = true;
+    elements.filterErrorOnly.checked = false;
+    filterErrorOnly = false;
+    elements.filterErrorOnly.parentElement?.classList.add('disabled');
+    // ストレージも更新
+    chrome.storage.local.set({ filterErrorOnly: false });
+  }
 }
 
 async function loadSpec(content: string): Promise<void> {

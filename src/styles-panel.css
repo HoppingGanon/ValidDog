@@ -201,6 +201,15 @@ body {
   color: var(--text-primary);
 }
 
+.filter-checkbox.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.filter-checkbox.disabled input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
 /* トラフィックリスト */
 .traffic-list {
   flex: 1;

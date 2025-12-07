@@ -394,6 +394,9 @@ export class OpenAPIValidator {
     // クエリパラメータの検証
     this.validateParameters(allParameters, 'query', { ...queryParams, ...request.query }, errors);
 
+    // ヘッダーパラメータの検証
+    this.validateParameters(allParameters, 'header', request.headers || {}, errors);
+
     // リクエストボディの検証
     if (operation.requestBody) {
       const contentType = 'application/json';
@@ -490,6 +493,9 @@ export class OpenAPIValidator {
       this.validateSchema(response.body, responseContent.schema, 'response', errors);
     }
 
+    // レスポンスヘッダーの検証
+    this.validateResponseHeaders(responseSpec.headers, response.headers || {}, errors);
+
     return {
       valid: errors.length === 0,
       errors
@@ -535,6 +541,58 @@ export class OpenAPIValidator {
         }
 
         this.validateSchema(convertedValue, param.schema, param.name, errors);
+      }
+    }
+  }
+
+  /**
+   * レスポンスヘッダーを検証
+   * OpenAPI仕様書のresponses.{code}.headersに基づいて検証
+   */
+  private validateResponseHeaders(
+    headerSpecs: Record<string, any> | undefined,
+    actualHeaders: Record<string, string>,
+    errors: ValidationError[]
+  ): void {
+    if (!headerSpecs) {
+      return;
+    }
+
+    // ヘッダー名を小文字に正規化したマップを作成
+    const normalizedHeaders: Record<string, string> = {};
+    for (const [key, value] of Object.entries(actualHeaders)) {
+      normalizedHeaders[key.toLowerCase()] = value;
+    }
+
+    for (const [headerName, headerSpec] of Object.entries(headerSpecs)) {
+      const normalizedName = headerName.toLowerCase();
+      const value = normalizedHeaders[normalizedName];
+
+      // 必須チェック
+      if (headerSpec.required && (value === undefined || value === '')) {
+        errors.push({
+          path: `header.${headerName}`,
+          message: `必須レスポンスヘッダー "${headerName}" がありません`,
+          errorCode: 'REQUIRED',
+          location: 'header'
+        });
+        continue;
+      }
+
+      // スキーマチェック
+      if (value !== undefined && value !== '' && headerSpec.schema) {
+        // 型変換（ヘッダーは文字列で来るため）
+        let convertedValue: unknown = value;
+        if (headerSpec.schema.type === 'integer' || headerSpec.schema.type === 'number') {
+          const num = Number(value);
+          if (!isNaN(num)) {
+            convertedValue = num;
+          }
+        } else if (headerSpec.schema.type === 'boolean') {
+          convertedValue = value === 'true';
+        }
+
+        this.validateSchema(convertedValue, headerSpec.schema, `header.${headerName}`, errors);
       }
     }
   }

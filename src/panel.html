@@ -39,6 +39,23 @@
         左側からトラフィックを選択してください
       </div>
       <div class="detail-content" id="detailContent" style="display: none;">
+        <!-- バリデーション結果 -->
+        <section class="detail-section">
+          <h2 class="section-title" data-i18n="validation">バリデーション</h2>
+          <div class="validation-result" id="validationResult">
+            <div class="validation-group">
+              <h3 class="info-title" data-i18n="requestValidation">リクエスト検証</h3>
+              <div class="validation-status" id="requestValidation"></div>
+              <div class="validation-errors" id="requestErrors"></div>
+            </div>
+            <div class="validation-group">
+              <h3 class="info-title" data-i18n="responseValidation">レスポンス検証</h3>
+              <div class="validation-status" id="responseValidation"></div>
+              <div class="validation-errors" id="responseErrors"></div>
+            </div>
+          </div>
+        </section>
+        
         <!-- リクエスト情報 -->
         <section class="detail-section">
           <h2 class="section-title" data-i18n="request">リクエスト</h2>
@@ -74,23 +91,6 @@
           <div class="info-group">
             <h3 class="info-title" data-i18n="body">ボディ</h3>
             <pre class="info-content code" id="responseBody"></pre>
-          </div>
-        </section>
-        
-        <!-- バリデーション結果 -->
-        <section class="detail-section">
-          <h2 class="section-title" data-i18n="validation">バリデーション</h2>
-          <div class="validation-result" id="validationResult">
-            <div class="validation-group">
-              <h3 class="info-title" data-i18n="requestValidation">リクエスト検証</h3>
-              <div class="validation-status" id="requestValidation"></div>
-              <div class="validation-errors" id="requestErrors"></div>
-            </div>
-            <div class="validation-group">
-              <h3 class="info-title" data-i18n="responseValidation">レスポンス検証</h3>
-              <div class="validation-status" id="responseValidation"></div>
-              <div class="validation-errors" id="responseErrors"></div>
-            </div>
           </div>
         </section>
       </div>

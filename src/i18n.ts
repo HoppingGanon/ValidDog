@@ -26,13 +26,21 @@ export type TranslationKey =
   | 'specLoadError'
   | 'noSpec'
   | 'status'
-  | 'errors';
+  | 'errors'
+  | 'importSpec'
+  | 'importFile'
+  | 'pasteSpec'
+  | 'import'
+  | 'clearSpec'
+  | 'close'
+  | 'or'
+  | 'specCleared';
 
 /** 翻訳データ */
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ja: {
     title: 'ばりっどーぬ - ValidDog',
-    loadSpec: '仕様書読込',
+    loadSpec: '仕様書',
     clearTraffic: '履歴削除',
     noTraffic: 'トラフィックがありません',
     request: 'リクエスト',
@@ -51,11 +59,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     specLoadError: '仕様書の読み込みに失敗しました',
     noSpec: '仕様書未読込',
     status: 'ステータス',
-    errors: 'エラー'
+    errors: 'エラー',
+    importSpec: 'OpenAPI仕様書をインポート',
+    importFile: 'ファイルを選択 (YAML/JSON):',
+    pasteSpec: '直接入力:',
+    import: 'インポート',
+    clearSpec: '仕様書を削除',
+    close: '閉じる',
+    or: 'または',
+    specCleared: '仕様書を削除しました'
   },
   en: {
     title: 'ValidDog',
-    loadSpec: 'Load Spec',
+    loadSpec: 'Spec',
     clearTraffic: 'Clear',
     noTraffic: 'No traffic',
     request: 'Request',
@@ -74,7 +90,15 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     specLoadError: 'Failed to load spec',
     noSpec: 'No spec loaded',
     status: 'Status',
-    errors: 'Errors'
+    errors: 'Errors',
+    importSpec: 'Import OpenAPI Spec',
+    importFile: 'Select file (YAML/JSON):',
+    pasteSpec: 'Paste directly:',
+    import: 'Import',
+    clearSpec: 'Clear Spec',
+    close: 'Close',
+    or: 'or',
+    specCleared: 'Spec cleared'
   }
 };
 

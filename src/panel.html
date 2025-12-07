@@ -95,20 +95,20 @@
   <!-- 仕様書読み込みモーダル -->
   <div class="modal" id="specModal" style="display: none;">
     <div class="modal-content">
-      <h2 class="modal-title">OpenAPI仕様書を読み込み</h2>
+      <h2 class="modal-title" data-i18n="importSpec">OpenAPI仕様書をインポート</h2>
       <div class="modal-body">
-        <label for="specUrl">URLから読み込み:</label>
-        <input type="text" id="specUrl" placeholder="https://example.com/openapi.yaml">
-        <button class="btn btn-primary" id="loadFromUrlBtn">読み込み</button>
+        <label for="specFile" data-i18n="importFile">ファイルを選択 (YAML/JSON):</label>
+        <input type="file" id="specFile" accept=".yaml,.yml,.json">
         
-        <div class="divider">または</div>
+        <div class="divider" data-i18n="or">または</div>
         
-        <label for="specContent">直接入力 (YAML/JSON):</label>
+        <label for="specContent" data-i18n="pasteSpec">直接入力:</label>
         <textarea id="specContent" rows="10" placeholder="OpenAPI仕様書を貼り付け..."></textarea>
-        <button class="btn btn-primary" id="loadFromTextBtn">読み込み</button>
+        <button class="btn btn-primary" id="loadFromTextBtn" data-i18n="import">インポート</button>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="closeModalBtn">閉じる</button>
+        <button class="btn btn-danger" id="clearSpecBtn" data-i18n="clearSpec">仕様書を削除</button>
+        <button class="btn btn-secondary" id="closeModalBtn" data-i18n="close">閉じる</button>
       </div>
     </div>
   </div>

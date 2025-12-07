@@ -44,7 +44,7 @@ const elements = {
   responseErrors: document.getElementById('responseErrors') as HTMLDivElement,
   
   // モーダル
-  specUrl: document.getElementById('specUrl') as HTMLInputElement,
+  specFile: document.getElementById('specFile') as HTMLInputElement,
   specContent: document.getElementById('specContent') as HTMLTextAreaElement
 };
 
@@ -433,20 +433,18 @@ function setupEventListeners(): void {
     elements.specModal.style.display = 'none';
   });
   
-  // URLから読み込み
-  document.getElementById('loadFromUrlBtn')?.addEventListener('click', async () => {
-    const url = elements.specUrl.value.trim();
-    if (!url) return;
+  // ファイルからインポート
+  elements.specFile?.addEventListener('change', async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
     
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const content = await response.text();
-      loadSpec(content);
-    } catch (e) {
-      alert(`${t('specLoadError')}: ${e instanceof Error ? e.message : String(e)}`);
+      const content = await file.text();
+      await loadSpec(content);
+      // ファイル入力をリセット
+      elements.specFile.value = '';
+    } catch (err) {
+      alert(`${t('specLoadError')}: ${err instanceof Error ? err.message : String(err)}`);
     }
   });
   
@@ -455,6 +453,11 @@ function setupEventListeners(): void {
     const content = elements.specContent.value.trim();
     if (!content) return;
     loadSpec(content);
+  });
+  
+  // 仕様書を削除
+  document.getElementById('clearSpecBtn')?.addEventListener('click', async () => {
+    await clearSpec();
   });
   
   // モーダル外クリックで閉じる
@@ -471,6 +474,7 @@ async function loadSpec(content: string): Promise<void> {
     await chrome.storage.local.set({ openApiSpec: content });
     updateSpecStatus(true);
     elements.specModal.style.display = 'none';
+    elements.specContent.value = '';
     
     // 既存のトラフィックを再バリデーション
     trafficList = trafficList.map(entry => ({
@@ -489,9 +493,29 @@ async function loadSpec(content: string): Promise<void> {
   }
 }
 
+async function clearSpec(): Promise<void> {
+  validator = null;
+  await chrome.storage.local.remove('openApiSpec');
+  updateSpecStatus(false);
+  elements.specContent.value = '';
+  
+  // トラフィックのバリデーション結果をクリア
+  trafficList = trafficList.map(entry => ({
+    ...entry,
+    validation: undefined
+  }));
+  renderTrafficList();
+  
+  if (selectedEntryId) {
+    selectEntry(selectedEntryId);
+  }
+  
+  elements.specModal.style.display = 'none';
+  alert(t('specCleared'));
+}
+
 // =============================================================================
 // 起動
 // =============================================================================
 
 initialize();
-

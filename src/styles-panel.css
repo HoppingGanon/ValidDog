@@ -413,7 +413,7 @@ body {
   margin-top: 0;
 }
 
-.modal-body input,
+.modal-body input[type="text"],
 .modal-body textarea {
   width: 100%;
   padding: 8px;
@@ -423,6 +423,37 @@ body {
   color: var(--text-primary);
   font-size: 12px;
   font-family: inherit;
+}
+
+.modal-body input[type="file"] {
+  width: 100%;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.modal-body input[type="file"]:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.modal-body input[type="file"]::file-selector-button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  margin-right: 12px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.modal-body input[type="file"]::file-selector-button:hover {
+  background: var(--accent-hover);
 }
 
 .modal-body input:focus,

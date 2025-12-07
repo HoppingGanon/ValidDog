@@ -4,8 +4,7 @@
   "description": "ValidDog - OpenAPI Validator Chrome Extension",
   "type": "module",
   "scripts": {
-    "build": "rollup -c rollup.config.chrome.js",
-    "dev": "rollup -c rollup.config.chrome.js -w",
+    "build": "",
     "clean": "rm -rf dist",
     "rebuild": "npm run clean && npm run build",
     "lint": "eslint src/**/*.ts",

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ValidDog</title>
+  <link rel="stylesheet" href="styles-panel.css">
+</head>
+<body>
+  <div class="container">
+    <!-- 左パネル: トラフィックリスト -->
+    <div class="left-panel">
+      <div class="header">
+        <div class="title-row">
+          <h1 class="title" data-i18n="title">ばりっどーぬ - ValidDog</h1>
+          <button class="lang-toggle" id="langToggle" title="Switch Language">
+            <span class="lang-icon">🌐</span>
+          </button>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="loadSpecBtn" data-i18n="loadSpec">仕様書読込</button>
+          <button class="btn btn-danger" id="clearBtn" data-i18n="clearTraffic">履歴削除</button>
+        </div>
+        <div class="spec-status" id="specStatus" data-i18n="noSpec">仕様書未読込</div>
+      </div>
+      <div class="traffic-list" id="trafficList">
+        <div class="empty-state" data-i18n="noTraffic">トラフィックがありません</div>
+      </div>
+    </div>
+    
+    <!-- 右パネル: 詳細表示 -->
+    <div class="right-panel">
+      <div class="detail-placeholder" id="detailPlaceholder" data-i18n="selectTraffic">
+        左側からトラフィックを選択してください
+      </div>
+      <div class="detail-content" id="detailContent" style="display: none;">
+        <!-- リクエスト情報 -->
+        <section class="detail-section">
+          <h2 class="section-title" data-i18n="request">リクエスト</h2>
+          <div class="info-group">
+            <h3 class="info-title" data-i18n="path">パス</h3>
+            <div class="info-content" id="requestPath"></div>
+          </div>
+          <div class="info-group">
+            <h3 class="info-title" data-i18n="queryParams">クエリパラメータ</h3>
+            <pre class="info-content code" id="requestQuery"></pre>
+          </div>
+          <div class="info-group">
+            <h3 class="info-title" data-i18n="headers">ヘッダー</h3>
+            <pre class="info-content code" id="requestHeaders"></pre>
+          </div>
+          <div class="info-group">
+            <h3 class="info-title" data-i18n="body">ボディ</h3>
+            <pre class="info-content code" id="requestBody"></pre>
+          </div>
+        </section>
+        
+        <!-- レスポンス情報 -->
+        <section class="detail-section">
+          <h2 class="section-title" data-i18n="response">レスポンス</h2>
+          <div class="info-group">
+            <h3 class="info-title" data-i18n="status">ステータス</h3>
+            <div class="info-content" id="responseStatus"></div>
+          </div>
+          <div class="info-group">
+            <h3 class="info-title" data-i18n="headers">ヘッダー</h3>
+            <pre class="info-content code" id="responseHeaders"></pre>
+          </div>
+          <div class="info-group">
+            <h3 class="info-title" data-i18n="body">ボディ</h3>
+            <pre class="info-content code" id="responseBody"></pre>
+          </div>
+        </section>
+        
+        <!-- バリデーション結果 -->
+        <section class="detail-section">
+          <h2 class="section-title" data-i18n="validation">バリデーション</h2>
+          <div class="validation-result" id="validationResult">
+            <div class="validation-group">
+              <h3 class="info-title" data-i18n="requestValidation">リクエスト検証</h3>
+              <div class="validation-status" id="requestValidation"></div>
+              <div class="validation-errors" id="requestErrors"></div>
+            </div>
+            <div class="validation-group">
+              <h3 class="info-title" data-i18n="responseValidation">レスポンス検証</h3>
+              <div class="validation-status" id="responseValidation"></div>
+              <div class="validation-errors" id="responseErrors"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 仕様書読み込みモーダル -->
+  <div class="modal" id="specModal" style="display: none;">
+    <div class="modal-content">
+      <h2 class="modal-title">OpenAPI仕様書を読み込み</h2>
+      <div class="modal-body">
+        <label for="specUrl">URLから読み込み:</label>
+        <input type="text" id="specUrl" placeholder="https://example.com/openapi.yaml">
+        <button class="btn btn-primary" id="loadFromUrlBtn">読み込み</button>
+        
+        <div class="divider">または</div>
+        
+        <label for="specContent">直接入力 (YAML/JSON):</label>
+        <textarea id="specContent" rows="10" placeholder="OpenAPI仕様書を貼り付け..."></textarea>
+        <button class="btn btn-primary" id="loadFromTextBtn">読み込み</button>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeModalBtn">閉じる</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="panel.js"></script>
+</body>
+</html>
+

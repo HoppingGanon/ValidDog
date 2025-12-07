@@ -18,9 +18,16 @@ function copyStaticFiles() {
         // ディレクトリが既に存在する場合は無視
       }
 
-      // HTMLファイルをコピー
-      const htmlFiles = ['test-validator.html'];
-      htmlFiles.forEach(file => {
+      // コピーするファイルのリスト
+      const filesToCopy = [
+        'manifest.json',
+        'devtools.html',
+        'panel.html',
+        'styles-panel.css',
+        'test-validator.html'
+      ];
+
+      filesToCopy.forEach(file => {
         const srcPath = `src/${file}`;
         if (existsSync(srcPath)) {
           copyFileSync(srcPath, `dist/${file}`);
@@ -33,8 +40,10 @@ function copyStaticFiles() {
         mkdirSync('dist/icons', { recursive: true });
         const iconFiles = readdirSync('src/icons');
         iconFiles.forEach(file => {
-          copyFileSync(`src/icons/${file}`, `dist/icons/${file}`);
-          console.log(`Copied: src/icons/${file} -> dist/icons/${file}`);
+          if (!file.startsWith('.')) {
+            copyFileSync(`src/icons/${file}`, `dist/icons/${file}`);
+            console.log(`Copied: src/icons/${file} -> dist/icons/${file}`);
+          }
         });
       } catch (e) {
         console.error('Failed to copy icons:', e.message);
@@ -44,8 +53,96 @@ function copyStaticFiles() {
 }
 
 /**
- * validator スクリプトのビルド設定
- * ブラウザ環境で動作するIIFE形式でビルド
+ * 共通のTypeScriptプラグイン設定
+ */
+const tsPlugin = typescript({
+  tsconfig: './tsconfig.json',
+  declaration: false,
+  declarationMap: false,
+  compilerOptions: {
+    declaration: false,
+    declarationMap: false
+  }
+});
+
+/**
+ * 共通のプラグイン設定
+ */
+const commonPlugins = [
+  resolve({
+    browser: true,
+    preferBuiltins: false
+  }),
+  commonjs(),
+  json()
+];
+
+/**
+ * Background script (Service Worker)
+ */
+const backgroundConfig = {
+  input: 'src/background.ts',
+  output: {
+    file: 'dist/background.js',
+    format: 'iife',
+    sourcemap: true,
+    name: 'Background'
+  },
+  plugins: [
+    ...commonPlugins,
+    typescript({
+      tsconfig: './tsconfig.json',
+      declaration: false,
+      declarationMap: false
+    }),
+    copyStaticFiles()
+  ]
+};
+
+/**
+ * DevTools script
+ */
+const devtoolsConfig = {
+  input: 'src/devtools.ts',
+  output: {
+    file: 'dist/devtools.js',
+    format: 'iife',
+    sourcemap: true,
+    name: 'DevTools'
+  },
+  plugins: [
+    ...commonPlugins,
+    typescript({
+      tsconfig: './tsconfig.json',
+      declaration: false,
+      declarationMap: false
+    })
+  ]
+};
+
+/**
+ * Panel script
+ */
+const panelConfig = {
+  input: 'src/panel.ts',
+  output: {
+    file: 'dist/panel.js',
+    format: 'iife',
+    sourcemap: true,
+    name: 'Panel'
+  },
+  plugins: [
+    ...commonPlugins,
+    typescript({
+      tsconfig: './tsconfig.json',
+      declaration: false,
+      declarationMap: false
+    })
+  ]
+};
+
+/**
+ * Validator (スタンドアロン用)
  */
 const validatorConfig = {
   input: 'src/validator.ts',
@@ -54,7 +151,6 @@ const validatorConfig = {
     format: 'iife',
     sourcemap: true,
     name: 'ValidatorModule',
-    // グローバル変数を公開
     footer: `
 // グローバル変数として公開
 if (typeof window !== 'undefined') {
@@ -66,23 +162,18 @@ if (typeof window !== 'undefined') {
 `
   },
   plugins: [
-    resolve({
-      browser: true,
-      preferBuiltins: false
-    }),
-    commonjs(),
-    json(),
+    ...commonPlugins,
     typescript({
       tsconfig: './tsconfig.json',
       declaration: false,
-      declarationMap: false,
-      compilerOptions: {
-        declaration: false,
-        declarationMap: false
-      }
-    }),
-    copyStaticFiles()
+      declarationMap: false
+    })
   ]
 };
 
-export default [validatorConfig];
+export default [
+  backgroundConfig,
+  devtoolsConfig,
+  panelConfig,
+  validatorConfig
+];

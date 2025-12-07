@@ -13,6 +13,9 @@ app.use(express.json());
 // 静的ファイル配信（test.htmlなど）
 app.use(express.static(path.join(__dirname)));
 
+// distフォルダからも静的ファイルを配信（validator.js, test-validator.html）
+app.use(express.static(path.join(__dirname, '..', 'dist')));
+
 // =============================================================================
 // 違反ログ出力用ヘルパー
 // =============================================================================

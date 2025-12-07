@@ -6,6 +6,10 @@
   "scripts": {
     "start": "node backend-server.js",
     "miss": "node backend-server-miss.js",
+    "test": "node api-test.mjs --all",
+    "test:users": "node api-test.mjs --users",
+    "test:posts": "node api-test.mjs --posts",
+    "test:errors": "node api-test.mjs --errors",
     "lint:openapi": "spectral lint openapi.yaml",
     "serve": "serve ."
   },

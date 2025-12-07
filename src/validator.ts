@@ -74,6 +74,8 @@ export interface ValidationError {
   actualType?: string;
   /** 期待される型/値 */
   expected?: string;
+  /** エラーメッセージのパラメータ（翻訳用） */
+  params?: Record<string, string | number>;
 }
 
 /** HTTPメソッドの型 */
@@ -353,8 +355,9 @@ export class OpenAPIValidator {
         valid: false,
         errors: [{
           path: request.path,
-          message: `パス "${request.path}" はOpenAPI仕様書に定義されていません`,
-          errorCode: 'PATH_NOT_FOUND'
+          message: `Path "${request.path}" is not defined in OpenAPI spec`,
+          errorCode: 'PATH_NOT_FOUND',
+          params: { path: request.path }
         }]
       };
     }
@@ -368,8 +371,9 @@ export class OpenAPIValidator {
         valid: false,
         errors: [{
           path: request.path,
-          message: `メソッド "${request.method.toUpperCase()}" はパス "${pattern}" に定義されていません`,
-          errorCode: 'METHOD_NOT_ALLOWED'
+          message: `Method "${request.method.toUpperCase()}" is not defined for path "${pattern}"`,
+          errorCode: 'METHOD_NOT_ALLOWED',
+          params: { method: request.method.toUpperCase(), path: pattern }
         }]
       };
     }
@@ -427,8 +431,9 @@ export class OpenAPIValidator {
         valid: false,
         errors: [{
           path: request.path,
-          message: `パス "${request.path}" はOpenAPI仕様書に定義されていません`,
-          errorCode: 'PATH_NOT_FOUND'
+          message: `Path "${request.path}" is not defined in OpenAPI spec`,
+          errorCode: 'PATH_NOT_FOUND',
+          params: { path: request.path }
         }]
       };
     }
@@ -442,8 +447,9 @@ export class OpenAPIValidator {
         valid: false,
         errors: [{
           path: request.path,
-          message: `メソッド "${request.method.toUpperCase()}" はパス "${pattern}" に定義されていません`,
-          errorCode: 'METHOD_NOT_ALLOWED'
+          message: `Method "${request.method.toUpperCase()}" is not defined for path "${pattern}"`,
+          errorCode: 'METHOD_NOT_ALLOWED',
+          params: { method: request.method.toUpperCase(), path: pattern }
         }]
       };
     }
@@ -457,8 +463,9 @@ export class OpenAPIValidator {
     if (!responseSpec) {
       errors.push({
         path: request.path,
-        message: `ステータスコード ${response.statusCode} は "${pattern}" の "${request.method.toUpperCase()}" に定義されていません`,
-        errorCode: 'UNEXPECTED_STATUS_CODE'
+        message: `Status code ${response.statusCode} is not defined for "${request.method.toUpperCase()}" "${pattern}"`,
+        errorCode: 'UNEXPECTED_STATUS_CODE',
+        params: { statusCode: response.statusCode, method: request.method.toUpperCase(), path: pattern }
       });
       return { valid: false, errors };
     }
@@ -468,7 +475,7 @@ export class OpenAPIValidator {
       if (response.body !== undefined && response.body !== null && response.body !== '') {
         errors.push({
           path: request.path,
-          message: '204 No Content レスポンスにはボディを含めるべきではありません',
+          message: '204 No Content response should not contain a body',
           errorCode: 'UNEXPECTED_BODY'
         });
       }

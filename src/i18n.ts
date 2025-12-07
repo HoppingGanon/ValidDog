@@ -39,7 +39,11 @@ export type TranslationKey =
   | 'filterMatchSpec'
   | 'filterErrorOnly'
   | 'noMatchingTraffic'
-  | 'tooSmallArea';
+  | 'tooSmallArea'
+  | 'errorPathNotFound'
+  | 'errorMethodNotAllowed'
+  | 'errorUnexpectedStatusCode'
+  | 'errorUnexpectedBody';
 
 /** 翻訳データ */
 const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -77,7 +81,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     filterMatchSpec: '仕様書にマッチするもののみ',
     filterErrorOnly: 'バリデーションエラーのもののみ',
     noMatchingTraffic: 'フィルタに一致するトラフィックがありません',
-    tooSmallArea: '領域が狭すぎて表示ができません。'
+    tooSmallArea: '領域が狭すぎて表示ができません。',
+    errorPathNotFound: 'パス "{path}" はOpenAPI仕様書に定義されていません',
+    errorMethodNotAllowed: 'メソッド "{method}" はパス "{path}" に定義されていません',
+    errorUnexpectedStatusCode: 'ステータスコード {statusCode} は "{path}" の "{method}" に定義されていません',
+    errorUnexpectedBody: '204 No Content レスポンスにはボディを含めるべきではありません'
   },
   en: {
     title: 'ValidDog',
@@ -113,7 +121,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     filterMatchSpec: 'Spec matches only',
     filterErrorOnly: 'Validation errors only',
     noMatchingTraffic: 'No traffic matching filters',
-    tooSmallArea: 'Area too small to display.'
+    tooSmallArea: 'Area too small to display.',
+    errorPathNotFound: 'Path "{path}" is not defined in OpenAPI spec',
+    errorMethodNotAllowed: 'Method "{method}" is not defined for path "{path}"',
+    errorUnexpectedStatusCode: 'Status code {statusCode} is not defined for "{method}" "{path}"',
+    errorUnexpectedBody: '204 No Content response should not contain a body'
   }
 };
 

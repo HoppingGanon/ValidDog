@@ -521,7 +521,10 @@ function renderValidation(validation: ValidationResult): void {
  */
 function formatValidationError(err: ValidationError): string {
   const pathHtml = err.path ? `<div class="validation-error-path">${escapeHtml(err.path)}</div>` : '';
-  const messageHtml = `<div class="validation-error-message">${escapeHtml(err.message)}</div>`;
+  
+  // エラーコードに基づいて翻訳されたメッセージを生成
+  const translatedMessage = translateErrorMessage(err);
+  const messageHtml = `<div class="validation-error-message">${escapeHtml(translatedMessage)}</div>`;
   
   // 詳細情報を構築
   const details: string[] = [];
@@ -550,6 +553,35 @@ function formatValidationError(err: ValidationError): string {
       ${detailsHtml}
     </div>
   `;
+}
+
+/**
+ * エラーコードに基づいて翻訳されたエラーメッセージを取得
+ */
+function translateErrorMessage(err: ValidationError): string {
+  const params = err.params || {};
+  
+  // エラーコードに対応する翻訳キーのマッピング
+  const errorCodeToKey: Record<string, TranslationKey> = {
+    'PATH_NOT_FOUND': 'errorPathNotFound',
+    'METHOD_NOT_ALLOWED': 'errorMethodNotAllowed',
+    'UNEXPECTED_STATUS_CODE': 'errorUnexpectedStatusCode',
+    'UNEXPECTED_BODY': 'errorUnexpectedBody'
+  };
+  
+  const translationKey = err.errorCode ? errorCodeToKey[err.errorCode] : undefined;
+  
+  if (translationKey) {
+    // 翻訳テンプレートを取得し、パラメータを置換
+    let message = t(translationKey);
+    for (const [key, value] of Object.entries(params)) {
+      message = message.replace(`{${key}}`, String(value));
+    }
+    return message;
+  }
+  
+  // 翻訳キーがない場合は元のメッセージを返す
+  return err.message;
 }
 
 /**

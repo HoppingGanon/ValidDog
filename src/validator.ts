@@ -4,12 +4,11 @@
  * OpenAPI仕様書を読み込んでリクエスト・レスポンスの内容を検証し、
  * スキーマ違反がないか確認するモジュール。
  *
- * Chrome拡張機能での使用を想定しています。
+ * Chrome拡張機能での使用を想定（evalを使用しない）
  */
 
 import yaml from 'js-yaml';
-import OpenAPIRequestValidator from 'openapi-request-validator';
-import OpenAPIResponseValidator from 'openapi-response-validator';
+import { Validator as JsonSchemaValidator } from 'jsonschema';
 
 // =============================================================================
 // 型定義
@@ -96,10 +95,12 @@ export interface ResponseInfo {
 
 /**
  * OpenAPI仕様書に基づいてリクエスト・レスポンスを検証するクラス
+ * evalを使用しないjsonschemaライブラリを使用
  */
 export class OpenAPIValidator {
   private spec: OpenAPISpec;
   private resolvedSpec: OpenAPISpec;
+  private jsonValidator: JsonSchemaValidator;
 
   /**
    * コンストラクタ
@@ -107,8 +108,15 @@ export class OpenAPIValidator {
    */
   constructor(spec: OpenAPISpec) {
     this.spec = spec;
-    // $ref を解決した仕様書を作成
     this.resolvedSpec = this.resolveRefs(spec);
+    this.jsonValidator = new JsonSchemaValidator();
+    
+    // コンポーネントスキーマを登録
+    if (this.resolvedSpec.components?.schemas) {
+      for (const [name, schema] of Object.entries(this.resolvedSpec.components.schemas)) {
+        this.jsonValidator.addSchema(schema, `/components/schemas/${name}`);
+      }
+    }
   }
 
   /**
@@ -127,13 +135,16 @@ export class OpenAPIValidator {
   private resolveRefs(spec: OpenAPISpec): OpenAPISpec {
     const resolved = JSON.parse(JSON.stringify(spec)) as OpenAPISpec;
 
-    const resolveRef = (obj: unknown): unknown => {
+    const resolveRef = (obj: unknown, depth = 0): unknown => {
+      // 循環参照を防ぐため深さ制限
+      if (depth > 20) return obj;
+      
       if (obj === null || typeof obj !== 'object') {
         return obj;
       }
 
       if (Array.isArray(obj)) {
-        return obj.map(resolveRef);
+        return obj.map(item => resolveRef(item, depth + 1));
       }
 
       const record = obj as Record<string, unknown>;
@@ -145,8 +156,7 @@ export class OpenAPIValidator {
           const schemaName = refPath.replace('#/components/schemas/', '');
           const schema = resolved.components?.schemas?.[schemaName];
           if (schema) {
-            // スキーマを展開（循環参照を避けるため、1レベルのみ）
-            return resolveRef({ ...schema });
+            return resolveRef({ ...schema }, depth + 1);
           }
         }
         return record;
@@ -155,7 +165,7 @@ export class OpenAPIValidator {
       // 再帰的に処理
       const result: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(record)) {
-        result[key] = resolveRef(value);
+        result[key] = resolveRef(value, depth + 1);
       }
       return result;
     };
@@ -165,11 +175,8 @@ export class OpenAPIValidator {
 
   /**
    * パス文字列からOpenAPI仕様書のパスパターンにマッチするものを検索
-   * @param actualPath - 実際のパス（例: /users/123）
-   * @returns マッチしたパスパターンとパスパラメータ
    */
   findMatchingPath(actualPath: string): { pattern: string; params: Record<string, string> } | null {
-    // クエリパラメータを除去
     const pathWithoutQuery = actualPath.split('?')[0];
 
     for (const pattern of Object.keys(this.resolvedSpec.paths)) {
@@ -183,13 +190,10 @@ export class OpenAPIValidator {
 
   /**
    * リクエストを検証
-   * @param request - リクエスト情報
-   * @returns バリデーション結果
    */
   validateRequest(request: RequestInfo): ValidationResult {
     const errors: ValidationError[] = [];
 
-    // パスのマッチング
     const matched = this.findMatchingPath(request.path);
     if (!matched) {
       return {
@@ -217,7 +221,7 @@ export class OpenAPIValidator {
       };
     }
 
-    // パラメータをマージ（パスレベル + オペレーションレベル）
+    // パラメータをマージ
     const allParameters = [
       ...(pathItem.parameters || []),
       ...(operation.parameters || [])
@@ -227,36 +231,29 @@ export class OpenAPIValidator {
     const queryString = request.path.split('?')[1] || '';
     const queryParams = parseQueryString(queryString);
 
-    // openapi-request-validator を使用
-    try {
-      const validator = new OpenAPIRequestValidator({
-        parameters: allParameters as any,
-        requestBody: operation.requestBody as any
-      });
+    // パスパラメータの検証
+    this.validateParameters(allParameters, 'path', params, errors);
 
-      const validationResult = validator.validateRequest({
-        headers: request.headers || {},
-        params,
-        query: { ...queryParams, ...request.query },
-        body: request.body
-      });
+    // クエリパラメータの検証
+    this.validateParameters(allParameters, 'query', { ...queryParams, ...request.query }, errors);
 
-      if (validationResult && validationResult.errors && validationResult.errors.length > 0) {
-        for (const error of validationResult.errors) {
+    // リクエストボディの検証
+    if (operation.requestBody) {
+      const contentType = 'application/json';
+      const bodySchema = operation.requestBody?.content?.[contentType]?.schema;
+      
+      if (bodySchema) {
+        if (operation.requestBody.required && (request.body === undefined || request.body === null)) {
           errors.push({
-            path: (error as any).path || request.path,
-            message: error.message || '不明なエラー',
-            errorCode: (error as any).errorCode,
-            location: (error as any).location
+            path: 'body',
+            message: 'リクエストボディは必須です',
+            errorCode: 'REQUIRED',
+            location: 'body'
           });
+        } else if (request.body !== undefined && request.body !== null) {
+          this.validateSchema(request.body, bodySchema, 'body', errors);
         }
       }
-    } catch (e) {
-      errors.push({
-        path: request.path,
-        message: `リクエストバリデーション中にエラーが発生: ${e instanceof Error ? e.message : String(e)}`,
-        errorCode: 'VALIDATION_ERROR'
-      });
     }
 
     return {
@@ -267,14 +264,10 @@ export class OpenAPIValidator {
 
   /**
    * レスポンスを検証
-   * @param request - リクエスト情報（パスとメソッドの特定に使用）
-   * @param response - レスポンス情報
-   * @returns バリデーション結果
    */
   validateResponse(request: RequestInfo, response: ResponseInfo): ValidationResult {
     const errors: ValidationError[] = [];
 
-    // パスのマッチング
     const matched = this.findMatchingPath(request.path);
     if (!matched) {
       return {
@@ -317,7 +310,7 @@ export class OpenAPIValidator {
       return { valid: false, errors };
     }
 
-    // 204 No Content の場合はボディがないことを確認
+    // 204 No Content の場合
     if (response.statusCode === 204) {
       if (response.body !== undefined && response.body !== null && response.body !== '') {
         errors.push({
@@ -333,56 +326,88 @@ export class OpenAPIValidator {
     const contentType = 'application/json';
     const responseContent = responseSpec.content?.[contentType];
 
-    if (!responseContent || !responseContent.schema) {
-      // スキーマが定義されていない場合はスキップ
-      return { valid: true, errors: [] };
-    }
-
-    // openapi-response-validator を使用
-    // レスポンス定義をライブラリ形式に変換
-    const responsesForValidator: Record<string, { schema: any }> = {};
-    for (const [code, respDef] of Object.entries(operation.responses)) {
-      const respDefTyped = respDef as any;
-      if (respDefTyped.content?.['application/json']?.schema) {
-        responsesForValidator[code] = {
-          schema: respDefTyped.content['application/json'].schema
-        };
-      }
-    }
-
-    try {
-      const validator = new OpenAPIResponseValidator({
-        responses: responsesForValidator,
-        components: this.resolvedSpec.components as any
-      });
-
-      const validationResult = validator.validateResponse(
-        statusCode,
-        response.body
-      );
-
-      if (validationResult && validationResult.errors && validationResult.errors.length > 0) {
-        for (const error of validationResult.errors) {
-          errors.push({
-            path: (error as any).path || request.path,
-            message: error.message || '不明なエラー',
-            errorCode: (error as any).errorCode,
-            location: 'response'
-          });
-        }
-      }
-    } catch (e) {
-      errors.push({
-        path: request.path,
-        message: `レスポンスバリデーション中にエラーが発生: ${e instanceof Error ? e.message : String(e)}`,
-        errorCode: 'VALIDATION_ERROR'
-      });
+    if (responseContent?.schema && response.body !== undefined) {
+      this.validateSchema(response.body, responseContent.schema, 'response', errors);
     }
 
     return {
       valid: errors.length === 0,
       errors
     };
+  }
+
+  /**
+   * パラメータを検証
+   */
+  private validateParameters(
+    parameters: any[],
+    location: 'path' | 'query' | 'header',
+    values: Record<string, any>,
+    errors: ValidationError[]
+  ): void {
+    const locationParams = parameters.filter(p => p.in === location);
+
+    for (const param of locationParams) {
+      const value = values[param.name];
+
+      // 必須チェック
+      if (param.required && (value === undefined || value === '')) {
+        errors.push({
+          path: param.name,
+          message: `必須パラメータ "${param.name}" がありません`,
+          errorCode: 'REQUIRED',
+          location
+        });
+        continue;
+      }
+
+      // スキーマチェック
+      if (value !== undefined && value !== '' && param.schema) {
+        // 型変換（クエリパラメータは文字列で来るため）
+        let convertedValue = value;
+        if (param.schema.type === 'integer' || param.schema.type === 'number') {
+          const num = Number(value);
+          if (!isNaN(num)) {
+            convertedValue = num;
+          }
+        } else if (param.schema.type === 'boolean') {
+          convertedValue = value === 'true' || value === true;
+        }
+
+        this.validateSchema(convertedValue, param.schema, param.name, errors);
+      }
+    }
+  }
+
+  /**
+   * JSONスキーマでバリデーション
+   */
+  private validateSchema(
+    value: unknown,
+    schema: any,
+    path: string,
+    errors: ValidationError[]
+  ): void {
+    try {
+      const result = this.jsonValidator.validate(value, schema);
+      
+      if (!result.valid) {
+        for (const error of result.errors) {
+          errors.push({
+            path: error.property ? `${path}.${error.property.replace('instance.', '')}` : path,
+            message: error.message,
+            errorCode: error.name,
+            location: path
+          });
+        }
+      }
+    } catch (e) {
+      errors.push({
+        path,
+        message: `スキーマ検証中にエラー: ${e instanceof Error ? e.message : String(e)}`,
+        errorCode: 'VALIDATION_ERROR'
+      });
+    }
   }
 
   /**
@@ -406,30 +431,21 @@ export class OpenAPIValidator {
 
 /**
  * OpenAPI仕様書の文字列をパースする
- * @param content - JSONまたはYAML形式の文字列
- * @returns パース済みのOpenAPI仕様書
  */
 export function parseOpenAPISpec(content: string): OpenAPISpec {
-  // JSONかYAMLかを判定
   const trimmed = content.trim();
 
   if (trimmed.startsWith('{')) {
-    // JSON形式
     return JSON.parse(content) as OpenAPISpec;
   } else {
-    // YAML形式
     return yaml.load(content) as OpenAPISpec;
   }
 }
 
 /**
  * パスパターンと実際のパスをマッチング
- * @param pattern - パスパターン（例: /users/{userId}）
- * @param actualPath - 実際のパス（例: /users/123）
- * @returns パスパラメータのオブジェクト、マッチしない場合はnull
  */
 export function matchPath(pattern: string, actualPath: string): Record<string, string> | null {
-  // パターンを正規表現に変換
   const paramNames: string[] = [];
   const regexPattern = pattern.replace(/\{([^}]+)\}/g, (_, paramName) => {
     paramNames.push(paramName);
@@ -443,7 +459,6 @@ export function matchPath(pattern: string, actualPath: string): Record<string, s
     return null;
   }
 
-  // パスパラメータを抽出
   const params: Record<string, string> = {};
   for (let i = 0; i < paramNames.length; i++) {
     params[paramNames[i]] = match[i + 1];
@@ -454,8 +469,6 @@ export function matchPath(pattern: string, actualPath: string): Record<string, s
 
 /**
  * クエリ文字列をパース
- * @param queryString - クエリ文字列（?を除く）
- * @returns パースされたクエリパラメータ
  */
 export function parseQueryString(queryString: string): Record<string, string> {
   const params: Record<string, string> = {};
@@ -477,22 +490,18 @@ export function parseQueryString(queryString: string): Record<string, string> {
 
 /**
  * Content-Typeヘッダーからメディアタイプを抽出
- * @param contentType - Content-Typeヘッダーの値
- * @returns メディアタイプ（例: application/json）
  */
 export function extractMediaType(contentType: string | undefined): string {
   if (!contentType) {
     return 'application/json';
   }
-  // charset などのパラメータを除去
   return contentType.split(';')[0].trim();
 }
 
 // =============================================================================
-// ブラウザ向けエクスポート（グローバル変数として公開）
+// ブラウザ向けエクスポート
 // =============================================================================
 
-// ブラウザ環境でグローバルに公開
 if (typeof window !== 'undefined') {
   (window as unknown as Record<string, unknown>).OpenAPIValidator = OpenAPIValidator;
   (window as unknown as Record<string, unknown>).parseOpenAPISpec = parseOpenAPISpec;

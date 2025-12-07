@@ -48,7 +48,7 @@
 
         "explorer.fileNesting.enabled": true,
         "explorer.fileNesting.patterns": {
-          "package.json": "package-lock.json, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, tsconfig.*.json"
+          "package.json": "package-lock.json, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, tsconfig.*.json, rollup.config.*.js, LICENSE, .gitignore, tsconfig.json"
         }
       }
     }

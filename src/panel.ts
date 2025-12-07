@@ -319,6 +319,9 @@ function renderTrafficList(): void {
   // フィルタを適用
   const filteredList = getFilteredTrafficList();
   
+  // スクロール位置が一番下かどうかを記録
+  const wasAtBottom = isScrolledToBottom(elements.trafficList);
+  
   if (filteredList.length === 0) {
     const message = trafficList.length === 0 
       ? t('noTraffic') 
@@ -327,7 +330,8 @@ function renderTrafficList(): void {
     return;
   }
   
-  const html = filteredList.slice().reverse().map(entry => {
+  // 新しいものが下に表示されるように（reverseを削除）
+  const html = filteredList.map(entry => {
     const isSelected = entry.id === selectedEntryId;
     const statusClass = entry.response.status >= 400 ? 'error' : 'success';
     
@@ -349,6 +353,11 @@ function renderTrafficList(): void {
   
   elements.trafficList.innerHTML = html;
   
+  // スクロール位置が一番下だった場合、下にスクロール
+  if (wasAtBottom) {
+    scrollToBottom(elements.trafficList);
+  }
+  
   // クリックイベントを追加
   elements.trafficList.querySelectorAll('.traffic-item').forEach(item => {
     item.addEventListener('click', () => {
@@ -358,6 +367,22 @@ function renderTrafficList(): void {
       }
     });
   });
+}
+
+/**
+ * 要素が一番下までスクロールされているかチェック
+ */
+function isScrolledToBottom(element: HTMLElement): boolean {
+  // 許容誤差（ピクセル）
+  const threshold = 5;
+  return element.scrollHeight - element.scrollTop - element.clientHeight <= threshold;
+}
+
+/**
+ * 要素を一番下までスクロール
+ */
+function scrollToBottom(element: HTMLElement): void {
+  element.scrollTop = element.scrollHeight;
 }
 
 /**

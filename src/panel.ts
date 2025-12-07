@@ -142,26 +142,17 @@ function connectToBackground(): void {
   const tabId = chrome.devtools.inspectedWindow.tabId;
   port = chrome.runtime.connect({ name: `devtools-panel-${tabId}` });
 
-  port.onMessage.addListener((message: ExtensionMessage) => {
-    if (message.type === "TRAFFIC_UPDATE") {
-      trafficList = message.payload as TrafficEntry[];
-      renderTrafficList();
-    }
-  });
-
   // 接続が切断された場合のハンドリング
   port.onDisconnect.addListener(() => {
     port = null;
     // サービスワーカーが再起動した場合に再接続を試みる
+    // トラフィックはpanel側で管理するため、再接続しても履歴は保持される
     setTimeout(() => {
       if (!port) {
         connectToBackground();
       }
     }, 1000);
   });
-
-  // 既存のトラフィックを取得
-  sendPortMessage({ type: "GET_TRAFFIC" });
 }
 
 /**

@@ -1,7 +1,7 @@
 # プライバシーポリシー / Privacy Policy
 
-最終更新日: 2024年12月7日  
-Last updated: December 7, 2024
+最終更新日: 2025年12月8日  
+Last updated: December 8, 2025
 
 ---
 

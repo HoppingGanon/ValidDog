@@ -114,7 +114,9 @@ export class OpenAPIValidator {
    */
   constructor(spec: OpenAPISpec) {
     this.spec = spec;
-    this.resolvedSpec = this.resolveRefs(spec);
+    // $ref解決 → スキーマ変換（nullable対応など）の順で処理
+    const resolved = this.resolveRefs(spec);
+    this.resolvedSpec = this.convertSchemaForJsonSchema(resolved);
     this.jsonValidator = new JsonSchemaValidator();
     
     // コンポーネントスキーマを登録
@@ -126,11 +128,11 @@ export class OpenAPIValidator {
   }
 
   /**
-   * 仕様書の文字列からOpenAPIValidatorを作成
-   * @param content - 仕様書の文字列（JSONまたはYAML）
+   * ファイル内容からOpenAPIValidatorを作成
+   * @param content - ファイル内容（JSONまたはYAML）
    * @returns OpenAPIValidator インスタンス
    */
-  static fromString(content: string): OpenAPIValidator {
+  static fromFile(content: string): OpenAPIValidator {
     const spec = parseOpenAPISpec(content);
     return new OpenAPIValidator(spec);
   }
@@ -177,6 +179,134 @@ export class OpenAPIValidator {
     };
 
     return resolveRef(resolved) as OpenAPISpec;
+  }
+
+  /**
+   * OpenAPIスキーマをJSON Schema互換に変換
+   * - nullable: true を type: ["original_type", "null"] に変換
+   * - additionalProperties のデフォルト値を設定
+   */
+  private convertSchemaForJsonSchema(spec: OpenAPISpec): OpenAPISpec {
+    const converted = JSON.parse(JSON.stringify(spec)) as OpenAPISpec;
+
+    const convertSchema = (obj: unknown, _parentRequired: string[] = []): unknown => {
+      if (obj === null || typeof obj !== 'object') {
+        return obj;
+      }
+
+      if (Array.isArray(obj)) {
+        return obj.map(item => convertSchema(item, []));
+      }
+
+      const record = obj as Record<string, unknown>;
+      const result: Record<string, unknown> = {};
+
+      // プロパティを処理
+      for (const [key, value] of Object.entries(record)) {
+        if (key === 'properties' && typeof value === 'object' && value !== null) {
+          // properties 内のスキーマを変換（親の required 情報を渡す）
+          const requiredProps = (record.required as string[]) || [];
+          const convertedProps: Record<string, unknown> = {};
+          for (const [propName, propSchema] of Object.entries(value as Record<string, unknown>)) {
+            convertedProps[propName] = convertSchema(propSchema, requiredProps);
+          }
+          result[key] = convertedProps;
+        } else if (key === 'items' && typeof value === 'object') {
+          // 配列のアイテムスキーマを変換
+          result[key] = convertSchema(value, []);
+        } else if (key === 'allOf' || key === 'oneOf' || key === 'anyOf') {
+          // 複合スキーマを変換
+          if (Array.isArray(value)) {
+            result[key] = value.map(item => convertSchema(item, []));
+          } else {
+            result[key] = value;
+          }
+        } else {
+          result[key] = value;
+        }
+      }
+
+      // nullable: true の処理
+      if (record.nullable === true && record.type) {
+        const originalType = record.type;
+        if (Array.isArray(originalType)) {
+          // 既に配列の場合は null を追加
+          if (!originalType.includes('null')) {
+            result.type = [...originalType, 'null'];
+          }
+        } else {
+          // 単一型の場合は配列に変換
+          result.type = [originalType, 'null'];
+        }
+        // nullable プロパティを削除（JSON Schemaには不要）
+        delete result.nullable;
+      }
+
+      // OpenAPI 固有のプロパティを削除
+      delete result.example;
+      delete result.examples;
+      delete result.xml;
+      delete result.externalDocs;
+      delete result.deprecated;
+      delete result.discriminator;
+
+      return result;
+    };
+
+    // paths 内のスキーマを変換
+    if (converted.paths) {
+      for (const pathItem of Object.values(converted.paths)) {
+        for (const method of ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'] as const) {
+          const operation = pathItem[method];
+          if (operation) {
+            // パラメータのスキーマを変換
+            if (operation.parameters) {
+              operation.parameters = operation.parameters.map((param: any) => {
+                if (param.schema) {
+                  param.schema = convertSchema(param.schema, []);
+                }
+                return param;
+              });
+            }
+            // リクエストボディのスキーマを変換
+            if (operation.requestBody?.content) {
+              for (const contentType of Object.keys(operation.requestBody.content)) {
+                const content = operation.requestBody.content[contentType];
+                if (content.schema) {
+                  content.schema = convertSchema(content.schema, []);
+                }
+              }
+            }
+            // レスポンスのスキーマを変換
+            if (operation.responses) {
+              for (const responseCode of Object.keys(operation.responses)) {
+                const response = operation.responses[responseCode];
+                if (response?.content) {
+                  for (const contentType of Object.keys(response.content)) {
+                    const content = response.content[contentType];
+                    if (content.schema) {
+                      content.schema = convertSchema(content.schema, []);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // components/schemas を変換
+    if (converted.components?.schemas) {
+      for (const schemaName of Object.keys(converted.components.schemas)) {
+        converted.components.schemas[schemaName] = convertSchema(
+          converted.components.schemas[schemaName],
+          []
+        );
+      }
+    }
+
+    return converted;
   }
 
   /**

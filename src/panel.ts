@@ -47,8 +47,7 @@ const elements = {
   responseErrors: document.getElementById('responseErrors') as HTMLDivElement,
   
   // モーダル
-  specFile: document.getElementById('specFile') as HTMLInputElement,
-  specContent: document.getElementById('specContent') as HTMLTextAreaElement
+  specFile: document.getElementById('specFile') as HTMLInputElement
 };
 
 // =============================================================================
@@ -65,7 +64,7 @@ async function initialize(): Promise<void> {
   // 仕様書があれば読み込み
   if (stored.openApiSpec) {
     try {
-      validator = OpenAPIValidator.fromString(stored.openApiSpec);
+      validator = OpenAPIValidator.fromFile(stored.openApiSpec);
     } catch (e) {
       console.error('Failed to load stored spec:', e);
     }
@@ -528,13 +527,6 @@ function setupEventListeners(): void {
     }
   });
   
-  // テキストから読み込み
-  document.getElementById('loadFromTextBtn')?.addEventListener('click', () => {
-    const content = elements.specContent.value.trim();
-    if (!content) return;
-    loadSpec(content);
-  });
-  
   // 仕様書を削除
   document.getElementById('clearSpecBtn')?.addEventListener('click', async () => {
     await clearSpec();
@@ -550,11 +542,10 @@ function setupEventListeners(): void {
 
 async function loadSpec(content: string): Promise<void> {
   try {
-    validator = OpenAPIValidator.fromString(content);
+    validator = OpenAPIValidator.fromFile(content);
     await chrome.storage.local.set({ openApiSpec: content });
     updateSpecStatus(true);
     elements.specModal.style.display = 'none';
-    elements.specContent.value = '';
     
     // 既存のトラフィックを再バリデーション
     trafficList = trafficList.map(entry => ({
@@ -577,7 +568,6 @@ async function clearSpec(): Promise<void> {
   validator = null;
   await chrome.storage.local.remove('openApiSpec');
   updateSpecStatus(false);
-  elements.specContent.value = '';
   
   // トラフィックのバリデーション結果をクリア
   trafficList = trafficList.map(entry => ({

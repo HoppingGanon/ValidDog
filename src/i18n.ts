@@ -38,7 +38,8 @@ export type TranslationKey =
   | 'actualValue'
   | 'filterMatchSpec'
   | 'filterErrorOnly'
-  | 'noMatchingTraffic';
+  | 'noMatchingTraffic'
+  | 'tooSmallArea';
 
 /** 翻訳データ */
 const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -75,7 +76,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     actualValue: '実際の値',
     filterMatchSpec: '仕様書にマッチするもののみ',
     filterErrorOnly: 'バリデーションエラーのもののみ',
-    noMatchingTraffic: 'フィルタに一致するトラフィックがありません'
+    noMatchingTraffic: 'フィルタに一致するトラフィックがありません',
+    tooSmallArea: '領域が狭すぎて表示ができません。'
   },
   en: {
     title: 'ValidDog',
@@ -110,7 +112,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     actualValue: 'Actual value',
     filterMatchSpec: 'Spec matches only',
     filterErrorOnly: 'Validation errors only',
-    noMatchingTraffic: 'No traffic matching filters'
+    noMatchingTraffic: 'No traffic matching filters',
+    tooSmallArea: 'Area too small to display.'
   }
 };
 

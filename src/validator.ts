@@ -716,7 +716,9 @@ export function parseOpenAPISpec(content: string): OpenAPISpec {
 }
 
 /**
- * パスパターンと実際のパスをマッチング
+ * パスパターンと実際のパスをマッチング（後方一致）
+ * BaseURLが異なる場合でも、パス部分が一致すればマッチする
+ * 例: パターン "/auth" は "/bbb/auth" にもマッチする
  */
 export function matchPath(pattern: string, actualPath: string): Record<string, string> | null {
   const paramNames: string[] = [];
@@ -725,7 +727,8 @@ export function matchPath(pattern: string, actualPath: string): Record<string, s
     return '([^/]+)';
   });
 
-  const regex = new RegExp(`^${regexPattern}$`);
+  // 後方一致でマッチング（BaseURLに依存しない）
+  const regex = new RegExp(`${regexPattern}$`);
   const match = actualPath.match(regex);
 
   if (!match) {

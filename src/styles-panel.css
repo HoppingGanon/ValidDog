@@ -456,6 +456,8 @@ body {
   margin-bottom: 4px;
   font-family: 'Consolas', 'Monaco', monospace;
   font-weight: 600;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .validation-error-message {

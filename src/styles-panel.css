@@ -201,6 +201,11 @@ body {
   color: var(--text-primary);
 }
 
+.filter-checkbox.sub-filter {
+  margin-left: 20px;
+  font-size: 10px;
+}
+
 .filter-checkbox.disabled {
   opacity: 0.5;
   cursor: not-allowed;

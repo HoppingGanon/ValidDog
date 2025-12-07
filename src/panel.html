@@ -11,17 +11,24 @@
     <!-- 左パネル: トラフィックリスト -->
     <div class="left-panel">
       <div class="header">
-        <div class="title-row">
-          <h1 class="title" data-i18n="title">ばりっどーぬ - ValidDog</h1>
-          <button class="lang-toggle" id="langToggle" title="Switch Language">
-            <span class="lang-icon">🌐</span>
-          </button>
+        <div class="logo-section">
+          <img src="icons/icon128.png" alt="ValidDog" class="logo-icon">
+          <div class="title-area">
+            <h1 class="title" data-i18n="title">ばりっどーぬ - ValidDog</h1>
+            <button class="lang-toggle" id="langToggle" title="Switch Language">
+              <span class="lang-icon">🌐</span>
+            </button>
+          </div>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" id="loadSpecBtn" data-i18n="loadSpec">仕様書読込</button>
+          <button class="btn btn-primary" id="loadSpecBtn" data-i18n="loadSpec">仕様書</button>
           <button class="btn btn-danger" id="clearBtn" data-i18n="clearTraffic">履歴削除</button>
         </div>
-        <div class="spec-status" id="specStatus" data-i18n="noSpec">仕様書未読込</div>
+        <div class="spec-info" id="specInfo" style="display: none;">
+          <div class="spec-title" id="specTitle"></div>
+          <div class="spec-description" id="specDescription"></div>
+        </div>
+        <div class="spec-status" id="specStatus"></div>
       </div>
       <div class="traffic-list" id="trafficList">
         <div class="empty-state" data-i18n="noTraffic">トラフィックがありません</div>

@@ -61,25 +61,29 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-.title-row {
+.logo-section {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.logo-icon {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .title {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.title::before {
-  content: '🐕';
-  font-size: 16px;
 }
 
 .lang-toggle {
@@ -146,6 +150,28 @@ body {
 .btn-danger:hover {
   background: var(--error);
   color: white;
+}
+
+.spec-info {
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.spec-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.spec-description {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  max-height: 60px;
+  overflow-y: auto;
 }
 
 .spec-status {

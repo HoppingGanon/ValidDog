@@ -24,6 +24,9 @@ const elements = {
   detailPlaceholder: document.getElementById('detailPlaceholder') as HTMLDivElement,
   detailContent: document.getElementById('detailContent') as HTMLDivElement,
   specStatus: document.getElementById('specStatus') as HTMLDivElement,
+  specInfo: document.getElementById('specInfo') as HTMLDivElement,
+  specTitle: document.getElementById('specTitle') as HTMLDivElement,
+  specDescription: document.getElementById('specDescription') as HTMLDivElement,
   specModal: document.getElementById('specModal') as HTMLDivElement,
   
   // リクエスト詳細
@@ -63,14 +66,16 @@ async function initialize(): Promise<void> {
   if (stored.openApiSpec) {
     try {
       validator = OpenAPIValidator.fromString(stored.openApiSpec);
-      updateSpecStatus(true);
     } catch (e) {
       console.error('Failed to load stored spec:', e);
     }
   }
   
-  // UIを更新
+  // UIを更新（updateSpecStatusより先に呼ぶ）
   updateUI();
+  
+  // 仕様書のステータスを更新（updateUIの後に呼ぶことで上書きを防ぐ）
+  updateSpecStatus(validator !== null);
   
   // イベントリスナーを設定
   setupEventListeners();
@@ -263,12 +268,21 @@ function updateUI(): void {
 }
 
 function updateSpecStatus(loaded: boolean): void {
-  if (loaded) {
+  if (loaded && validator) {
+    const spec = validator.getSpec();
     elements.specStatus.textContent = t('specLoaded');
     elements.specStatus.classList.add('loaded');
+    
+    // 仕様書のtitleとdescriptionを表示
+    elements.specInfo.style.display = 'block';
+    elements.specTitle.textContent = spec.info.title || '';
+    elements.specDescription.textContent = spec.info.description || '';
   } else {
     elements.specStatus.textContent = t('noSpec');
     elements.specStatus.classList.remove('loaded');
+    elements.specInfo.style.display = 'none';
+    elements.specTitle.textContent = '';
+    elements.specDescription.textContent = '';
   }
 }
 

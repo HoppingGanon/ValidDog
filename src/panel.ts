@@ -15,6 +15,10 @@ let selectedEntryId: string | null = null;
 let validator: OpenAPIValidator | null = null;
 let port: chrome.runtime.Port | null = null;
 
+// フィルタ状態
+let filterMatchSpec = false;
+let filterErrorOnly = false;
+
 // =============================================================================
 // DOM要素
 // =============================================================================
@@ -47,7 +51,11 @@ const elements = {
   responseErrors: document.getElementById('responseErrors') as HTMLDivElement,
   
   // モーダル
-  specFile: document.getElementById('specFile') as HTMLInputElement
+  specFile: document.getElementById('specFile') as HTMLInputElement,
+  
+  // フィルタ
+  filterMatchSpec: document.getElementById('filterMatchSpec') as HTMLInputElement,
+  filterErrorOnly: document.getElementById('filterErrorOnly') as HTMLInputElement
 };
 
 // =============================================================================
@@ -55,11 +63,23 @@ const elements = {
 // =============================================================================
 
 async function initialize(): Promise<void> {
-  // 言語設定を読み込み
-  const stored = await chrome.storage.local.get(['language', 'openApiSpec']);
+  // 設定を読み込み
+  const stored = await chrome.storage.local.get([
+    'language', 
+    'openApiSpec',
+    'filterMatchSpec',
+    'filterErrorOnly'
+  ]);
+  
   if (stored.language) {
     setLanguage(stored.language as Language);
   }
+  
+  // フィルタ設定を復元
+  filterMatchSpec = stored.filterMatchSpec ?? false;
+  filterErrorOnly = stored.filterErrorOnly ?? false;
+  elements.filterMatchSpec.checked = filterMatchSpec;
+  elements.filterErrorOnly.checked = filterErrorOnly;
   
   // 仕様書があれば読み込み
   if (stored.openApiSpec) {
@@ -293,12 +313,18 @@ function updateSpecStatus(loaded: boolean): void {
 }
 
 function renderTrafficList(): void {
-  if (trafficList.length === 0) {
-    elements.trafficList.innerHTML = `<div class="empty-state">${t('noTraffic')}</div>`;
+  // フィルタを適用
+  const filteredList = getFilteredTrafficList();
+  
+  if (filteredList.length === 0) {
+    const message = trafficList.length === 0 
+      ? t('noTraffic') 
+      : t('noMatchingTraffic');
+    elements.trafficList.innerHTML = `<div class="empty-state">${message}</div>`;
     return;
   }
   
-  const html = trafficList.slice().reverse().map(entry => {
+  const html = filteredList.slice().reverse().map(entry => {
     const isSelected = entry.id === selectedEntryId;
     const statusClass = entry.response.status >= 400 ? 'error' : 'success';
     
@@ -329,6 +355,60 @@ function renderTrafficList(): void {
       }
     });
   });
+}
+
+/**
+ * フィルタを適用したトラフィックリストを取得
+ */
+function getFilteredTrafficList(): TrafficEntry[] {
+  return trafficList.filter(entry => {
+    // 仕様書マッチフィルタ
+    if (filterMatchSpec && validator) {
+      if (!matchesOpenAPISpec(entry.path)) {
+        return false;
+      }
+    }
+    
+    // エラーのみフィルタ
+    if (filterErrorOnly) {
+      if (!entry.validation) {
+        return false;
+      }
+      if (entry.validation.requestValid && entry.validation.responseValid) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+}
+
+/**
+ * パスがOpenAPI仕様書にマッチするかチェック（後方一致）
+ */
+function matchesOpenAPISpec(requestPath: string): boolean {
+  if (!validator) return false;
+  
+  // URLからパス部分を抽出
+  const pathWithoutQuery = requestPath.split('?')[0];
+  
+  // OpenAPI仕様書のパスと後方一致でマッチング
+  const specPaths = validator.getPathPatterns();
+  
+  for (const specPath of specPaths) {
+    // パスパターンを正規表現に変換（パスパラメータ対応）
+    const regexPattern = specPath
+      .replace(/\{[^}]+\}/g, '[^/]+')  // {param} → [^/]+
+      .replace(/\//g, '\\/');          // / → \/
+    
+    // 後方一致でマッチ
+    const regex = new RegExp(`${regexPattern}$`);
+    if (regex.test(pathWithoutQuery)) {
+      return true;
+    }
+  }
+  
+  return false;
 }
 
 function selectEntry(id: string): void {
@@ -537,6 +617,20 @@ function setupEventListeners(): void {
     if (e.target === elements.specModal) {
       elements.specModal.style.display = 'none';
     }
+  });
+  
+  // フィルタ: 仕様書にマッチするもののみ
+  elements.filterMatchSpec?.addEventListener('change', async (e) => {
+    filterMatchSpec = (e.target as HTMLInputElement).checked;
+    await chrome.storage.local.set({ filterMatchSpec });
+    renderTrafficList();
+  });
+  
+  // フィルタ: エラーのもののみ
+  elements.filterErrorOnly?.addEventListener('change', async (e) => {
+    filterErrorOnly = (e.target as HTMLInputElement).checked;
+    await chrome.storage.local.set({ filterErrorOnly });
+    renderTrafficList();
   });
 }
 

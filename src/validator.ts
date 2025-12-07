@@ -591,6 +591,13 @@ export class OpenAPIValidator {
   getResolvedSpec(): OpenAPISpec {
     return this.resolvedSpec;
   }
+
+  /**
+   * 仕様書に定義されているパスパターンの一覧を取得
+   */
+  getPathPatterns(): string[] {
+    return Object.keys(this.resolvedSpec.paths);
+  }
 }
 
 // =============================================================================

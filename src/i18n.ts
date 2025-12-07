@@ -35,7 +35,10 @@ export type TranslationKey =
   | 'specCleared'
   | 'expected'
   | 'actualType'
-  | 'actualValue';
+  | 'actualValue'
+  | 'filterMatchSpec'
+  | 'filterErrorOnly'
+  | 'noMatchingTraffic';
 
 /** 翻訳データ */
 const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -69,7 +72,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     specCleared: '仕様書を削除しました',
     expected: '期待',
     actualType: '実際の型',
-    actualValue: '実際の値'
+    actualValue: '実際の値',
+    filterMatchSpec: '仕様書にマッチするもののみ',
+    filterErrorOnly: 'エラーのもののみ',
+    noMatchingTraffic: 'フィルタに一致するトラフィックがありません'
   },
   en: {
     title: 'ValidDog',
@@ -101,7 +107,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     specCleared: 'Spec cleared',
     expected: 'Expected',
     actualType: 'Actual type',
-    actualValue: 'Actual value'
+    actualValue: 'Actual value',
+    filterMatchSpec: 'Spec matches only',
+    filterErrorOnly: 'Errors only',
+    noMatchingTraffic: 'No traffic matching filters'
   }
 };
 

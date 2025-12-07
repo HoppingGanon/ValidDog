@@ -171,6 +171,36 @@ body {
   color: var(--success);
 }
 
+/* フィルタセクション */
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: 8px;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.filter-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.filter-checkbox:hover {
+  color: var(--text-primary);
+}
+
 /* トラフィックリスト */
 .traffic-list {
   flex: 1;

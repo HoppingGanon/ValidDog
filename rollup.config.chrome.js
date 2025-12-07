@@ -1,8 +1,8 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
-import { copyFileSync, mkdirSync, readdirSync } from 'fs';
-import { join, dirname } from 'path';
+import json from '@rollup/plugin-json';
+import { copyFileSync, mkdirSync, readdirSync, existsSync } from 'fs';
 
 /**
  * srcフォルダ内の静的ファイルをdistにコピーするプラグイン
@@ -18,21 +18,13 @@ function copyStaticFiles() {
         // ディレクトリが既に存在する場合は無視
       }
 
-      // コピーするファイルのリスト
-      const filesToCopy = [
-        { src: 'src/manifest.json', dest: 'dist/manifest.json' },
-        { src: 'src/devtools.html', dest: 'dist/devtools.html' },
-        { src: 'src/panel.html', dest: 'dist/panel.html' },
-        { src: 'src/styles-panel.css', dest: 'dist/styles-panel.css' }
-      ];
-
-      // ファイルをコピー
-      filesToCopy.forEach(({ src, dest }) => {
-        try {
-          copyFileSync(src, dest);
-          console.log(`Copied: ${src} -> ${dest}`);
-        } catch (e) {
-          console.error(`Failed to copy ${src}:`, e.message);
+      // HTMLファイルをコピー
+      const htmlFiles = ['test-validator.html'];
+      htmlFiles.forEach(file => {
+        const srcPath = `src/${file}`;
+        if (existsSync(srcPath)) {
+          copyFileSync(srcPath, `dist/${file}`);
+          console.log(`Copied: ${srcPath} -> dist/${file}`);
         }
       });
 
@@ -41,7 +33,7 @@ function copyStaticFiles() {
         mkdirSync('dist/icons', { recursive: true });
         const iconFiles = readdirSync('src/icons');
         iconFiles.forEach(file => {
-          copyFileSync(join('src/icons', file), join('dist/icons', file));
+          copyFileSync(`src/icons/${file}`, `dist/icons/${file}`);
           console.log(`Copied: src/icons/${file} -> dist/icons/${file}`);
         });
       } catch (e) {
@@ -51,89 +43,46 @@ function copyStaticFiles() {
   };
 }
 
-const config = [
-  // Background script
-  {
-    input: 'src/background.ts',
-    output: {
-      file: 'dist/background.js',
-      format: 'iife',
-      sourcemap: true,
-      name: 'Background'
-    },
-    plugins: [
-      resolve({
-        browser: true,
-        preferBuiltins: false
-      }),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
-        declarationMap: false,
-        compilerOptions: {
-          declaration: false,
-          declarationMap: false
-        }
-      }),
-      copyStaticFiles()
-    ]
+/**
+ * validator スクリプトのビルド設定
+ * ブラウザ環境で動作するIIFE形式でビルド
+ */
+const validatorConfig = {
+  input: 'src/validator.ts',
+  output: {
+    file: 'dist/validator.js',
+    format: 'iife',
+    sourcemap: true,
+    name: 'ValidatorModule',
+    // グローバル変数を公開
+    footer: `
+// グローバル変数として公開
+if (typeof window !== 'undefined') {
+  window.OpenAPIValidator = ValidatorModule.OpenAPIValidator;
+  window.parseOpenAPISpec = ValidatorModule.parseOpenAPISpec;
+  window.matchPath = ValidatorModule.matchPath;
+  window.parseQueryString = ValidatorModule.parseQueryString;
+}
+`
   },
-  
-  // DevTools script
-  {
-    input: 'src/devtools.ts',
-    output: {
-      file: 'dist/devtools.js',
-      format: 'iife',
-      sourcemap: true,
-      name: 'DevTools'
-    },
-    plugins: [
-      resolve({
-        browser: true,
-        preferBuiltins: false
-      }),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
+  plugins: [
+    resolve({
+      browser: true,
+      preferBuiltins: false
+    }),
+    commonjs(),
+    json(),
+    typescript({
+      tsconfig: './tsconfig.json',
+      declaration: false,
+      declarationMap: false,
+      compilerOptions: {
         declaration: false,
-        declarationMap: false,
-        compilerOptions: {
-          declaration: false,
-          declarationMap: false
-        }
-      })
-    ]
-  },
-  
-  // Panel script
-  {
-    input: 'src/panel.ts',
-    output: {
-      file: 'dist/panel.js',
-      format: 'iife',
-      sourcemap: true,
-      name: 'Panel'
-    },
-    plugins: [
-      resolve({
-        browser: true,
-        preferBuiltins: false
-      }),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
-        declarationMap: false,
-        compilerOptions: {
-          declaration: false,
-          declarationMap: false
-        }
-      })
-    ]
-  }
-];
+        declarationMap: false
+      }
+    }),
+    copyStaticFiles()
+  ]
+};
 
-export default config;
-
+export default [validatorConfig];

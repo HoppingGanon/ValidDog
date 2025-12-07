@@ -119,8 +119,12 @@
     <div class="modal-content">
       <h2 class="modal-title" data-i18n="importSpec">OpenAPI仕様書をインポート</h2>
       <div class="modal-body">
-        <label for="specFile" data-i18n="importFile">ファイルを選択 (YAML/JSON):</label>
-        <input type="file" id="specFile" accept=".yaml,.yml,.json">
+        <label data-i18n="importFile">ファイルを選択 (YAML/JSON):</label>
+        <div class="custom-file-input">
+          <input type="file" id="specFile" accept=".yaml,.yml,.json" class="hidden-file-input">
+          <button type="button" class="btn btn-primary" id="chooseFileBtn" data-i18n="chooseFile">ファイルを選択</button>
+          <span class="file-name" id="fileName" data-i18n="noFileSelected">選択されていません</span>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-danger" id="clearSpecBtn" data-i18n="clearSpec">仕様書を削除</button>

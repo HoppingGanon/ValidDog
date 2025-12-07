@@ -31,7 +31,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   font-size: 12px;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -114,7 +115,6 @@ body {
   font-weight: 600;
   color: var(--text-primary);
 }
-
 
 .actions {
   display: flex;
@@ -289,11 +289,26 @@ body {
   margin-right: 8px;
 }
 
-.traffic-method.GET { background: var(--method-get); color: #000; }
-.traffic-method.POST { background: var(--method-post); color: #000; }
-.traffic-method.PUT { background: var(--method-put); color: #000; }
-.traffic-method.PATCH { background: var(--method-patch); color: #fff; }
-.traffic-method.DELETE { background: var(--method-delete); color: #fff; }
+.traffic-method.GET {
+  background: var(--method-get);
+  color: #000;
+}
+.traffic-method.POST {
+  background: var(--method-post);
+  color: #000;
+}
+.traffic-method.PUT {
+  background: var(--method-put);
+  color: #000;
+}
+.traffic-method.PATCH {
+  background: var(--method-patch);
+  color: #fff;
+}
+.traffic-method.DELETE {
+  background: var(--method-delete);
+  color: #fff;
+}
 
 .traffic-path {
   flex: 1;
@@ -395,7 +410,7 @@ body {
 }
 
 .info-content.code {
-  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
   background: var(--bg-primary);
   padding: 8px;
   border-radius: 4px;
@@ -454,7 +469,7 @@ body {
   color: var(--accent);
   font-size: 10px;
   margin-bottom: 4px;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: "Consolas", "Monaco", monospace;
   font-weight: 600;
   word-break: break-all;
   overflow-wrap: break-word;
@@ -471,7 +486,7 @@ body {
   border-radius: 4px;
   font-size: 10px;
   line-height: 1.6;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: "Consolas", "Monaco", monospace;
 }
 
 .error-detail-label {
@@ -545,35 +560,33 @@ body {
   font-family: inherit;
 }
 
-.modal-body input[type="file"] {
-  width: 100%;
+/* カスタムファイル入力 */
+.custom-file-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 8px;
   background: var(--bg-tertiary);
   border: 1px dashed var(--border-color);
   border-radius: 4px;
-  color: var(--text-primary);
-  font-size: 12px;
-  cursor: pointer;
 }
 
-.modal-body input[type="file"]:hover {
+.custom-file-input:hover {
   border-color: var(--accent);
   background: var(--bg-hover);
 }
 
-.modal-body input[type="file"]::file-selector-button {
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 12px;
-  margin-right: 12px;
-  cursor: pointer;
-  font-size: 11px;
+.hidden-file-input {
+  display: none;
 }
 
-.modal-body input[type="file"]::file-selector-button:hover {
-  background: var(--accent-hover);
+.file-name {
+  color: var(--text-secondary);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
 
 .modal-body input:focus,
@@ -585,7 +598,7 @@ body {
 .modal-body textarea {
   resize: vertical;
   min-height: 150px;
-  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
 }
 
 .modal-body .btn {
@@ -601,7 +614,7 @@ body {
 
 .divider::before,
 .divider::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   width: 40%;
@@ -651,7 +664,7 @@ body {
   .container {
     flex-direction: column;
   }
-  
+
   .left-panel {
     width: 100%;
     max-width: none;
@@ -660,12 +673,12 @@ body {
     border-right: none;
     border-bottom: 1px solid var(--border-color);
   }
-  
+
   .right-panel {
     width: 100%;
     height: 50%;
   }
-  
+
   .detail-placeholder {
     width: 100%;
   }
@@ -676,9 +689,8 @@ body {
   .too-small-message {
     display: flex;
   }
-  
+
   .container {
     display: none;
   }
 }
-

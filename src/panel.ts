@@ -77,6 +77,10 @@ const elements = {
   filterErrorOnly: document.getElementById(
     "filterErrorOnly"
   ) as HTMLInputElement,
+
+  // カスタムファイル入力
+  chooseFileBtn: document.getElementById("chooseFileBtn") as HTMLButtonElement,
+  fileName: document.getElementById("fileName") as HTMLSpanElement,
 };
 
 // =============================================================================
@@ -765,15 +769,35 @@ function setupEventListeners(): void {
   });
 
   // ファイルからインポート
+  // カスタムファイル選択ボタン
+  elements.chooseFileBtn?.addEventListener("click", () => {
+    elements.specFile?.click();
+  });
+
   elements.specFile?.addEventListener("change", async (e) => {
     const file = (e.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+    if (!file) {
+      // ファイル名表示をリセット
+      if (elements.fileName) {
+        elements.fileName.textContent = t("noFileSelected");
+      }
+      return;
+    }
+
+    // ファイル名を表示
+    if (elements.fileName) {
+      elements.fileName.textContent = file.name;
+    }
 
     try {
       const content = await file.text();
       await loadSpec(content);
       // ファイル入力をリセット
       elements.specFile.value = "";
+      // ファイル名表示をリセット
+      if (elements.fileName) {
+        elements.fileName.textContent = t("noFileSelected");
+      }
     } catch (err) {
       alert(
         `${t("specLoadError")}: ${

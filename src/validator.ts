@@ -184,18 +184,24 @@ export class OpenAPIValidator {
   /**
    * OpenAPIスキーマをJSON Schema互換に変換
    * - nullable: true を type: ["original_type", "null"] に変換
+   * - required でないプロパティに null を許容
    * - additionalProperties のデフォルト値を設定
    */
   private convertSchemaForJsonSchema(spec: OpenAPISpec): OpenAPISpec {
     const converted = JSON.parse(JSON.stringify(spec)) as OpenAPISpec;
 
-    const convertSchema = (obj: unknown, _parentRequired: string[] = []): unknown => {
+    /**
+     * スキーマを変換
+     * @param obj - 変換対象のスキーマ
+     * @param isRequired - このプロパティがrequiredかどうか（trueならnull非許容）
+     */
+    const convertSchema = (obj: unknown, isRequired: boolean = true): unknown => {
       if (obj === null || typeof obj !== 'object') {
         return obj;
       }
 
       if (Array.isArray(obj)) {
-        return obj.map(item => convertSchema(item, []));
+        return obj.map(item => convertSchema(item, true));
       }
 
       const record = obj as Record<string, unknown>;
@@ -204,20 +210,22 @@ export class OpenAPIValidator {
       // プロパティを処理
       for (const [key, value] of Object.entries(record)) {
         if (key === 'properties' && typeof value === 'object' && value !== null) {
-          // properties 内のスキーマを変換（親の required 情報を渡す）
+          // properties 内のスキーマを変換（required 情報を確認）
           const requiredProps = (record.required as string[]) || [];
           const convertedProps: Record<string, unknown> = {};
           for (const [propName, propSchema] of Object.entries(value as Record<string, unknown>)) {
-            convertedProps[propName] = convertSchema(propSchema, requiredProps);
+            // プロパティがrequiredに含まれているかどうか
+            const propIsRequired = requiredProps.includes(propName);
+            convertedProps[propName] = convertSchema(propSchema, propIsRequired);
           }
           result[key] = convertedProps;
         } else if (key === 'items' && typeof value === 'object') {
-          // 配列のアイテムスキーマを変換
-          result[key] = convertSchema(value, []);
+          // 配列のアイテムスキーマを変換（配列要素はrequired扱い）
+          result[key] = convertSchema(value, true);
         } else if (key === 'allOf' || key === 'oneOf' || key === 'anyOf') {
           // 複合スキーマを変換
           if (Array.isArray(value)) {
-            result[key] = value.map(item => convertSchema(item, []));
+            result[key] = value.map(item => convertSchema(item, true));
           } else {
             result[key] = value;
           }
@@ -226,8 +234,12 @@ export class OpenAPIValidator {
         }
       }
 
-      // nullable: true の処理
-      if (record.nullable === true && record.type) {
+      // null許容の処理
+      // 1. nullable: true が設定されている場合
+      // 2. required でないプロパティの場合
+      const shouldAllowNull = record.nullable === true || !isRequired;
+      
+      if (shouldAllowNull && record.type) {
         const originalType = record.type;
         if (Array.isArray(originalType)) {
           // 既に配列の場合は null を追加
@@ -238,9 +250,10 @@ export class OpenAPIValidator {
           // 単一型の場合は配列に変換
           result.type = [originalType, 'null'];
         }
-        // nullable プロパティを削除（JSON Schemaには不要）
-        delete result.nullable;
       }
+      
+      // nullable プロパティを削除（JSON Schemaには不要）
+      delete result.nullable;
 
       // OpenAPI 固有のプロパティを削除
       delete result.example;
@@ -263,7 +276,8 @@ export class OpenAPIValidator {
             if (operation.parameters) {
               operation.parameters = operation.parameters.map((param: any) => {
                 if (param.schema) {
-                  param.schema = convertSchema(param.schema, []);
+                  // パラメータのrequired属性を確認
+                  param.schema = convertSchema(param.schema, param.required ?? false);
                 }
                 return param;
               });
@@ -273,7 +287,8 @@ export class OpenAPIValidator {
               for (const contentType of Object.keys(operation.requestBody.content)) {
                 const content = operation.requestBody.content[contentType];
                 if (content.schema) {
-                  content.schema = convertSchema(content.schema, []);
+                  // リクエストボディのスキーマはトップレベルとしてrequired扱い
+                  content.schema = convertSchema(content.schema, true);
                 }
               }
             }
@@ -285,7 +300,8 @@ export class OpenAPIValidator {
                   for (const contentType of Object.keys(response.content)) {
                     const content = response.content[contentType];
                     if (content.schema) {
-                      content.schema = convertSchema(content.schema, []);
+                      // レスポンススキーマはトップレベルとしてrequired扱い
+                      content.schema = convertSchema(content.schema, true);
                     }
                   }
                 }
@@ -299,9 +315,10 @@ export class OpenAPIValidator {
     // components/schemas を変換
     if (converted.components?.schemas) {
       for (const schemaName of Object.keys(converted.components.schemas)) {
+        // コンポーネントスキーマはトップレベルとしてrequired扱い
         converted.components.schemas[schemaName] = convertSchema(
           converted.components.schemas[schemaName],
-          []
+          true
         );
       }
     }

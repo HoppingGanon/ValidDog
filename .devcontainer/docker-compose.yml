@@ -1,0 +1,12 @@
+version: '3.9'
+services:
+  devcon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: devcon-validdog
+    volumes:
+      - ./entrypoint.sh:/entrypoint.sh
+      - ../:/workspaces
+      - ./.ssh:/root/.ssh
+    privileged: true

@@ -1,0 +1,56 @@
+{
+  "name": "ValidDog",
+  "dockerComposeFile": "./docker-compose.yml",
+  "service": "devcon",
+  "workspaceFolder": "/workspaces",
+  "postStartCommand": "",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "niikei.japanese-proofreading-info",
+        "Redocly.openapi-vs-code",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "eslint.enable": true,
+        "eslint.lintTask.enable": false,
+        "eslint.validate": ["javascript", "typescript"],
+        "eslint.probe": ["javascript", "typescript"],
+        "eslint.useFlatConfig": true,
+        "eslint.useESLintClass": true,
+
+        "[html]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[javascript]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[typescript]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[css]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[scss]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[json]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+
+        "explorer.fileNesting.enabled": true,
+        "explorer.fileNesting.patterns": {
+          "package.json": "package-lock.json, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, tsconfig.*.json"
+        }
+      }
+    }
+  }
+}

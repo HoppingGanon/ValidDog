@@ -21,6 +21,7 @@ import {
   postsTests,
   headerTests,
   pathParamTests,
+  paramTypeTests,
   errorTests,
   getTestBody,
   getTestHeaders,
@@ -176,13 +177,14 @@ OpenAPI テストスクリプト（Node.js版）
   node api-test.mjs [オプション]
 
 オプション:
-  --all       すべてのテストを実行（デフォルト）
-  --users     Users APIのテストのみ実行
-  --posts     Posts APIのテストのみ実行
-  --headers   ヘッダーバリデーションテストのみ実行
+  --all        すべてのテストを実行（デフォルト）
+  --users      Users APIのテストのみ実行
+  --posts      Posts APIのテストのみ実行
+  --headers    ヘッダーバリデーションテストのみ実行
   --pathparams パスパラメータテストのみ実行
-  --errors    エラーケースのテストのみ実行
-  --help      ヘルプを表示
+  --paramtypes 数値/ブール型変換テストのみ実行
+  --errors     エラーケースのテストのみ実行
+  --help       ヘルプを表示
 
 環境変数:
   API_URL     APIのベースURL（デフォルト: ${DEFAULT_BASE_URL}）
@@ -190,7 +192,7 @@ OpenAPI テストスクリプト（Node.js版）
 例:
   node api-test.mjs --all
   node api-test.mjs --users --posts
-  node api-test.mjs --headers --pathparams
+  node api-test.mjs --headers --pathparams --paramtypes
   API_URL=http://localhost:3002 node api-test.mjs --all
 
 テストケース数:
@@ -198,6 +200,7 @@ OpenAPI テストスクリプト（Node.js版）
   Posts API:     ${postsTests.length}件
   Headers:       ${headerTests.length}件
   Path Params:   ${pathParamTests.length}件
+  Param Types:   ${paramTypeTests.length}件
   Errors:        ${errorTests.length}件
   合計:          ${getTotalTestCount()}件
 `);
@@ -217,6 +220,7 @@ OpenAPI テストスクリプト（Node.js版）
   const runPosts = runAll || args.includes('--posts');
   const runHeaders = runAll || args.includes('--headers');
   const runPathParams = runAll || args.includes('--pathparams');
+  const runParamTypes = runAll || args.includes('--paramtypes');
   const runErrors = runAll || args.includes('--errors');
 
   const results = [];
@@ -235,6 +239,10 @@ OpenAPI テストスクリプト（Node.js版）
 
   if (runPathParams) {
     results.push(await runTestGroup(pathParamTests, 'Path Parameters テスト'));
+  }
+
+  if (runParamTypes) {
+    results.push(await runTestGroup(paramTypeTests, 'Param Types テスト（数値/ブール型変換）'));
   }
 
   if (runErrors) {

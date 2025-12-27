@@ -1,6 +1,6 @@
 /**
  * 共通テストケース定義
- * 
+ *
  * このファイルはブラウザ（test.html）とNode.js（api-test.js）の両方で使用されます。
  * テストケースを一元管理することで、両プラットフォームで同一のテストを実行できます。
  */
@@ -62,7 +62,12 @@ export const usersTests = [
       password: 'password123',
       age: 28,
       phoneNumber: '+819099998888',
-      address: { postalCode: '150-0001', prefecture: '東京都', city: '渋谷区', street: '渋谷1-1-1' },
+      address: {
+        postalCode: '150-0001',
+        prefecture: '東京都',
+        city: '渋谷区',
+        street: '渋谷1-1-1',
+      },
       tags: ['新規', 'テスト'],
     },
     desc: 'ユーザー作成',
@@ -76,7 +81,12 @@ export const usersTests = [
       name: '更新された名前',
       age: 31,
       phoneNumber: '+819012345678',
-      address: { postalCode: '100-0001', prefecture: '東京都', city: '千代田区', street: '丸の内2-2-2' },
+      address: {
+        postalCode: '100-0001',
+        prefecture: '東京都',
+        city: '千代田区',
+        street: '丸の内2-2-2',
+      },
       status: 'active',
       preferences: { newsletter: false, language: 'en', timezone: 'UTC' },
     },
@@ -895,6 +905,11 @@ export function getTestHeaders(testCase) {
  * @returns {number} - テストケースの総数
  */
 export function getTotalTestCount() {
-  return usersTests.length + postsTests.length + headerTests.length + pathParamTests.length + errorTests.length;
+  return (
+    usersTests.length +
+    postsTests.length +
+    headerTests.length +
+    pathParamTests.length +
+    errorTests.length
+  );
 }
-

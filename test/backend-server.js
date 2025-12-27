@@ -32,25 +32,25 @@ const users = [
       postalCode: '100-0001',
       prefecture: '東京都',
       city: '千代田区',
-      street: '丸の内1-1-1'
+      street: '丸の内1-1-1',
     },
     status: 'active',
     preferences: {
       newsletter: true,
       language: 'ja',
-      timezone: 'Asia/Tokyo'
+      timezone: 'Asia/Tokyo',
     },
     profile: {
       bio: 'ソフトウェアエンジニアです',
       avatarUrl: 'https://example.com/avatars/tanaka.png',
       socialLinks: {
         twitter: '@tanaka',
-        github: 'tanaka'
+        github: 'tanaka',
       },
-      skills: ['JavaScript', 'TypeScript', 'React']
+      skills: ['JavaScript', 'TypeScript', 'React'],
     },
     createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440002',
@@ -62,24 +62,24 @@ const users = [
       postalCode: '530-0001',
       prefecture: '大阪府',
       city: '大阪市北区',
-      street: '梅田1-1-1'
+      street: '梅田1-1-1',
     },
     status: 'active',
     preferences: {
       newsletter: false,
       language: 'ja',
-      timezone: 'Asia/Tokyo'
+      timezone: 'Asia/Tokyo',
     },
     profile: {
       bio: 'デザイナーです',
       avatarUrl: 'https://example.com/avatars/suzuki.png',
       socialLinks: {
-        twitter: '@suzuki'
+        twitter: '@suzuki',
       },
-      skills: ['Figma', 'Photoshop', 'Illustrator']
+      skills: ['Figma', 'Photoshop', 'Illustrator'],
     },
     createdAt: '2024-02-01T00:00:00Z',
-    updatedAt: '2024-02-01T00:00:00Z'
+    updatedAt: '2024-02-01T00:00:00Z',
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440003',
@@ -91,23 +91,23 @@ const users = [
       postalCode: '460-0001',
       prefecture: '愛知県',
       city: '名古屋市中区',
-      street: '栄1-1-1'
+      street: '栄1-1-1',
     },
     status: 'inactive',
     preferences: {
       newsletter: true,
       language: 'en',
-      timezone: 'Asia/Tokyo'
+      timezone: 'Asia/Tokyo',
     },
     profile: {
       bio: 'プロジェクトマネージャーです',
       avatarUrl: null,
       socialLinks: {},
-      skills: ['Project Management', 'Agile']
+      skills: ['Project Management', 'Agile'],
     },
     createdAt: '2024-03-01T00:00:00Z',
-    updatedAt: '2024-03-01T00:00:00Z'
-  }
+    updatedAt: '2024-03-01T00:00:00Z',
+  },
 ];
 
 // 投稿データ
@@ -121,11 +121,11 @@ const posts = [
     metadata: {
       readingTime: 5,
       keywords: ['初投稿', 'ブログ'],
-      featured: false
+      featured: false,
     },
     status: 'published',
     createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z'
+    updatedAt: '2024-01-15T10:00:00Z',
   },
   {
     id: 2,
@@ -136,11 +136,11 @@ const posts = [
     metadata: {
       readingTime: 15,
       keywords: ['TypeScript', 'プログラミング'],
-      featured: true
+      featured: true,
     },
     status: 'published',
     createdAt: '2024-02-01T14:30:00Z',
-    updatedAt: '2024-02-10T09:00:00Z'
+    updatedAt: '2024-02-10T09:00:00Z',
   },
   {
     id: 3,
@@ -151,12 +151,12 @@ const posts = [
     metadata: {
       readingTime: 20,
       keywords: ['デザイン', 'UI/UX'],
-      featured: false
+      featured: false,
     },
     status: 'draft',
     createdAt: '2024-03-01T08:00:00Z',
-    updatedAt: '2024-03-01T08:00:00Z'
-  }
+    updatedAt: '2024-03-01T08:00:00Z',
+  },
 ];
 
 // コメントデータ
@@ -166,15 +166,15 @@ const comments = [
     postId: 1,
     authorId: '550e8400-e29b-41d4-a716-446655440002',
     content: '素晴らしい投稿ですね！',
-    createdAt: '2024-01-16T12:00:00Z'
+    createdAt: '2024-01-16T12:00:00Z',
   },
   {
     id: '660e8400-e29b-41d4-a716-446655440002',
     postId: 2,
     authorId: '550e8400-e29b-41d4-a716-446655440003',
     content: 'とても参考になりました。',
-    createdAt: '2024-02-05T15:30:00Z'
-  }
+    createdAt: '2024-02-05T15:30:00Z',
+  },
 ];
 
 // =============================================================================
@@ -206,17 +206,19 @@ app.get('/users', (req, res) => {
 
   // バリデーション
   if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'パラメータが無効です',
-      [{ field: 'page or limit', message: 'pageは1以上、limitは1〜100の範囲で指定してください' }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'パラメータが無効です', [
+          { field: 'page or limit', message: 'pageは1以上、limitは1〜100の範囲で指定してください' },
+        ]),
+      );
   }
 
   // フィルタリング
   let filteredUsers = [...users];
   if (status) {
-    filteredUsers = filteredUsers.filter(u => u.status === status);
+    filteredUsers = filteredUsers.filter((u) => u.status === status);
   }
 
   // ソート
@@ -241,8 +243,8 @@ app.get('/users', (req, res) => {
       page: pageNum,
       limit: limitNum,
       total,
-      totalPages
-    }
+      totalPages,
+    },
   });
 });
 
@@ -271,7 +273,7 @@ app.post('/users', (req, res) => {
     status: 'active',
     tags: tags || [],
     createdAt: now(),
-    updatedAt: now()
+    updatedAt: now(),
   };
 
   users.push(newUser);
@@ -283,7 +285,7 @@ app.get('/users/:userId', (req, res) => {
   const { userId } = req.params;
   const { includeDetails } = req.query;
 
-  const user = users.find(u => u.id === userId);
+  const user = users.find((u) => u.id === userId);
   if (!user) {
     return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
@@ -301,7 +303,7 @@ app.put('/users/:userId', (req, res) => {
   const { userId } = req.params;
   const { email, name, age, phoneNumber, address, status, preferences } = req.body;
 
-  const userIndex = users.findIndex(u => u.id === userId);
+  const userIndex = users.findIndex((u) => u.id === userId);
   if (userIndex === -1) {
     return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
@@ -325,7 +327,7 @@ app.put('/users/:userId', (req, res) => {
     address: address || null,
     status: status || 'active',
     preferences: preferences || null,
-    updatedAt: now()
+    updatedAt: now(),
   };
 
   users[userIndex] = updatedUser;
@@ -339,7 +341,7 @@ app.patch('/users/:userId', (req, res) => {
   const { notifyUser } = req.query;
   const updates = req.body;
 
-  const userIndex = users.findIndex(u => u.id === userId);
+  const userIndex = users.findIndex((u) => u.id === userId);
   if (userIndex === -1) {
     return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
@@ -348,7 +350,7 @@ app.patch('/users/:userId', (req, res) => {
   const updatedUser = {
     ...users[userIndex],
     ...updates,
-    updatedAt: now()
+    updatedAt: now(),
   };
 
   users[userIndex] = updatedUser;
@@ -367,7 +369,7 @@ app.delete('/users/:userId', (req, res) => {
   const { userId } = req.params;
   const { permanent, reason } = req.query;
 
-  const userIndex = users.findIndex(u => u.id === userId);
+  const userIndex = users.findIndex((u) => u.id === userId);
   if (userIndex === -1) {
     return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
@@ -391,7 +393,7 @@ app.patch('/users/:userId/profile', (req, res) => {
   const { userId } = req.params;
   const { bio, avatarUrl, socialLinks, skills } = req.body;
 
-  const userIndex = users.findIndex(u => u.id === userId);
+  const userIndex = users.findIndex((u) => u.id === userId);
   if (userIndex === -1) {
     return res.status(404).json(errorResponse('NOT_FOUND', 'ユーザーが見つかりません'));
   }
@@ -402,8 +404,10 @@ app.patch('/users/:userId/profile', (req, res) => {
     ...currentProfile,
     ...(bio !== undefined && { bio }),
     ...(avatarUrl !== undefined && { avatarUrl }),
-    ...(socialLinks !== undefined && { socialLinks: { ...currentProfile.socialLinks, ...socialLinks } }),
-    ...(skills !== undefined && { skills })
+    ...(socialLinks !== undefined && {
+      socialLinks: { ...currentProfile.socialLinks, ...socialLinks },
+    }),
+    ...(skills !== undefined && { skills }),
   };
   users[userIndex].updatedAt = now();
 
@@ -431,16 +435,16 @@ app.post('/posts', (req, res) => {
 
   // 新規投稿作成
   const newPost = {
-    id: posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1,
+    id: posts.length > 0 ? Math.max(...posts.map((p) => p.id)) + 1 : 1,
     title,
     content,
     authorId,
     categoryIds: categoryIds || [],
     metadata: metadata || null,
     status: draft === 'true' ? 'draft' : 'published',
-    publishedAt: draft === 'true' ? null : (publishedAt || now()),
+    publishedAt: draft === 'true' ? null : publishedAt || now(),
     createdAt: now(),
-    updatedAt: now()
+    updatedAt: now(),
   };
 
   posts.push(newPost);
@@ -452,7 +456,7 @@ app.put('/posts/:postId', (req, res) => {
   const postId = parseInt(req.params.postId);
   const { title, content, categoryIds, metadata, status } = req.body;
 
-  const postIndex = posts.findIndex(p => p.id === postId);
+  const postIndex = posts.findIndex((p) => p.id === postId);
   if (postIndex === -1) {
     return res.status(404).json(errorResponse('NOT_FOUND', '投稿が見つかりません'));
   }
@@ -474,7 +478,7 @@ app.put('/posts/:postId', (req, res) => {
     categoryIds: categoryIds || [],
     metadata: metadata || null,
     status: status || posts[postIndex].status,
-    updatedAt: now()
+    updatedAt: now(),
   };
 
   posts[postIndex] = updatedPost;
@@ -485,7 +489,7 @@ app.put('/posts/:postId', (req, res) => {
 app.delete('/posts/:postId', (req, res) => {
   const postId = parseInt(req.params.postId);
 
-  const postIndex = posts.findIndex(p => p.id === postId);
+  const postIndex = posts.findIndex((p) => p.id === postId);
   if (postIndex === -1) {
     return res.status(404).json(errorResponse('NOT_FOUND', '投稿が見つかりません'));
   }
@@ -500,16 +504,20 @@ app.patch('/posts/:postId/status', (req, res) => {
   const { reason } = req.query;
   const { status, comment } = req.body;
 
-  const postIndex = posts.findIndex(p => p.id === postId);
+  const postIndex = posts.findIndex((p) => p.id === postId);
   if (postIndex === -1) {
     return res.status(404).json(errorResponse('NOT_FOUND', '投稿が見つかりません'));
   }
 
   // 必須フィールドのバリデーション
   if (!status) {
-    return res.status(400).json(errorResponse('VALIDATION_ERROR', 'バリデーションエラー', [
-      { field: 'status', message: 'ステータスは必須です' }
-    ]));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'バリデーションエラー', [
+          { field: 'status', message: 'ステータスは必須です' },
+        ]),
+      );
   }
 
   // ステータス更新
@@ -521,7 +529,9 @@ app.patch('/posts/:postId/status', (req, res) => {
     posts[postIndex].publishedAt = now();
   }
 
-  console.log(`投稿 ${postId} のステータスを ${status} に変更しました（理由: ${reason || '未指定'}, コメント: ${comment || 'なし'}）`);
+  console.log(
+    `投稿 ${postId} のステータスを ${status} に変更しました（理由: ${reason || '未指定'}, コメント: ${comment || 'なし'}）`,
+  );
 
   res.json(posts[postIndex]);
 });
@@ -533,13 +543,13 @@ app.delete('/posts/:postId/comments/:commentId', (req, res) => {
   const { notifyAuthor } = req.query;
 
   // 投稿の存在確認
-  const post = posts.find(p => p.id === postId);
+  const post = posts.find((p) => p.id === postId);
   if (!post) {
     return res.status(404).json(errorResponse('NOT_FOUND', '投稿が見つかりません'));
   }
 
   // コメントの存在確認
-  const commentIndex = comments.findIndex(c => c.id === commentId && c.postId === postId);
+  const commentIndex = comments.findIndex((c) => c.id === commentId && c.postId === postId);
   if (commentIndex === -1) {
     return res.status(404).json(errorResponse('NOT_FOUND', 'コメントが見つかりません'));
   }
@@ -569,11 +579,13 @@ app.get('/header/hissu', (req, res) => {
 
   // 必須ヘッダーのバリデーション
   if (!reqHitsuyou) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      '必須ヘッダー aaa-req-hitsuyou が不足しています',
-      [{ field: 'aaa-req-hitsuyou', message: '必須ヘッダーが指定されていません' }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', '必須ヘッダー aaa-req-hitsuyou が不足しています', [
+          { field: 'aaa-req-hitsuyou', message: '必須ヘッダーが指定されていません' },
+        ]),
+      );
   }
 
   // レスポンスヘッダーを設定
@@ -584,8 +596,8 @@ app.get('/header/hissu', (req, res) => {
     message: 'ヘッダーバリデーション成功',
     receivedHeaders: {
       'aaa-req-hitsuyou': reqHitsuyou,
-      'aaa-req-nini': reqNini || null
-    }
+      'aaa-req-nini': reqNini || null,
+    },
   });
 });
 
@@ -595,21 +607,25 @@ app.get('/header/uuid', (req, res) => {
 
   // 必須ヘッダーのバリデーション
   if (!reqUuid) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      '必須ヘッダー aaa-req-uuid が不足しています',
-      [{ field: 'aaa-req-uuid', message: '必須ヘッダーが指定されていません' }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', '必須ヘッダー aaa-req-uuid が不足しています', [
+          { field: 'aaa-req-uuid', message: '必須ヘッダーが指定されていません' },
+        ]),
+      );
   }
 
   // UUID形式のバリデーション
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(reqUuid)) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'aaa-req-uuid がUUID形式ではありません',
-      [{ field: 'aaa-req-uuid', message: `値 "${reqUuid}" はUUID形式ではありません` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'aaa-req-uuid がUUID形式ではありません', [
+          { field: 'aaa-req-uuid', message: `値 "${reqUuid}" はUUID形式ではありません` },
+        ]),
+      );
   }
 
   // レスポンスヘッダーを設定
@@ -617,7 +633,7 @@ app.get('/header/uuid', (req, res) => {
 
   res.json({
     message: 'UUIDヘッダーバリデーション成功',
-    receivedUuid: reqUuid
+    receivedUuid: reqUuid,
   });
 });
 
@@ -627,21 +643,27 @@ app.get('/header/regexp', (req, res) => {
 
   // 必須ヘッダーのバリデーション
   if (!reqRegexp) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      '必須ヘッダー aaa-req-regexp が不足しています',
-      [{ field: 'aaa-req-regexp', message: '必須ヘッダーが指定されていません' }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', '必須ヘッダー aaa-req-regexp が不足しています', [
+          { field: 'aaa-req-regexp', message: '必須ヘッダーが指定されていません' },
+        ]),
+      );
   }
 
   // パターンバリデーション（ABC-数字3桁）
   const pattern = /^ABC-[0-9]{3}$/;
   if (!pattern.test(reqRegexp)) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'aaa-req-regexp がパターン ^ABC-[0-9]{3}$ に一致しません',
-      [{ field: 'aaa-req-regexp', message: `値 "${reqRegexp}" はパターンに一致しません` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse(
+          'VALIDATION_ERROR',
+          'aaa-req-regexp がパターン ^ABC-[0-9]{3}$ に一致しません',
+          [{ field: 'aaa-req-regexp', message: `値 "${reqRegexp}" はパターンに一致しません` }],
+        ),
+      );
   }
 
   // レスポンスヘッダーを設定（XYZ-英字3文字）
@@ -649,7 +671,7 @@ app.get('/header/regexp', (req, res) => {
 
   res.json({
     message: '正規表現ヘッダーバリデーション成功',
-    receivedRegexp: reqRegexp
+    receivedRegexp: reqRegexp,
   });
 });
 
@@ -659,21 +681,32 @@ app.get('/header/datetime', (req, res) => {
 
   // 必須ヘッダーのバリデーション
   if (!reqDatetime) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      '必須ヘッダー aaa-req-datetime が不足しています',
-      [{ field: 'aaa-req-datetime', message: '必須ヘッダーが指定されていません' }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', '必須ヘッダー aaa-req-datetime が不足しています', [
+          { field: 'aaa-req-datetime', message: '必須ヘッダーが指定されていません' },
+        ]),
+      );
   }
 
   // date-time形式のバリデーション（ISO 8601）
   const date = new Date(reqDatetime);
   if (isNaN(date.getTime()) || !reqDatetime.includes('T')) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'aaa-req-datetime がdate-time形式（ISO 8601）ではありません',
-      [{ field: 'aaa-req-datetime', message: `値 "${reqDatetime}" はdate-time形式ではありません` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse(
+          'VALIDATION_ERROR',
+          'aaa-req-datetime がdate-time形式（ISO 8601）ではありません',
+          [
+            {
+              field: 'aaa-req-datetime',
+              message: `値 "${reqDatetime}" はdate-time形式ではありません`,
+            },
+          ],
+        ),
+      );
   }
 
   // レスポンスヘッダーを設定
@@ -682,7 +715,7 @@ app.get('/header/datetime', (req, res) => {
   res.json({
     message: 'date-timeヘッダーバリデーション成功',
     receivedDatetime: reqDatetime,
-    parsedDate: date.toISOString()
+    parsedDate: date.toISOString(),
   });
 });
 
@@ -697,16 +730,18 @@ app.get('/path/uuid/:uuid', (req, res) => {
   // UUID形式のバリデーション
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(uuid)) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'uuid がUUID形式ではありません',
-      [{ field: 'uuid', message: `値 "${uuid}" はUUID形式ではありません` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'uuid がUUID形式ではありません', [
+          { field: 'uuid', message: `値 "${uuid}" はUUID形式ではありません` },
+        ]),
+      );
   }
 
   res.json({
     uuid,
-    message: 'UUIDパスパラメータバリデーション成功'
+    message: 'UUIDパスパラメータバリデーション成功',
   });
 });
 
@@ -717,16 +752,18 @@ app.get('/path/regexp/:code', (req, res) => {
   // パターンバリデーション（ITEM-数字4桁）
   const pattern = /^ITEM-[0-9]{4}$/;
   if (!pattern.test(code)) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'code がパターン ^ITEM-[0-9]{4}$ に一致しません',
-      [{ field: 'code', message: `値 "${code}" はパターンに一致しません` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'code がパターン ^ITEM-[0-9]{4}$ に一致しません', [
+          { field: 'code', message: `値 "${code}" はパターンに一致しません` },
+        ]),
+      );
   }
 
   res.json({
     code,
-    message: '正規表現パスパラメータバリデーション成功'
+    message: '正規表現パスパラメータバリデーション成功',
   });
 });
 
@@ -738,16 +775,18 @@ app.get('/path/datetime/:datetime', (req, res) => {
   // date-time形式のバリデーション（ISO 8601）
   const date = new Date(decodedDatetime);
   if (isNaN(date.getTime()) || !decodedDatetime.includes('T')) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'datetime がdate-time形式（ISO 8601）ではありません',
-      [{ field: 'datetime', message: `値 "${decodedDatetime}" はdate-time形式ではありません` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'datetime がdate-time形式（ISO 8601）ではありません', [
+          { field: 'datetime', message: `値 "${decodedDatetime}" はdate-time形式ではありません` },
+        ]),
+      );
   }
 
   res.json({
     datetime: date.toISOString(),
-    message: 'date-timeパスパラメータバリデーション成功'
+    message: 'date-timeパスパラメータバリデーション成功',
   });
 });
 
@@ -758,17 +797,19 @@ app.get('/path/encoded/:text', (req, res) => {
 
   // 長さバリデーション
   if (decodedText.length < 1 || decodedText.length > 100) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'text の長さが範囲外です（1〜100文字）',
-      [{ field: 'text', message: `長さ ${decodedText.length} は範囲外です` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'text の長さが範囲外です（1〜100文字）', [
+          { field: 'text', message: `長さ ${decodedText.length} は範囲外です` },
+        ]),
+      );
   }
 
   res.json({
     text: decodedText,
     encoded: text,
-    message: 'URIエンコーディングパスパラメータバリデーション成功'
+    message: 'URIエンコーディングパスパラメータバリデーション成功',
   });
 });
 
@@ -779,25 +820,29 @@ app.get('/path/integer/:num', (req, res) => {
 
   // 整数バリデーション
   if (isNaN(numInt) || num !== String(numInt)) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'num が整数ではありません',
-      [{ field: 'num', message: `値 "${num}" は整数ではありません` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'num が整数ではありません', [
+          { field: 'num', message: `値 "${num}" は整数ではありません` },
+        ]),
+      );
   }
 
   // 範囲バリデーション（1〜9999）
   if (numInt < 1 || numInt > 9999) {
-    return res.status(400).json(errorResponse(
-      'VALIDATION_ERROR',
-      'num が範囲外です（1〜9999）',
-      [{ field: 'num', message: `値 ${numInt} は範囲外です` }]
-    ));
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'num が範囲外です（1〜9999）', [
+          { field: 'num', message: `値 ${numInt} は範囲外です` },
+        ]),
+      );
   }
 
   res.json({
     num: numInt,
-    message: '整数パスパラメータバリデーション成功'
+    message: '整数パスパラメータバリデーション成功',
   });
 });
 

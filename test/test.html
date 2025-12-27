@@ -1,229 +1,308 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenAPI テスト</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; font-size: 14px; }
-    
-    .container { display: flex; height: 100vh; }
-    
-    .left { width: 50%; padding: 10px; overflow-y: auto; border-right: 1px solid #ccc; }
-    .right { width: 50%; padding: 10px; display: flex; flex-direction: column; }
-    
-    h1 { font-size: 16px; margin-bottom: 10px; }
-    h2 { font-size: 14px; margin: 15px 0 5px; padding-top: 10px; border-top: 1px solid #ddd; }
-    h2:first-of-type { border-top: none; margin-top: 10px; }
-    
-    .test-item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; }
-    .test-item:nth-child(odd) { background: #f5f5f5; }
-    .test-item:nth-child(even) { background: #fff; }
-    
-    .method { font-size: 11px; font-weight: bold; color: #fff; padding: 2px 6px; min-width: 55px; text-align: center; }
-    .method.get { background: #61affe; }
-    .method.post { background: #49cc90; }
-    .method.put { background: #fca130; }
-    .method.patch { background: #50e3c2; }
-    .method.delete { background: #f93e3e; }
-    
-    .test-title { flex: 1; font-size: 12px; }
-    .test-desc { font-size: 10px; color: #666; margin-left: 63px; padding: 0 6px 4px; }
-    
-    button { padding: 3px 10px; font-size: 12px; cursor: pointer; }
-    
-    .clear-btn { margin-bottom: 8px; }
-    
-    #result {
-      flex: 1;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 10px;
-      font-family: monospace;
-      font-size: 12px;
-      white-space: pre-wrap;
-      word-break: break-all;
-      overflow-y: auto;
-    }
-    #result .info { color: #9cdcfe; }
-    #result .success { color: #4ec9b0; }
-    #result .error { color: #f14c4c; }
-    #result .url { color: #ce9178; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="left">
-      <h1>OpenAPI テスト</h1>
-      <p>Server: <code id="baseurl-display"></code></p>
-
-      <h2>Users API</h2>
-      <div id="users-tests"></div>
-
-      <h2>Posts API</h2>
-      <div id="posts-tests"></div>
-
-      <h2>Headers Validation</h2>
-      <div id="header-tests"></div>
-
-      <h2>Path Parameters</h2>
-      <div id="pathparam-tests"></div>
-
-      <h2>Error Cases</h2>
-      <div id="error-tests"></div>
-    </div>
-    <div class="right">
-      <button class="clear-btn" onclick="clearResult()">Clear</button>
-      <div id="result"></div>
-    </div>
-  </div>
-
-  <script type="module">
-    // 共通テストケースをインポート
-    import {
-      DEFAULT_BASE_URL,
-      usersTests,
-      postsTests,
-      headerTests,
-      pathParamTests,
-      errorTests,
-      getTestBody,
-      getTestHeaders
-    } from './test-cases.mjs';
-
-    // ベースURL設定
-    const BASEURL = DEFAULT_BASE_URL;
-    document.getElementById('baseurl-display').textContent = BASEURL;
-
-    const resultDiv = document.getElementById('result');
-
-    // =============================================================================
-    // ブラウザ用ログ出力関数
-    // =============================================================================
-    function log(text, className = '') {
-      const span = document.createElement('span');
-      span.className = className;
-      span.textContent = text + '\n';
-      resultDiv.appendChild(span);
-      resultDiv.scrollTop = resultDiv.scrollHeight;
-    }
-
-    // グローバルに公開（onclick用）
-    window.clearResult = function() {
-      resultDiv.innerHTML = '';
-    };
-
-    // =============================================================================
-    // テスト実行関数（ブラウザ版）
-    // =============================================================================
-    async function runTest(testCase) {
-      const { method, path, desc } = testCase;
-      const body = getTestBody(testCase);
-      const customHeaders = getTestHeaders(testCase);
-      const url = BASEURL + path;
-      
-      log('─'.repeat(50));
-      log(desc, 'info');
-      log(`${method} ${url}`, 'url');
-      
-      // カスタムヘッダーの表示
-      if (Object.keys(customHeaders).length > 0) {
-        log('Request Headers:');
-        for (const [key, value] of Object.entries(customHeaders)) {
-          log(`  ${key}: ${value}`);
-        }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenAPI テスト</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      
-      if (body) {
-        log('Request Body:');
-        log(JSON.stringify(body, null, 2));
+      body {
+        font-family: sans-serif;
+        font-size: 14px;
       }
 
-      const options = {
-        method,
-        headers: { 'Content-Type': 'application/json', ...customHeaders }
+      .container {
+        display: flex;
+        height: 100vh;
+      }
+
+      .left {
+        width: 50%;
+        padding: 10px;
+        overflow-y: auto;
+        border-right: 1px solid #ccc;
+      }
+      .right {
+        width: 50%;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      h2 {
+        font-size: 14px;
+        margin: 15px 0 5px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+      }
+      h2:first-of-type {
+        border-top: none;
+        margin-top: 10px;
+      }
+
+      .test-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 6px;
+      }
+      .test-item:nth-child(odd) {
+        background: #f5f5f5;
+      }
+      .test-item:nth-child(even) {
+        background: #fff;
+      }
+
+      .method {
+        font-size: 11px;
+        font-weight: bold;
+        color: #fff;
+        padding: 2px 6px;
+        min-width: 55px;
+        text-align: center;
+      }
+      .method.get {
+        background: #61affe;
+      }
+      .method.post {
+        background: #49cc90;
+      }
+      .method.put {
+        background: #fca130;
+      }
+      .method.patch {
+        background: #50e3c2;
+      }
+      .method.delete {
+        background: #f93e3e;
+      }
+
+      .test-title {
+        flex: 1;
+        font-size: 12px;
+      }
+      .test-desc {
+        font-size: 10px;
+        color: #666;
+        margin-left: 63px;
+        padding: 0 6px 4px;
+      }
+
+      button {
+        padding: 3px 10px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .clear-btn {
+        margin-bottom: 8px;
+      }
+
+      #result {
+        flex: 1;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        overflow-y: auto;
+      }
+      #result .info {
+        color: #9cdcfe;
+      }
+      #result .success {
+        color: #4ec9b0;
+      }
+      #result .error {
+        color: #f14c4c;
+      }
+      #result .url {
+        color: #ce9178;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="left">
+        <h1>OpenAPI テスト</h1>
+        <p>Server: <code id="baseurl-display"></code></p>
+
+        <h2>Users API</h2>
+        <div id="users-tests"></div>
+
+        <h2>Posts API</h2>
+        <div id="posts-tests"></div>
+
+        <h2>Headers Validation</h2>
+        <div id="header-tests"></div>
+
+        <h2>Path Parameters</h2>
+        <div id="pathparam-tests"></div>
+
+        <h2>Error Cases</h2>
+        <div id="error-tests"></div>
+      </div>
+      <div class="right">
+        <button class="clear-btn" onclick="clearResult()">Clear</button>
+        <div id="result"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      // 共通テストケースをインポート
+      import {
+        DEFAULT_BASE_URL,
+        usersTests,
+        postsTests,
+        headerTests,
+        pathParamTests,
+        errorTests,
+        getTestBody,
+        getTestHeaders,
+      } from './test-cases.mjs';
+
+      // ベースURL設定
+      const BASEURL = DEFAULT_BASE_URL;
+      document.getElementById('baseurl-display').textContent = BASEURL;
+
+      const resultDiv = document.getElementById('result');
+
+      // =============================================================================
+      // ブラウザ用ログ出力関数
+      // =============================================================================
+      function log(text, className = '') {
+        const span = document.createElement('span');
+        span.className = className;
+        span.textContent = text + '\n';
+        resultDiv.appendChild(span);
+        resultDiv.scrollTop = resultDiv.scrollHeight;
+      }
+
+      // グローバルに公開（onclick用）
+      window.clearResult = function () {
+        resultDiv.innerHTML = '';
       };
-      if (body) options.body = JSON.stringify(body);
 
-      try {
-        const res = await fetch(url, options);
-        const status = res.status;
-        
-        log(`\nResponse: ${status} ${res.statusText}`, status >= 400 ? 'error' : 'success');
-        
-        // レスポンスヘッダーの表示（カスタムヘッダーがあった場合のみ）
+      // =============================================================================
+      // テスト実行関数（ブラウザ版）
+      // =============================================================================
+      async function runTest(testCase) {
+        const { method, path, desc } = testCase;
+        const body = getTestBody(testCase);
+        const customHeaders = getTestHeaders(testCase);
+        const url = BASEURL + path;
+
+        log('─'.repeat(50));
+        log(desc, 'info');
+        log(`${method} ${url}`, 'url');
+
+        // カスタムヘッダーの表示
         if (Object.keys(customHeaders).length > 0) {
-          log('Response Headers:');
-          for (const [key, value] of res.headers.entries()) {
-            if (key.startsWith('aaa-res-')) {
-              log(`  ${key}: ${value}`);
-            }
+          log('Request Headers:');
+          for (const [key, value] of Object.entries(customHeaders)) {
+            log(`  ${key}: ${value}`);
           }
         }
-        
-        if (status !== 204) {
-          try {
-            const data = await res.json();
-            log(JSON.stringify(data, null, 2));
-          } catch {
-            const text = await res.text();
-            if (text) {
-              log(text);
-            } else {
-              log('(Empty body)');
+
+        if (body) {
+          log('Request Body:');
+          log(JSON.stringify(body, null, 2));
+        }
+
+        const options = {
+          method,
+          headers: { 'Content-Type': 'application/json', ...customHeaders },
+        };
+        if (body) options.body = JSON.stringify(body);
+
+        try {
+          const res = await fetch(url, options);
+          const status = res.status;
+
+          log(`\nResponse: ${status} ${res.statusText}`, status >= 400 ? 'error' : 'success');
+
+          // レスポンスヘッダーの表示（カスタムヘッダーがあった場合のみ）
+          if (Object.keys(customHeaders).length > 0) {
+            log('Response Headers:');
+            for (const [key, value] of res.headers.entries()) {
+              if (key.startsWith('aaa-res-')) {
+                log(`  ${key}: ${value}`);
+              }
             }
           }
-        } else {
-          log('(No Content)');
+
+          if (status !== 204) {
+            try {
+              const data = await res.json();
+              log(JSON.stringify(data, null, 2));
+            } catch {
+              const text = await res.text();
+              if (text) {
+                log(text);
+              } else {
+                log('(Empty body)');
+              }
+            }
+          } else {
+            log('(No Content)');
+          }
+        } catch (err) {
+          log(`Error: ${err.message}`, 'error');
         }
-      } catch (err) {
-        log(`Error: ${err.message}`, 'error');
+        log('');
       }
-      log('');
-    }
 
-    // =============================================================================
-    // UI生成
-    // =============================================================================
-    function createTestUI(tests, containerId) {
-      const container = document.getElementById(containerId);
-      tests.forEach(testCase => {
-        const item = document.createElement('div');
-        item.className = 'test-item';
-        
-        const method = document.createElement('span');
-        method.className = `method ${testCase.method.toLowerCase()}`;
-        method.textContent = testCase.method;
-        
-        const title = document.createElement('span');
-        title.className = 'test-title';
-        title.textContent = testCase.title;
-        
-        const btn = document.createElement('button');
-        btn.textContent = '実行';
-        btn.onclick = () => runTest(testCase);
-        
-        item.appendChild(method);
-        item.appendChild(title);
-        item.appendChild(btn);
-        container.appendChild(item);
+      // =============================================================================
+      // UI生成
+      // =============================================================================
+      function createTestUI(tests, containerId) {
+        const container = document.getElementById(containerId);
+        tests.forEach((testCase) => {
+          const item = document.createElement('div');
+          item.className = 'test-item';
 
-        if (testCase.desc) {
-          const desc = document.createElement('div');
-          desc.className = 'test-desc';
-          desc.textContent = testCase.desc;
-          container.appendChild(desc);
-        }
-      });
-    }
+          const method = document.createElement('span');
+          method.className = `method ${testCase.method.toLowerCase()}`;
+          method.textContent = testCase.method;
 
-    // UI初期化
-    createTestUI(usersTests, 'users-tests');
-    createTestUI(postsTests, 'posts-tests');
-    createTestUI(headerTests, 'header-tests');
-    createTestUI(pathParamTests, 'pathparam-tests');
-    createTestUI(errorTests, 'error-tests');
-  </script>
-</body>
+          const title = document.createElement('span');
+          title.className = 'test-title';
+          title.textContent = testCase.title;
+
+          const btn = document.createElement('button');
+          btn.textContent = '実行';
+          btn.onclick = () => runTest(testCase);
+
+          item.appendChild(method);
+          item.appendChild(title);
+          item.appendChild(btn);
+          container.appendChild(item);
+
+          if (testCase.desc) {
+            const desc = document.createElement('div');
+            desc.className = 'test-desc';
+            desc.textContent = testCase.desc;
+            container.appendChild(desc);
+          }
+        });
+      }
+
+      // UI初期化
+      createTestUI(usersTests, 'users-tests');
+      createTestUI(postsTests, 'posts-tests');
+      createTestUI(headerTests, 'header-tests');
+      createTestUI(pathParamTests, 'pathparam-tests');
+      createTestUI(errorTests, 'error-tests');
+    </script>
+  </body>
 </html>

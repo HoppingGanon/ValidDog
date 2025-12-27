@@ -1,753 +1,819 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ユーザー登録 | Sample</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --color-bg: #f8fafc;
-      --color-surface: #ffffff;
-      --color-surface-alt: #f1f5f9;
-      --color-border: #e2e8f0;
-      --color-text: #1e293b;
-      --color-text-muted: #64748b;
-      --color-primary: #2563eb;
-      --color-primary-hover: #3b82f6;
-      --color-success: #16a34a;
-      --color-error: #dc2626;
-      --color-warning: #d97706;
-      --font-sans: 'Noto Sans JP', -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-      --radius: 12px;
-      --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: var(--font-sans);
-      background: var(--color-bg);
-      color: var(--color-text);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 40px 20px;
-      background-image: 
-        radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
-    }
-
-    .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 32px;
-      max-width: 1200px;
-      width: 100%;
-    }
-
-    @media (max-width: 900px) {
-      .container {
-        grid-template-columns: 1fr;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ユーザー登録 | Sample</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-bg: #f8fafc;
+        --color-surface: #ffffff;
+        --color-surface-alt: #f1f5f9;
+        --color-border: #e2e8f0;
+        --color-text: #1e293b;
+        --color-text-muted: #64748b;
+        --color-primary: #2563eb;
+        --color-primary-hover: #3b82f6;
+        --color-success: #16a34a;
+        --color-error: #dc2626;
+        --color-warning: #d97706;
+        --font-sans: 'Noto Sans JP', -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --radius: 12px;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
       }
-    }
 
-    /* ============================================
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background: var(--color-bg);
+        color: var(--color-text);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 20px;
+        background-image:
+          radial-gradient(ellipse at 20% 0%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
+      }
+
+      .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        max-width: 1200px;
+        width: 100%;
+      }
+
+      @media (max-width: 900px) {
+        .container {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ============================================
        左側：登録フォーム
        ============================================ */
-    .form-panel {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius);
-      padding: 32px;
-      box-shadow: var(--shadow);
-    }
+      .form-panel {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        padding: 32px;
+        box-shadow: var(--shadow);
+      }
 
-    .form-header {
-      margin-bottom: 28px;
-    }
+      .form-header {
+        margin-bottom: 28px;
+      }
 
-    .form-header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, var(--color-primary), #7c3aed);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+      .form-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--color-primary), #7c3aed);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
 
-    .form-header p {
-      color: var(--color-text-muted);
-      font-size: 0.875rem;
-    }
+      .form-header p {
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+      }
 
-    .form-section {
-      margin-bottom: 24px;
-    }
+      .form-section {
+        margin-bottom: 24px;
+      }
 
-    .section-title {
-      font-size: 0.75rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--color-text-muted);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+      .section-title {
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-muted);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--color-border);
-    }
+      .section-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--color-border);
+      }
 
-    .form-grid {
-      display: grid;
-      gap: 16px;
-    }
+      .form-grid {
+        display: grid;
+        gap: 16px;
+      }
 
-    .form-grid-2 {
-      grid-template-columns: 1fr 1fr;
-    }
+      .form-grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
 
-    label {
-      font-size: 0.8125rem;
-      font-weight: 500;
-      color: var(--color-text);
-    }
+      label {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--color-text);
+      }
 
-    label .required {
-      color: var(--color-error);
-      margin-left: 4px;
-    }
+      label .required {
+        color: var(--color-error);
+        margin-left: 4px;
+      }
 
-    input, select, textarea {
-      background: var(--color-surface-alt);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 12px 14px;
-      font-family: var(--font-sans);
-      font-size: 0.9375rem;
-      color: var(--color-text);
-      transition: all 0.2s ease;
-    }
+      input,
+      select,
+      textarea {
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-family: var(--font-sans);
+        font-size: 0.9375rem;
+        color: var(--color-text);
+        transition: all 0.2s ease;
+      }
 
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
 
-    input::placeholder {
-      color: var(--color-text-muted);
-      opacity: 0.6;
-    }
+      input::placeholder {
+        color: var(--color-text-muted);
+        opacity: 0.6;
+      }
 
-    .input-hint {
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-    }
+      .input-hint {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+      }
 
-    .tags-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
+      .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
 
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--color-primary);
-      color: white;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--color-primary);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
 
-    .tag button {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-      padding: 0;
-      font-size: 1rem;
-      line-height: 1;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-    }
+      .tag button {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 0;
+        font-size: 1rem;
+        line-height: 1;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+      }
 
-    .tag button:hover {
-      opacity: 1;
-    }
+      .tag button:hover {
+        opacity: 1;
+      }
 
-    .tag-input-wrapper {
-      display: flex;
-      gap: 8px;
-    }
+      .tag-input-wrapper {
+        display: flex;
+        gap: 8px;
+      }
 
-    .tag-input-wrapper input {
-      flex: 1;
-    }
+      .tag-input-wrapper input {
+        flex: 1;
+      }
 
-    .tag-add-btn {
-      background: var(--color-surface-alt);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 0 16px;
-      color: var(--color-text);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+      .tag-add-btn {
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 0 16px;
+        color: var(--color-text);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
 
-    .tag-add-btn:hover {
-      background: var(--color-border);
-    }
+      .tag-add-btn:hover {
+        background: var(--color-border);
+      }
 
-    .btn-submit {
-      width: 100%;
-      background: linear-gradient(135deg, var(--color-primary), #7c3aed);
-      border: none;
-      border-radius: 8px;
-      padding: 14px 24px;
-      font-family: var(--font-sans);
-      font-size: 1rem;
-      font-weight: 600;
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 8px;
-    }
+      .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--color-primary), #7c3aed);
+        border: none;
+        border-radius: 8px;
+        padding: 14px 24px;
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 8px;
+      }
 
-    .btn-submit:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(37, 99, 235, 0.35);
-    }
+      .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(37, 99, 235, 0.35);
+      }
 
-    .btn-submit:active {
-      transform: translateY(0);
-    }
+      .btn-submit:active {
+        transform: translateY(0);
+      }
 
-    /* ============================================
+      /* ============================================
        右側：レスポンス表示
        ============================================ */
-    .result-panel {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      height: fit-content;
-      min-height: 400px;
-    }
-
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .result-header h2 {
-      font-size: 0.875rem;
-      font-weight: 600;
-    }
-
-    .result-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-clear {
-      background: transparent;
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-family: var(--font-sans);
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-clear:hover {
-      background: var(--color-surface-alt);
-      color: var(--color-text);
-    }
-
-    .result-tabs {
-      display: flex;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .result-tab {
-      flex: 1;
-      padding: 12px;
-      background: transparent;
-      border: none;
-      font-family: var(--font-sans);
-      font-size: 0.8125rem;
-      font-weight: 500;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition: all 0.2s;
-      border-bottom: 2px solid transparent;
-    }
-
-    .result-tab:hover {
-      color: var(--color-text);
-      background: var(--color-surface-alt);
-    }
-
-    .result-tab.active {
-      color: var(--color-primary);
-      border-bottom-color: var(--color-primary);
-    }
-
-    .result-content {
-      flex: 1;
-      padding: 16px;
-      overflow: auto;
-    }
-
-    .result-pane {
-      display: none;
-      height: 100%;
-    }
-
-    .result-pane.active {
-      display: block;
-    }
-
-    .result-output {
-      font-family: var(--font-mono);
-      font-size: 0.8125rem;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-all;
-      color: #475569;
-    }
-
-    .result-output .method {
-      color: var(--color-primary);
-      font-weight: 600;
-    }
-
-    .result-output .url {
-      color: #0891b2;
-    }
-
-    .result-output .status-success {
-      color: var(--color-success);
-      font-weight: 600;
-    }
-
-    .result-output .status-error {
-      color: var(--color-error);
-      font-weight: 600;
-    }
-
-    .result-output .key {
-      color: #be185d;
-    }
-
-    .result-output .string {
-      color: #15803d;
-    }
-
-    .result-output .number {
-      color: #b45309;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .status-badge.success {
-      background: rgba(22, 163, 74, 0.12);
-      color: var(--color-success);
-    }
-
-    .status-badge.error {
-      background: rgba(220, 38, 38, 0.1);
-      color: var(--color-error);
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      min-height: 300px;
-      color: var(--color-text-muted);
-    }
-
-    .empty-state svg {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 16px;
-      opacity: 0.4;
-    }
-
-    .empty-state p {
-      font-size: 0.875rem;
-    }
-
-    /* Loading state */
-    .btn-submit.loading {
-      position: relative;
-      color: transparent;
-      pointer-events: none;
-    }
-
-    .btn-submit.loading::after {
-      content: '';
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      top: 50%;
-      left: 50%;
-      margin-left: -10px;
-      margin-top: -10px;
-      border: 2px solid transparent;
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <!-- 左側：登録フォーム -->
-    <div class="form-panel">
-      <div class="form-header">
-        <h1>ユーザー登録</h1>
-        <p>新しいアカウントを作成してサービスを利用しましょう</p>
-      </div>
-
-      <form id="registerForm">
-        <!-- 基本情報セクション -->
-        <div class="form-section">
-          <div class="section-title">基本情報</div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="email">メールアドレス<span class="required">*</span></label>
-              <input type="email" id="email" name="email" placeholder="example@mail.com" required>
-            </div>
-            <div class="form-group">
-              <label for="name">名前<span class="required">*</span></label>
-              <input type="text" id="name" name="name" placeholder="山田 太郎" required maxlength="100">
-            </div>
-            <div class="form-group">
-              <label for="password">パスワード<span class="required">*</span></label>
-              <input type="password" id="password" name="password" placeholder="8文字以上" required minlength="8">
-              <span class="input-hint">8文字以上で入力してください</span>
-            </div>
-            <div class="form-grid form-grid-2">
-              <div class="form-group">
-                <label for="age">年齢</label>
-                <input type="number" id="age" name="age" placeholder="28" min="0" max="150">
-              </div>
-              <div class="form-group">
-                <label for="phoneNumber">電話番号</label>
-                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+819012345678">
-                <span class="input-hint">+81 から始まる形式</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 住所セクション -->
-        <div class="form-section">
-          <div class="section-title">住所（任意）</div>
-          <div class="form-grid">
-            <div class="form-grid form-grid-2">
-              <div class="form-group">
-                <label for="postalCode">郵便番号</label>
-                <input type="text" id="postalCode" name="postalCode" placeholder="100-0001">
-              </div>
-              <div class="form-group">
-                <label for="prefecture">都道府県</label>
-                <input type="text" id="prefecture" name="prefecture" placeholder="東京都">
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="city">市区町村</label>
-              <input type="text" id="city" name="city" placeholder="渋谷区">
-            </div>
-            <div class="form-group">
-              <label for="street">番地・建物名</label>
-              <input type="text" id="street" name="street" placeholder="渋谷1-1-1 ○○ビル101">
-            </div>
-          </div>
-        </div>
-
-        <!-- タグセクション -->
-        <div class="form-section">
-          <div class="section-title">タグ（任意）</div>
-          <div class="form-group">
-            <div class="tag-input-wrapper">
-              <input type="text" id="tagInput" placeholder="タグを入力">
-              <button type="button" class="tag-add-btn" onclick="addTag()">追加</button>
-            </div>
-            <div class="tags-container" id="tagsContainer"></div>
-          </div>
-        </div>
-
-        <button type="submit" class="btn-submit" id="submitBtn">登録する</button>
-      </form>
-    </div>
-
-    <!-- 右側：レスポンス表示 -->
-    <div class="result-panel">
-      <div class="result-header">
-        <h2>APIレスポンス</h2>
-        <div class="result-actions">
-          <button class="btn-clear" onclick="clearResults()">クリア</button>
-        </div>
-      </div>
-      <div class="result-tabs">
-        <button class="result-tab active" data-tab="request" onclick="switchTab('request')">リクエスト</button>
-        <button class="result-tab" data-tab="response" onclick="switchTab('response')">レスポンス</button>
-      </div>
-      <div class="result-content">
-        <div class="result-pane active" id="request-pane">
-          <div class="empty-state" id="request-empty">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-            <p>フォームを送信するとリクエスト内容が表示されます</p>
-          </div>
-          <div class="result-output" id="request-output" style="display: none;"></div>
-        </div>
-        <div class="result-pane" id="response-pane">
-          <div class="empty-state" id="response-empty">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-            <p>APIからのレスポンスがここに表示されます</p>
-          </div>
-          <div class="result-output" id="response-output" style="display: none;"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { DEFAULT_BASE_URL } from './test-cases.mjs';
-
-    const BASEURL = DEFAULT_BASE_URL;
-    let tags = [];
-
-    // タグ管理
-    window.addTag = function() {
-      const input = document.getElementById('tagInput');
-      const value = input.value.trim();
-      if (value && !tags.includes(value)) {
-        tags.push(value);
-        renderTags();
-        input.value = '';
+      .result-panel {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        height: fit-content;
+        min-height: 400px;
       }
-    };
 
-    function removeTag(tag) {
-      tags = tags.filter(t => t !== tag);
-      renderTags();
-    }
+      .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--color-border);
+      }
 
-    function renderTags() {
-      const container = document.getElementById('tagsContainer');
-      container.innerHTML = tags.map(tag => `
+      .result-header h2 {
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+
+      .result-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn-clear {
+        background: transparent;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-family: var(--font-sans);
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-clear:hover {
+        background: var(--color-surface-alt);
+        color: var(--color-text);
+      }
+
+      .result-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .result-tab {
+        flex: 1;
+        padding: 12px;
+        background: transparent;
+        border: none;
+        font-family: var(--font-sans);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+        border-bottom: 2px solid transparent;
+      }
+
+      .result-tab:hover {
+        color: var(--color-text);
+        background: var(--color-surface-alt);
+      }
+
+      .result-tab.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+      }
+
+      .result-content {
+        flex: 1;
+        padding: 16px;
+        overflow: auto;
+      }
+
+      .result-pane {
+        display: none;
+        height: 100%;
+      }
+
+      .result-pane.active {
+        display: block;
+      }
+
+      .result-output {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-all;
+        color: #475569;
+      }
+
+      .result-output .method {
+        color: var(--color-primary);
+        font-weight: 600;
+      }
+
+      .result-output .url {
+        color: #0891b2;
+      }
+
+      .result-output .status-success {
+        color: var(--color-success);
+        font-weight: 600;
+      }
+
+      .result-output .status-error {
+        color: var(--color-error);
+        font-weight: 600;
+      }
+
+      .result-output .key {
+        color: #be185d;
+      }
+
+      .result-output .string {
+        color: #15803d;
+      }
+
+      .result-output .number {
+        color: #b45309;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+
+      .status-badge.success {
+        background: rgba(22, 163, 74, 0.12);
+        color: var(--color-success);
+      }
+
+      .status-badge.error {
+        background: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+      }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        min-height: 300px;
+        color: var(--color-text-muted);
+      }
+
+      .empty-state svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        opacity: 0.4;
+      }
+
+      .empty-state p {
+        font-size: 0.875rem;
+      }
+
+      /* Loading state */
+      .btn-submit.loading {
+        position: relative;
+        color: transparent;
+        pointer-events: none;
+      }
+
+      .btn-submit.loading::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin-left: -10px;
+        margin-top: -10px;
+        border: 2px solid transparent;
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- 左側：登録フォーム -->
+      <div class="form-panel">
+        <div class="form-header">
+          <h1>ユーザー登録</h1>
+          <p>新しいアカウントを作成してサービスを利用しましょう</p>
+        </div>
+
+        <form id="registerForm">
+          <!-- 基本情報セクション -->
+          <div class="form-section">
+            <div class="section-title">基本情報</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="email">メールアドレス<span class="required">*</span></label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="example@mail.com"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="name">名前<span class="required">*</span></label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="山田 太郎"
+                  required
+                  maxlength="100"
+                />
+              </div>
+              <div class="form-group">
+                <label for="password">パスワード<span class="required">*</span></label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="8文字以上"
+                  required
+                  minlength="8"
+                />
+                <span class="input-hint">8文字以上で入力してください</span>
+              </div>
+              <div class="form-grid form-grid-2">
+                <div class="form-group">
+                  <label for="age">年齢</label>
+                  <input type="number" id="age" name="age" placeholder="28" min="0" max="150" />
+                </div>
+                <div class="form-group">
+                  <label for="phoneNumber">電話番号</label>
+                  <input
+                    type="tel"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    placeholder="+819012345678"
+                  />
+                  <span class="input-hint">+81 から始まる形式</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 住所セクション -->
+          <div class="form-section">
+            <div class="section-title">住所（任意）</div>
+            <div class="form-grid">
+              <div class="form-grid form-grid-2">
+                <div class="form-group">
+                  <label for="postalCode">郵便番号</label>
+                  <input type="text" id="postalCode" name="postalCode" placeholder="100-0001" />
+                </div>
+                <div class="form-group">
+                  <label for="prefecture">都道府県</label>
+                  <input type="text" id="prefecture" name="prefecture" placeholder="東京都" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="city">市区町村</label>
+                <input type="text" id="city" name="city" placeholder="渋谷区" />
+              </div>
+              <div class="form-group">
+                <label for="street">番地・建物名</label>
+                <input type="text" id="street" name="street" placeholder="渋谷1-1-1 ○○ビル101" />
+              </div>
+            </div>
+          </div>
+
+          <!-- タグセクション -->
+          <div class="form-section">
+            <div class="section-title">タグ（任意）</div>
+            <div class="form-group">
+              <div class="tag-input-wrapper">
+                <input type="text" id="tagInput" placeholder="タグを入力" />
+                <button type="button" class="tag-add-btn" onclick="addTag()">追加</button>
+              </div>
+              <div class="tags-container" id="tagsContainer"></div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">登録する</button>
+        </form>
+      </div>
+
+      <!-- 右側：レスポンス表示 -->
+      <div class="result-panel">
+        <div class="result-header">
+          <h2>APIレスポンス</h2>
+          <div class="result-actions">
+            <button class="btn-clear" onclick="clearResults()">クリア</button>
+          </div>
+        </div>
+        <div class="result-tabs">
+          <button class="result-tab active" data-tab="request" onclick="switchTab('request')">
+            リクエスト
+          </button>
+          <button class="result-tab" data-tab="response" onclick="switchTab('response')">
+            レスポンス
+          </button>
+        </div>
+        <div class="result-content">
+          <div class="result-pane active" id="request-pane">
+            <div class="empty-state" id="request-empty">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
+              </svg>
+              <p>フォームを送信するとリクエスト内容が表示されます</p>
+            </div>
+            <div class="result-output" id="request-output" style="display: none"></div>
+          </div>
+          <div class="result-pane" id="response-pane">
+            <div class="empty-state" id="response-empty">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                />
+              </svg>
+              <p>APIからのレスポンスがここに表示されます</p>
+            </div>
+            <div class="result-output" id="response-output" style="display: none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { DEFAULT_BASE_URL } from './test-cases.mjs';
+
+      const BASEURL = DEFAULT_BASE_URL;
+      let tags = [];
+
+      // タグ管理
+      window.addTag = function () {
+        const input = document.getElementById('tagInput');
+        const value = input.value.trim();
+        if (value && !tags.includes(value)) {
+          tags.push(value);
+          renderTags();
+          input.value = '';
+        }
+      };
+
+      function removeTag(tag) {
+        tags = tags.filter((t) => t !== tag);
+        renderTags();
+      }
+
+      function renderTags() {
+        const container = document.getElementById('tagsContainer');
+        container.innerHTML = tags
+          .map(
+            (tag) => `
         <span class="tag">
           ${escapeHtml(tag)}
           <button type="button" onclick="removeTagByName('${escapeHtml(tag)}')">&times;</button>
         </span>
-      `).join('');
-    }
-
-    window.removeTagByName = function(tag) {
-      removeTag(tag);
-    };
-
-    // Enterキーでタグ追加
-    document.getElementById('tagInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addTag();
+      `,
+          )
+          .join('');
       }
-    });
 
-    // タブ切り替え
-    window.switchTab = function(tabName) {
-      document.querySelectorAll('.result-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === tabName);
-      });
-      document.querySelectorAll('.result-pane').forEach(pane => {
-        pane.classList.toggle('active', pane.id === `${tabName}-pane`);
-      });
-    };
-
-    // 結果クリア
-    window.clearResults = function() {
-      document.getElementById('request-empty').style.display = 'flex';
-      document.getElementById('request-output').style.display = 'none';
-      document.getElementById('request-output').innerHTML = '';
-      document.getElementById('response-empty').style.display = 'flex';
-      document.getElementById('response-output').style.display = 'none';
-      document.getElementById('response-output').innerHTML = '';
-    };
-
-    // HTMLエスケープ
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    // JSON整形（シンタックスハイライト付き）
-    function formatJson(json) {
-      const str = JSON.stringify(json, null, 2);
-      return str.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
-        let cls = 'number';
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            cls = 'key';
-          } else {
-            cls = 'string';
-          }
-        }
-        return `<span class="${cls}">${escapeHtml(match)}</span>`;
-      });
-    }
-
-    // フォーム送信処理
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.classList.add('loading');
-
-      // フォームデータ取得
-      const formData = {
-        email: document.getElementById('email').value,
-        name: document.getElementById('name').value,
-        password: document.getElementById('password').value,
+      window.removeTagByName = function (tag) {
+        removeTag(tag);
       };
 
-      // 任意フィールド追加
-      const age = document.getElementById('age').value;
-      if (age) formData.age = parseInt(age, 10);
+      // Enterキーでタグ追加
+      document.getElementById('tagInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addTag();
+        }
+      });
 
-      const phoneNumber = document.getElementById('phoneNumber').value;
-      if (phoneNumber) formData.phoneNumber = phoneNumber;
-
-      // 住所
-      const postalCode = document.getElementById('postalCode').value;
-      const prefecture = document.getElementById('prefecture').value;
-      const city = document.getElementById('city').value;
-      const street = document.getElementById('street').value;
-
-      if (postalCode || prefecture || city || street) {
-        formData.address = {};
-        if (postalCode) formData.address.postalCode = postalCode;
-        if (prefecture) formData.address.prefecture = prefecture;
-        if (city) formData.address.city = city;
-        if (street) formData.address.street = street;
-      }
-
-      // タグ
-      if (tags.length > 0) {
-        formData.tags = [...tags];
-      }
-
-      const url = `${BASEURL}/users`;
-
-      // リクエスト表示
-      const requestOutput = document.getElementById('request-output');
-      document.getElementById('request-empty').style.display = 'none';
-      requestOutput.style.display = 'block';
-      requestOutput.innerHTML = `<span class="method">POST</span> <span class="url">${escapeHtml(url)}</span>\n\n` +
-        `<span class="key">Content-Type:</span> <span class="string">application/json</span>\n\n` +
-        formatJson(formData);
-
-      // タブをリクエストに切り替え
-      switchTab('request');
-
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+      // タブ切り替え
+      window.switchTab = function (tabName) {
+        document.querySelectorAll('.result-tab').forEach((tab) => {
+          tab.classList.toggle('active', tab.dataset.tab === tabName);
         });
+        document.querySelectorAll('.result-pane').forEach((pane) => {
+          pane.classList.toggle('active', pane.id === `${tabName}-pane`);
+        });
+      };
 
-        const status = response.status;
-        const statusText = response.statusText;
+      // 結果クリア
+      window.clearResults = function () {
+        document.getElementById('request-empty').style.display = 'flex';
+        document.getElementById('request-output').style.display = 'none';
+        document.getElementById('request-output').innerHTML = '';
+        document.getElementById('response-empty').style.display = 'flex';
+        document.getElementById('response-output').style.display = 'none';
+        document.getElementById('response-output').innerHTML = '';
+      };
 
-        let responseData;
-        try {
-          responseData = await response.json();
-        } catch {
-          responseData = await response.text() || '(Empty body)';
+      // HTMLエスケープ
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      // JSON整形（シンタックスハイライト付き）
+      function formatJson(json) {
+        const str = JSON.stringify(json, null, 2);
+        return str.replace(
+          /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+          (match) => {
+            let cls = 'number';
+            if (/^"/.test(match)) {
+              if (/:$/.test(match)) {
+                cls = 'key';
+              } else {
+                cls = 'string';
+              }
+            }
+            return `<span class="${cls}">${escapeHtml(match)}</span>`;
+          },
+        );
+      }
+
+      // フォーム送信処理
+      document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.classList.add('loading');
+
+        // フォームデータ取得
+        const formData = {
+          email: document.getElementById('email').value,
+          name: document.getElementById('name').value,
+          password: document.getElementById('password').value,
+        };
+
+        // 任意フィールド追加
+        const age = document.getElementById('age').value;
+        if (age) formData.age = parseInt(age, 10);
+
+        const phoneNumber = document.getElementById('phoneNumber').value;
+        if (phoneNumber) formData.phoneNumber = phoneNumber;
+
+        // 住所
+        const postalCode = document.getElementById('postalCode').value;
+        const prefecture = document.getElementById('prefecture').value;
+        const city = document.getElementById('city').value;
+        const street = document.getElementById('street').value;
+
+        if (postalCode || prefecture || city || street) {
+          formData.address = {};
+          if (postalCode) formData.address.postalCode = postalCode;
+          if (prefecture) formData.address.prefecture = prefecture;
+          if (city) formData.address.city = city;
+          if (street) formData.address.street = street;
         }
 
-        // レスポンス表示
-        const responseOutput = document.getElementById('response-output');
-        document.getElementById('response-empty').style.display = 'none';
-        responseOutput.style.display = 'block';
+        // タグ
+        if (tags.length > 0) {
+          formData.tags = [...tags];
+        }
 
-        const statusClass = status >= 400 ? 'status-error' : 'status-success';
-        const badgeClass = status >= 400 ? 'error' : 'success';
+        const url = `${BASEURL}/users`;
 
-        responseOutput.innerHTML = 
-          `<span class="status-badge ${badgeClass}">${status} ${statusText}</span>\n\n` +
-          (typeof responseData === 'object' ? formatJson(responseData) : escapeHtml(responseData));
+        // リクエスト表示
+        const requestOutput = document.getElementById('request-output');
+        document.getElementById('request-empty').style.display = 'none';
+        requestOutput.style.display = 'block';
+        requestOutput.innerHTML =
+          `<span class="method">POST</span> <span class="url">${escapeHtml(url)}</span>\n\n` +
+          `<span class="key">Content-Type:</span> <span class="string">application/json</span>\n\n` +
+          formatJson(formData);
 
-        // 成功時はレスポンスタブに切り替え
-        switchTab('response');
+        // タブをリクエストに切り替え
+        switchTab('request');
 
-      } catch (err) {
-        const responseOutput = document.getElementById('response-output');
-        document.getElementById('response-empty').style.display = 'none';
-        responseOutput.style.display = 'block';
-        responseOutput.innerHTML = `<span class="status-badge error">Error</span>\n\n${escapeHtml(err.message)}`;
-        switchTab('response');
-      } finally {
-        submitBtn.classList.remove('loading');
-      }
-    });
-  </script>
-</body>
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+          });
+
+          const status = response.status;
+          const statusText = response.statusText;
+
+          let responseData;
+          try {
+            responseData = await response.json();
+          } catch {
+            responseData = (await response.text()) || '(Empty body)';
+          }
+
+          // レスポンス表示
+          const responseOutput = document.getElementById('response-output');
+          document.getElementById('response-empty').style.display = 'none';
+          responseOutput.style.display = 'block';
+
+          const statusClass = status >= 400 ? 'status-error' : 'status-success';
+          const badgeClass = status >= 400 ? 'error' : 'success';
+
+          responseOutput.innerHTML =
+            `<span class="status-badge ${badgeClass}">${status} ${statusText}</span>\n\n` +
+            (typeof responseData === 'object'
+              ? formatJson(responseData)
+              : escapeHtml(responseData));
+
+          // 成功時はレスポンスタブに切り替え
+          switchTab('response');
+        } catch (err) {
+          const responseOutput = document.getElementById('response-output');
+          document.getElementById('response-empty').style.display = 'none';
+          responseOutput.style.display = 'block';
+          responseOutput.innerHTML = `<span class="status-badge error">Error</span>\n\n${escapeHtml(err.message)}`;
+          switchTab('response');
+        } finally {
+          submitBtn.classList.remove('loading');
+        }
+      });
+    </script>
+  </body>
 </html>
-

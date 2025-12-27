@@ -693,20 +693,18 @@ app.get('/header/datetime', (req, res) => {
   // date-time形式のバリデーション（ISO 8601）
   const date = new Date(reqDatetime);
   if (isNaN(date.getTime()) || !reqDatetime.includes('T')) {
-    return res
-      .status(400)
-      .json(
-        errorResponse(
-          'VALIDATION_ERROR',
-          'aaa-req-datetime がdate-time形式（ISO 8601）ではありません',
-          [
-            {
-              field: 'aaa-req-datetime',
-              message: `値 "${reqDatetime}" はdate-time形式ではありません`,
-            },
-          ],
-        ),
-      );
+    return res.status(400).json(
+      errorResponse(
+        'VALIDATION_ERROR',
+        'aaa-req-datetime がdate-time形式（ISO 8601）ではありません',
+        [
+          {
+            field: 'aaa-req-datetime',
+            message: `値 "${reqDatetime}" はdate-time形式ではありません`,
+          },
+        ],
+      ),
+    );
   }
 
   // レスポンスヘッダーを設定
@@ -847,6 +845,102 @@ app.get('/path/integer/:num', (req, res) => {
 });
 
 // =============================================================================
+// Param Types API（数値/ブール型パラメータ変換テスト用）
+// =============================================================================
+
+// GET /param-types/query - クエリパラメータの型変換テスト
+app.get('/param-types/query', (req, res) => {
+  const { intValue, numValue, boolValue, requiredInt } = req.query;
+
+  // requiredIntの必須チェック
+  if (requiredInt === undefined || requiredInt === '') {
+    return res
+      .status(400)
+      .json(errorResponse('VALIDATION_ERROR', '必須パラメータ requiredInt がありません'));
+  }
+
+  // パースした値を返す（バリデーターで変換されることを確認）
+  const parsedIntValue = intValue !== undefined ? parseInt(intValue, 10) : null;
+  const parsedNumValue = numValue !== undefined ? parseFloat(numValue) : null;
+  const parsedBoolValue =
+    boolValue !== undefined ? boolValue === 'true' || boolValue === true : null;
+  const parsedRequiredInt = parseInt(requiredInt, 10);
+
+  res.json({
+    intValue: parsedIntValue,
+    numValue: parsedNumValue,
+    boolValue: parsedBoolValue,
+    requiredInt: parsedRequiredInt,
+    message: 'クエリパラメータの型変換テスト成功',
+    // デバッグ用：元の値も返す
+    rawValues: {
+      intValue,
+      numValue,
+      boolValue,
+      requiredInt,
+    },
+  });
+});
+
+// GET /param-types/header - ヘッダーパラメータの型変換テスト
+app.get('/param-types/header', (req, res) => {
+  const intValue = req.headers['x-int-value'];
+  const numValue = req.headers['x-num-value'];
+  const boolValue = req.headers['x-bool-value'];
+  const requiredInt = req.headers['x-required-int'];
+
+  // requiredIntの必須チェック
+  if (requiredInt === undefined || requiredInt === '') {
+    return res
+      .status(400)
+      .json(errorResponse('VALIDATION_ERROR', '必須ヘッダー X-Required-Int がありません'));
+  }
+
+  // レスポンスヘッダーを設定
+  res.set('X-Res-Int', '42');
+  res.set('X-Res-Bool', 'true');
+
+  res.json({
+    message: 'ヘッダーパラメータの型変換テスト成功',
+    receivedHeaders: {
+      intValue: intValue !== undefined ? parseInt(intValue, 10) : null,
+      numValue: numValue !== undefined ? parseFloat(numValue) : null,
+      boolValue: boolValue !== undefined ? boolValue === 'true' : null,
+      requiredInt: parseInt(requiredInt, 10),
+    },
+  });
+});
+
+// GET /param-types/path/:intId/:boolFlag - パスパラメータの型変換テスト
+app.get('/param-types/path/:intId/:boolFlag', (req, res) => {
+  const { intId, boolFlag } = req.params;
+
+  // 整数バリデーション
+  const parsedIntId = parseInt(intId, 10);
+  if (isNaN(parsedIntId)) {
+    return res.status(400).json(errorResponse('VALIDATION_ERROR', 'intId が整数ではありません'));
+  }
+
+  // ブール値バリデーション
+  const validBoolValues = ['true', 'false'];
+  if (!validBoolValues.includes(boolFlag.toLowerCase())) {
+    return res
+      .status(400)
+      .json(
+        errorResponse('VALIDATION_ERROR', 'boolFlag は true または false である必要があります'),
+      );
+  }
+
+  const parsedBoolFlag = boolFlag.toLowerCase() === 'true';
+
+  res.json({
+    intId: parsedIntId,
+    boolFlag: parsedBoolFlag,
+    message: 'パスパラメータの型変換テスト成功',
+  });
+});
+
+// =============================================================================
 // サーバー起動
 // =============================================================================
 
@@ -882,4 +976,9 @@ app.listen(PORT, () => {
   console.log('    GET    /path/datetime/:dt   - date-timeパスパラメータテスト');
   console.log('    GET    /path/encoded/:text  - URIエンコーディングテスト');
   console.log('    GET    /path/integer/:num   - 整数パスパラメータテスト');
+  console.log('');
+  console.log('  [Param Types]（数値/ブール型変換テスト）');
+  console.log('    GET    /param-types/query   - クエリパラメータの型変換テスト');
+  console.log('    GET    /param-types/header  - ヘッダーパラメータの型変換テスト');
+  console.log('    GET    /param-types/path/:intId/:boolFlag - パスパラメータの型変換テスト');
 });

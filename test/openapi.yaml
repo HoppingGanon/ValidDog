@@ -18,6 +18,8 @@ tags:
     description: ヘッダーバリデーションテスト用API
   - name: PathParams
     description: パスパラメータバリデーションテスト用API
+  - name: ParamTypes
+    description: 数値/ブール型パラメータ変換テスト用API
 
 paths:
   /users:
@@ -947,6 +949,166 @@ paths:
                 properties:
                   num:
                     type: integer
+                  message:
+                    type: string
+
+  # ===========================================================================
+  # 数値/ブール型パラメータバリデーションテスト用API
+  # ===========================================================================
+  /param-types/query:
+    get:
+      summary: クエリパラメータの型変換テスト
+      description: 数値型・ブール型クエリパラメータが文字列から正しく変換されることをテスト
+      operationId: getParamTypesQuery
+      tags:
+        - ParamTypes
+      parameters:
+        - name: intValue
+          in: query
+          description: 整数値（文字列として送信されても整数として処理）
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+        - name: numValue
+          in: query
+          description: 数値（小数点含む、文字列として送信されても数値として処理）
+          required: false
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100.5
+        - name: boolValue
+          in: query
+          description: ブール値（"true"/"false"文字列をbooleanとして処理）
+          required: false
+          schema:
+            type: boolean
+        - name: requiredInt
+          in: query
+          description: 必須の整数パラメータ
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  intValue:
+                    type: integer
+                  numValue:
+                    type: number
+                  boolValue:
+                    type: boolean
+                  requiredInt:
+                    type: integer
+                  message:
+                    type: string
+
+  /param-types/header:
+    get:
+      summary: ヘッダーパラメータの型変換テスト
+      description: 数値型・ブール型ヘッダーパラメータが文字列から正しく変換されることをテスト
+      operationId: getParamTypesHeader
+      tags:
+        - ParamTypes
+      parameters:
+        - name: X-Int-Value
+          in: header
+          description: 整数値ヘッダー
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+        - name: X-Num-Value
+          in: header
+          description: 数値ヘッダー
+          required: false
+          schema:
+            type: number
+        - name: X-Bool-Value
+          in: header
+          description: ブール値ヘッダー
+          required: false
+          schema:
+            type: boolean
+        - name: X-Required-Int
+          in: header
+          description: 必須の整数ヘッダー
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          headers:
+            X-Res-Int:
+              description: 整数レスポンスヘッダー
+              required: true
+              schema:
+                type: integer
+            X-Res-Bool:
+              description: ブールレスポンスヘッダー
+              required: true
+              schema:
+                type: boolean
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  receivedHeaders:
+                    type: object
+                    properties:
+                      intValue:
+                        type: integer
+                      numValue:
+                        type: number
+                      boolValue:
+                        type: boolean
+
+  /param-types/path/{intId}/{boolFlag}:
+    get:
+      summary: パスパラメータの型変換テスト
+      description: 数値型・ブール型パスパラメータが文字列から正しく変換されることをテスト
+      operationId: getParamTypesPath
+      tags:
+        - ParamTypes
+      parameters:
+        - name: intId
+          in: path
+          description: 整数パスパラメータ
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 9999
+        - name: boolFlag
+          in: path
+          description: ブール型パスパラメータ
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  intId:
+                    type: integer
+                  boolFlag:
+                    type: boolean
                   message:
                     type: string
 

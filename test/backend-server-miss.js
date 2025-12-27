@@ -769,6 +769,79 @@ app.get('/path/integer/:num', (req, res) => {
 });
 
 // =============================================================================
+// Param Types API（数値/ブール型パラメータ変換テスト用 - 違反バージョン）
+// =============================================================================
+
+// GET /param-types/query - クエリパラメータの型変換テスト（違反レスポンス）
+app.get('/param-types/query', (req, res) => {
+  const violations = [
+    'intValue: integer型のところstring型を返却',
+    'numValue: number型のところarray型を返却',
+    'boolValue: boolean型のところstring型を返却',
+    'requiredInt: integer型のところobject型を返却',
+  ];
+  logViolations('GET /param-types/query', violations);
+
+  res.json({
+    // intValue: integer -> string違反
+    intValue: 'forty-two',
+    // numValue: number -> array違反
+    numValue: [3.14, 2.71],
+    // boolValue: boolean -> string違反
+    boolValue: 'yes',
+    // requiredInt: integer -> object違反
+    requiredInt: { value: 10, unit: 'items' },
+    message: 'クエリパラメータの型変換テスト',
+  });
+});
+
+// GET /param-types/header - ヘッダーパラメータの型変換テスト（違反レスポンス）
+app.get('/param-types/header', (req, res) => {
+  const violations = [
+    'レスポンスヘッダー X-Res-Int: integer型のところ文字列 "not-a-number" を設定',
+    'レスポンスヘッダー X-Res-Bool: boolean型のところ文字列 "maybe" を設定',
+    'receivedHeaders.intValue: integer型のところstring型',
+    'receivedHeaders.boolValue: boolean型のところnumber型',
+  ];
+  logViolations('GET /param-types/header', violations);
+
+  // 型違反のレスポンスヘッダー
+  res.set('X-Res-Int', 'not-a-number');
+  res.set('X-Res-Bool', 'maybe');
+
+  res.json({
+    message: ['ヘッダーパラメータの型変換テスト'], // string -> array違反
+    receivedHeaders: {
+      // intValue: integer -> string違反
+      intValue: 'ten',
+      // numValue: number -> null違反
+      numValue: null,
+      // boolValue: boolean -> number違反
+      boolValue: 1,
+    },
+  });
+});
+
+// GET /param-types/path/:intId/:boolFlag - パスパラメータの型変換テスト（違反レスポンス）
+app.get('/param-types/path/:intId/:boolFlag', (req, res) => {
+  const violations = [
+    'intId: integer型のところstring型を返却',
+    'boolFlag: boolean型のところarray型を返却',
+    'message: string型のところnumber型を返却',
+  ];
+  logViolations('GET /param-types/path/:intId/:boolFlag', violations);
+
+  res.json({
+    // intId: integer -> string違反
+    intId: 'ID-' + req.params.intId,
+    // boolFlag: boolean -> array違反
+    boolFlag: [true, false],
+    // message: string -> number違反
+    message: 200,
+  });
+});
+
+// =============================================================================
 // 400エラー用（バリデーションエラー）
 // =============================================================================
 
@@ -840,5 +913,10 @@ app.listen(PORT, () => {
   console.log('    GET    /path/datetime/:dt   - format違反');
   console.log('    GET    /path/encoded/:text  - 型違反（array/number）');
   console.log('    GET    /path/integer/:num   - 型違反（string）');
+  console.log('');
+  console.log('  [Param Types]（数値/ブール型変換テスト - 違反）');
+  console.log('    GET    /param-types/query   - 型違反（string/array/object）');
+  console.log('    GET    /param-types/header  - ヘッダー型違反＋ボディ型違反');
+  console.log('    GET    /param-types/path/:intId/:boolFlag - 型違反（string/array）');
   console.log('');
 });

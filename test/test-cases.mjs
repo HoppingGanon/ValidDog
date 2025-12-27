@@ -521,6 +521,196 @@ export const pathParamTests = [
 ];
 
 /**
+ * 数値/ブール型パラメータ変換 テストケース
+ * Path/Query/Headerパラメータは文字列として送信されるため、
+ * バリデーター側で適切に型変換されることを確認するテスト
+ */
+export const paramTypeTests = [
+  // === クエリパラメータの型変換テスト ===
+  {
+    title: 'GET /param-types/query (all types)',
+    method: 'GET',
+    path: '/param-types/query?intValue=42&numValue=3.14&boolValue=true&requiredInt=100',
+    body: null,
+    desc: 'クエリパラメータ型変換テスト（全パラメータ指定）',
+  },
+  {
+    title: 'GET /param-types/query (bool=false)',
+    method: 'GET',
+    path: '/param-types/query?boolValue=false&requiredInt=1',
+    body: null,
+    desc: 'クエリパラメータ: boolValue=false が正しくfalseに変換される',
+  },
+  {
+    title: 'GET /param-types/query (bool=FALSE)',
+    method: 'GET',
+    path: '/param-types/query?boolValue=FALSE&requiredInt=1',
+    body: null,
+    desc: 'クエリパラメータ: boolValue=FALSE（大文字）も正しくfalseに変換される',
+  },
+  {
+    title: 'GET /param-types/query (bool=True)',
+    method: 'GET',
+    path: '/param-types/query?boolValue=True&requiredInt=1',
+    body: null,
+    desc: 'クエリパラメータ: boolValue=True（混合ケース）も正しくtrueに変換される',
+  },
+  {
+    title: 'GET /param-types/query (int only)',
+    method: 'GET',
+    path: '/param-types/query?intValue=50&requiredInt=25',
+    body: null,
+    desc: 'クエリパラメータ: 整数値のみ',
+  },
+  {
+    title: 'GET /param-types/query (num decimal)',
+    method: 'GET',
+    path: '/param-types/query?numValue=99.99&requiredInt=10',
+    body: null,
+    desc: 'クエリパラメータ: 小数値',
+  },
+  {
+    title: 'GET /param-types/query (required only)',
+    method: 'GET',
+    path: '/param-types/query?requiredInt=5',
+    body: null,
+    desc: 'クエリパラメータ: 必須の整数パラメータのみ',
+  },
+
+  // === ヘッダーパラメータの型変換テスト ===
+  {
+    title: 'GET /param-types/header (all types)',
+    method: 'GET',
+    path: '/param-types/header',
+    headers: {
+      'X-Int-Value': '123',
+      'X-Num-Value': '45.67',
+      'X-Bool-Value': 'true',
+      'X-Required-Int': '999',
+    },
+    body: null,
+    desc: 'ヘッダーパラメータ型変換テスト（全ヘッダー指定）',
+  },
+  {
+    title: 'GET /param-types/header (bool=false)',
+    method: 'GET',
+    path: '/param-types/header',
+    headers: {
+      'X-Bool-Value': 'false',
+      'X-Required-Int': '1',
+    },
+    body: null,
+    desc: 'ヘッダーパラメータ: X-Bool-Value=false が正しくfalseに変換される',
+  },
+  {
+    title: 'GET /param-types/header (required only)',
+    method: 'GET',
+    path: '/param-types/header',
+    headers: {
+      'X-Required-Int': '500',
+    },
+    body: null,
+    desc: 'ヘッダーパラメータ: 必須の整数ヘッダーのみ',
+  },
+
+  // === パスパラメータの型変換テスト ===
+  {
+    title: 'GET /param-types/path/:intId/:boolFlag (true)',
+    method: 'GET',
+    path: '/param-types/path/123/true',
+    body: null,
+    desc: 'パスパラメータ型変換テスト（整数とtrue）',
+  },
+  {
+    title: 'GET /param-types/path/:intId/:boolFlag (false)',
+    method: 'GET',
+    path: '/param-types/path/456/false',
+    body: null,
+    desc: 'パスパラメータ型変換テスト（整数とfalse）',
+  },
+  {
+    title: 'GET /param-types/path/:intId/:boolFlag (FALSE)',
+    method: 'GET',
+    path: '/param-types/path/789/FALSE',
+    body: null,
+    desc: 'パスパラメータ型変換テスト（整数とFALSE大文字）',
+  },
+  {
+    title: 'GET /param-types/path/:intId/:boolFlag (True)',
+    method: 'GET',
+    path: '/param-types/path/1/True',
+    body: null,
+    desc: 'パスパラメータ型変換テスト（整数とTrue混合ケース）',
+  },
+
+  // === 既存のエンドポイントでの型変換確認 ===
+  {
+    title: 'GET /users (integer query params)',
+    method: 'GET',
+    path: '/users?page=2&limit=50',
+    body: null,
+    desc: '既存エンドポイント: 整数クエリパラメータ page, limit',
+  },
+  {
+    title: 'GET /users/:id (bool query param true)',
+    method: 'GET',
+    path: `/users/${SAMPLE_USER_ID}?includeDetails=true`,
+    body: null,
+    desc: '既存エンドポイント: ブールクエリパラメータ includeDetails=true',
+  },
+  {
+    title: 'GET /users/:id (bool query param false)',
+    method: 'GET',
+    path: `/users/${SAMPLE_USER_ID}?includeDetails=false`,
+    body: null,
+    desc: '既存エンドポイント: ブールクエリパラメータ includeDetails=false',
+  },
+  {
+    title: 'DELETE /users/:id (bool permanent=true)',
+    method: 'DELETE',
+    path: `/users/${SAMPLE_USER_ID}?permanent=true`,
+    body: null,
+    desc: '既存エンドポイント: ブールクエリパラメータ permanent=true',
+  },
+  {
+    title: 'DELETE /users/:id (bool permanent=false)',
+    method: 'DELETE',
+    path: `/users/${SAMPLE_USER_ID}?permanent=false`,
+    body: null,
+    desc: '既存エンドポイント: ブールクエリパラメータ permanent=false',
+  },
+  {
+    title: 'DELETE /posts/:postId/comments/:commentId (bool notifyAuthor=false)',
+    method: 'DELETE',
+    path: `/posts/${SAMPLE_POST_ID}/comments/${SAMPLE_COMMENT_ID}?notifyAuthor=false`,
+    body: null,
+    desc: '既存エンドポイント: ブールクエリパラメータ notifyAuthor=false',
+  },
+  {
+    title: 'POST /posts (bool draft=true)',
+    method: 'POST',
+    path: '/posts?draft=true',
+    body: {
+      title: '下書きテスト',
+      content: '下書きコンテンツ',
+      authorId: SAMPLE_USER_ID,
+    },
+    desc: '既存エンドポイント: ブールクエリパラメータ draft=true',
+  },
+  {
+    title: 'POST /posts (bool draft=false)',
+    method: 'POST',
+    path: '/posts?draft=false',
+    body: {
+      title: '公開テスト',
+      content: '公開コンテンツ',
+      authorId: SAMPLE_USER_ID,
+    },
+    desc: '既存エンドポイント: ブールクエリパラメータ draft=false',
+  },
+];
+
+/**
  * エラーケース テストケース
  */
 export const errorTests = [
@@ -873,6 +1063,7 @@ export const allTestCases = {
   posts: postsTests,
   headers: headerTests,
   pathParams: pathParamTests,
+  paramTypes: paramTypeTests,
   errors: errorTests,
 };
 
@@ -910,6 +1101,7 @@ export function getTotalTestCount() {
     postsTests.length +
     headerTests.length +
     pathParamTests.length +
+    paramTypeTests.length +
     errorTests.length
   );
 }

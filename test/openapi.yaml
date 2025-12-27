@@ -832,6 +832,12 @@ paths:
                     format: uuid
                   message:
                     type: string
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /path/regexp/{code}:
     get:
@@ -860,6 +866,12 @@ paths:
                     type: string
                   message:
                     type: string
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /path/datetime/{datetime}:
     get:
@@ -889,6 +901,12 @@ paths:
                     format: date-time
                   message:
                     type: string
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /path/encoded/{text}:
     get:
@@ -922,6 +940,12 @@ paths:
                     description: エンコードされたテキスト
                   message:
                     type: string
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /path/integer/{num}:
     get:
@@ -951,6 +975,12 @@ paths:
                     type: integer
                   message:
                     type: string
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # ===========================================================================
   # 数値/ブール型パラメータバリデーションテスト用API
@@ -1009,6 +1039,12 @@ paths:
                     type: integer
                   message:
                     type: string
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /param-types/header:
     get:
@@ -1074,6 +1110,12 @@ paths:
                         type: number
                       boolValue:
                         type: boolean
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /param-types/path/{intId}/{boolFlag}:
     get:
@@ -1111,6 +1153,12 @@ paths:
                     type: boolean
                   message:
                     type: string
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:

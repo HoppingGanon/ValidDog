@@ -677,19 +677,39 @@ export class OpenAPIValidator {
       if (!result.valid) {
         for (const error of result.errors) {
           // 期待される型/値を取得
+          // minimum/maximum/minLength/maxLengthなどの範囲エラーの場合は
+          // ライブラリが片方の値しか返さないため、期待値は表示しない
+          const rangeErrorNames = [
+            'minimum',
+            'maximum',
+            'exclusiveMinimum',
+            'exclusiveMaximum',
+            'minLength',
+            'maxLength',
+            'minItems',
+            'maxItems',
+            'minProperties',
+            'maxProperties',
+          ];
+          const isRangeError = rangeErrorNames.includes(error.name);
+
           let expected = '';
-          if (error.argument) {
-            if (Array.isArray(error.argument)) {
-              expected = error.argument.join(', ');
-            } else {
-              expected = String(error.argument);
-            }
-          } else if (error.schema && typeof error.schema === 'object') {
-            const schema = error.schema as Record<string, unknown>;
-            if (schema.type) {
-              expected = Array.isArray(schema.type) ? schema.type.join(' | ') : String(schema.type);
-            } else if (schema.enum && Array.isArray(schema.enum)) {
-              expected = schema.enum.join(' | ');
+          if (!isRangeError) {
+            if (error.argument) {
+              if (Array.isArray(error.argument)) {
+                expected = error.argument.join(', ');
+              } else {
+                expected = String(error.argument);
+              }
+            } else if (error.schema && typeof error.schema === 'object') {
+              const schema = error.schema as Record<string, unknown>;
+              if (schema.type) {
+                expected = Array.isArray(schema.type)
+                  ? schema.type.join(' | ')
+                  : String(schema.type);
+              } else if (schema.enum && Array.isArray(schema.enum)) {
+                expected = schema.enum.join(' | ');
+              }
             }
           }
 

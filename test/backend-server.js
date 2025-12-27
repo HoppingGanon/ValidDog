@@ -224,7 +224,12 @@ app.get('/users', (req, res) => {
   // ソート
   if (sort) {
     filteredUsers.sort((a, b) => {
-      if (sort === 'name') return a.name.localeCompare(b.name);
+      if (sort === 'name') {
+        // nullチェックと型チェック（nameが文字列でない場合は空文字列として扱う）
+        const nameA = typeof a.name === 'string' ? a.name : '';
+        const nameB = typeof b.name === 'string' ? b.name : '';
+        return nameA.localeCompare(nameB);
+      }
       if (sort === 'createdAt') return new Date(a.createdAt) - new Date(b.createdAt);
       if (sort === 'updatedAt') return new Date(a.updatedAt) - new Date(b.updatedAt);
       return 0;
@@ -767,17 +772,17 @@ app.get('/path/regexp/:code', (req, res) => {
 
 // GET /path/datetime/:datetime - date-timeパスパラメータテスト
 app.get('/path/datetime/:datetime', (req, res) => {
+  // Expressは既にパスパラメータをデコードしているため、そのまま使用
   const { datetime } = req.params;
-  const decodedDatetime = decodeURIComponent(datetime);
 
   // date-time形式のバリデーション（ISO 8601）
-  const date = new Date(decodedDatetime);
-  if (isNaN(date.getTime()) || !decodedDatetime.includes('T')) {
+  const date = new Date(datetime);
+  if (isNaN(date.getTime()) || !datetime.includes('T')) {
     return res
       .status(400)
       .json(
         errorResponse('VALIDATION_ERROR', 'datetime がdate-time形式（ISO 8601）ではありません', [
-          { field: 'datetime', message: `値 "${decodedDatetime}" はdate-time形式ではありません` },
+          { field: 'datetime', message: `値 "${datetime}" はdate-time形式ではありません` },
         ]),
       );
   }
@@ -790,23 +795,23 @@ app.get('/path/datetime/:datetime', (req, res) => {
 
 // GET /path/encoded/:text - URIエンコーディングパスパラメータテスト
 app.get('/path/encoded/:text', (req, res) => {
+  // Expressは既にパスパラメータをデコードしているため、そのまま使用
   const { text } = req.params;
-  const decodedText = decodeURIComponent(text);
 
   // 長さバリデーション
-  if (decodedText.length < 1 || decodedText.length > 100) {
+  if (text.length < 1 || text.length > 100) {
     return res
       .status(400)
       .json(
         errorResponse('VALIDATION_ERROR', 'text の長さが範囲外です（1〜100文字）', [
-          { field: 'text', message: `長さ ${decodedText.length} は範囲外です` },
+          { field: 'text', message: `長さ ${text.length} は範囲外です` },
         ]),
       );
   }
 
   res.json({
-    text: decodedText,
-    encoded: text,
+    text: text,
+    encoded: encodeURIComponent(text),
     message: 'URIエンコーディングパスパラメータバリデーション成功',
   });
 });

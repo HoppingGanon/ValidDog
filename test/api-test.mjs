@@ -118,16 +118,18 @@ async function runTest(testCase) {
     }
 
     if (status !== 204) {
-      try {
-        const data = await res.json();
-        console.log(JSON.stringify(data, null, 2));
-      } catch {
-        const text = await res.text();
-        if (text) {
+      // まずテキストとしてボディを取得し、その後JSONパースを試みる
+      const text = await res.text();
+      if (text) {
+        try {
+          const data = JSON.parse(text);
+          console.log(JSON.stringify(data, null, 2));
+        } catch {
+          // JSONパースに失敗した場合はテキストとして表示
           console.log(text);
-        } else {
-          log.dim('(Empty body)');
         }
+      } else {
+        log.dim('(Empty body)');
       }
     } else {
       log.dim('(No Content)');

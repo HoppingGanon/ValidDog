@@ -1,0 +1,8 @@
+# 依存関係
+node_modules/
+
+# 設定ファイル
+*.json
+*.yaml
+*.yml
+

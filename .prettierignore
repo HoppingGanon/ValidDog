@@ -1,0 +1,12 @@
+# ビルド成果物
+dist/
+
+# 依存関係
+node_modules/
+
+# その他
+*.md
+*.json
+*.yaml
+*.yml
+

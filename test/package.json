@@ -11,7 +11,9 @@
     "test:posts": "node api-test.mjs --posts",
     "test:errors": "node api-test.mjs --errors",
     "lint:openapi": "spectral lint openapi.yaml",
-    "serve": "serve ."
+    "serve": "serve .",
+    "format": "prettier --write \"**/*.{js,mjs,html}\"",
+    "format:check": "prettier --check \"**/*.{js,mjs,html}\""
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -19,6 +21,7 @@
   },
   "devDependencies": {
     "@stoplight/spectral-cli": "^6.11.0",
+    "prettier": "^3.7.4",
     "serve": "^14.2.5"
   }
 }

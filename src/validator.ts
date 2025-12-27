@@ -550,20 +550,72 @@ export class OpenAPIValidator {
 
       // スキーマチェック
       if (value !== undefined && value !== '' && param.schema) {
-        // 型変換（クエリパラメータは文字列で来るため）
-        let convertedValue = value;
-        if (param.schema.type === 'integer' || param.schema.type === 'number') {
-          const num = Number(value);
-          if (!isNaN(num)) {
-            convertedValue = num;
-          }
-        } else if (param.schema.type === 'boolean') {
-          convertedValue = value === 'true' || value === true;
-        }
+        // 型変換（Path/Query/Headerパラメータは文字列で来るため）
+        const convertedValue = this.convertParameterValue(value, param.schema);
 
         this.validateSchema(convertedValue, param.schema, param.name, errors);
       }
     }
+  }
+
+  /**
+   * パラメータ値をスキーマの型に合わせて変換
+   * Path/Query/Headerパラメータは文字列として届くため、スキーマで指定された型に変換する
+   * @param value - 変換対象の値（通常は文字列）
+   * @param schema - パラメータのスキーマ
+   * @returns 変換後の値
+   */
+  private convertParameterValue(value: unknown, schema: any): unknown {
+    // スキーマのtypeを取得（配列の場合も考慮: nullable対応で ["integer", "null"] など）
+    const schemaType = schema.type;
+    const types: string[] = Array.isArray(schemaType) ? schemaType : [schemaType];
+
+    // 数値型（integer または number）の場合
+    if (types.includes('integer') || types.includes('number')) {
+      // 既に数値の場合はそのまま返す
+      if (typeof value === 'number') {
+        return value;
+      }
+      // 文字列から数値への変換を試みる
+      if (typeof value === 'string') {
+        const num = Number(value);
+        if (!isNaN(num)) {
+          // integer型の場合は整数かどうかをチェック
+          if (types.includes('integer') && !types.includes('number')) {
+            // 整数として有効な文字列かチェック（小数点を含まない）
+            if (Number.isInteger(num) || /^-?\d+$/.test(value)) {
+              return num;
+            }
+            // 小数が来た場合は変換しない（バリデーションエラーになる）
+            return value;
+          }
+          return num;
+        }
+      }
+      return value;
+    }
+
+    // ブール型の場合
+    if (types.includes('boolean')) {
+      // 既にbooleanの場合はそのまま返す
+      if (typeof value === 'boolean') {
+        return value;
+      }
+      // 文字列 "true"/"false" をboolean型に変換
+      if (typeof value === 'string') {
+        const lowerValue = value.toLowerCase();
+        if (lowerValue === 'true') {
+          return true;
+        }
+        if (lowerValue === 'false') {
+          return false;
+        }
+      }
+      return value;
+    }
+
+    // その他の型はそのまま返す
+    return value;
   }
 
   /**
@@ -603,15 +655,7 @@ export class OpenAPIValidator {
       // スキーマチェック
       if (value !== undefined && value !== '' && headerSpec.schema) {
         // 型変換（ヘッダーは文字列で来るため）
-        let convertedValue: unknown = value;
-        if (headerSpec.schema.type === 'integer' || headerSpec.schema.type === 'number') {
-          const num = Number(value);
-          if (!isNaN(num)) {
-            convertedValue = num;
-          }
-        } else if (headerSpec.schema.type === 'boolean') {
-          convertedValue = value === 'true';
-        }
+        const convertedValue = this.convertParameterValue(value, headerSpec.schema);
 
         this.validateSchema(convertedValue, headerSpec.schema, `header.${headerName}`, errors);
       }

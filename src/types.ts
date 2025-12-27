@@ -46,7 +46,7 @@ export interface ValidationError {
 }
 
 /** メッセージタイプ */
-export type MessageType = 
+export type MessageType =
   | 'TRAFFIC_UPDATE'
   | 'CLEAR_TRAFFIC'
   | 'GET_TRAFFIC'
@@ -64,4 +64,3 @@ export interface StorageData {
   language: Language;
   openApiSpec?: string;
 }
-

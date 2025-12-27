@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -43,7 +43,7 @@
       }
 
       body {
-        font-family: "Noto Sans JP", sans-serif;
+        font-family: 'Noto Sans JP', sans-serif;
         background: var(--bg-primary);
         color: var(--text-primary);
         min-height: 100vh;
@@ -52,22 +52,15 @@
 
       /* 背景パターン */
       body::before {
-        content: "";
+        content: '';
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(
-            ellipse at 20% 0%,
-            rgba(99, 102, 241, 0.08) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            ellipse at 80% 100%,
-            rgba(129, 140, 248, 0.06) 0%,
-            transparent 50%
-          );
+        background:
+          radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 100%, rgba(129, 140, 248, 0.06) 0%, transparent 50%);
         pointer-events: none;
         z-index: -1;
       }
@@ -100,11 +93,7 @@
       .logo-icon {
         width: 48px;
         height: 48px;
-        background: linear-gradient(
-          135deg,
-          var(--accent-primary),
-          var(--accent-secondary)
-        );
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
         border-radius: var(--radius-md);
         display: flex;
         align-items: center;
@@ -273,11 +262,7 @@
       }
 
       .btn-primary {
-        background: linear-gradient(
-          135deg,
-          var(--accent-primary),
-          var(--accent-secondary)
-        );
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
         color: white;
         box-shadow: 0 2px 10px var(--accent-glow);
       }
@@ -333,17 +318,13 @@
       }
 
       .user-card::before {
-        content: "";
+        content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(
-          90deg,
-          var(--accent-primary),
-          var(--accent-secondary)
-        );
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
         opacity: 0;
         transition: opacity 0.3s ease;
       }
@@ -369,11 +350,7 @@
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: linear-gradient(
-          135deg,
-          var(--accent-primary),
-          var(--accent-secondary)
-        );
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
         display: flex;
         align-items: center;
         justify-content: center;
@@ -464,7 +441,7 @@
       }
 
       .user-id {
-        font-family: "JetBrains Mono", monospace;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
         color: var(--text-muted);
         margin-top: 12px;
@@ -607,11 +584,7 @@
         width: 80px;
         height: 80px;
         border-radius: 50%;
-        background: linear-gradient(
-          135deg,
-          var(--accent-primary),
-          var(--accent-secondary)
-        );
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
         display: flex;
         align-items: center;
         justify-content: center;
@@ -660,7 +633,7 @@
       }
 
       .detail-value.mono {
-        font-family: "JetBrains Mono", monospace;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 13px;
         color: var(--text-secondary);
       }
@@ -788,9 +761,7 @@
               <div class="logo-subtitle">User Management</div>
             </div>
           </div>
-          <button class="btn btn-primary" onclick="fetchUsers()">
-            🔄 更新
-          </button>
+          <button class="btn btn-primary" onclick="fetchUsers()">🔄 更新</button>
         </div>
       </header>
 
@@ -830,9 +801,7 @@
       <div class="filters-section">
         <div class="filters-header">
           <h2>🔍 フィルター & ソート</h2>
-          <button class="btn btn-secondary" onclick="resetFilters()">
-            リセット
-          </button>
+          <button class="btn btn-secondary" onclick="resetFilters()">リセット</button>
         </div>
         <div class="filters-grid">
           <div class="filter-group">
@@ -864,13 +833,7 @@
           </div>
           <div class="filter-group">
             <label>ページ</label>
-            <input
-              type="number"
-              id="filter-page"
-              value="1"
-              min="1"
-              onchange="fetchUsers()"
-            />
+            <input type="number" id="filter-page" value="1" min="1" onchange="fetchUsers()" />
           </div>
         </div>
       </div>
@@ -879,10 +842,7 @@
       <div class="users-section">
         <div class="section-header">
           <h2>👥 ユーザー一覧</h2>
-          <span
-            id="users-count"
-            style="color: var(--text-muted); font-size: 14px"
-          ></span>
+          <span id="users-count" style="color: var(--text-muted); font-size: 14px"></span>
         </div>
         <div id="users-container">
           <div class="loading">
@@ -893,11 +853,7 @@
       </div>
 
       <!-- ページネーション -->
-      <div
-        id="pagination-container"
-        class="pagination"
-        style="display: none"
-      ></div>
+      <div id="pagination-container" class="pagination" style="display: none"></div>
     </div>
 
     <!-- ユーザー詳細モーダル -->
@@ -914,15 +870,13 @@
     </div>
 
     <script>
-      const BASE_URL = "http://localhost:3001";
+      const BASE_URL = 'http://localhost:3001';
       let currentPagination = null;
 
       // ユーザー一覧を取得
       async function fetchUsers() {
-        const container = document.getElementById("users-container");
-        const paginationContainer = document.getElementById(
-          "pagination-container"
-        );
+        const container = document.getElementById('users-container');
+        const paginationContainer = document.getElementById('pagination-container');
 
         // ローディング表示
         container.innerHTML = `
@@ -931,24 +885,22 @@
           <div class="loading-text">ユーザー情報を読み込み中...</div>
         </div>
       `;
-        paginationContainer.style.display = "none";
+        paginationContainer.style.display = 'none';
 
         // フィルターパラメータを取得
-        const status = document.getElementById("filter-status").value;
-        const sort = document.getElementById("filter-sort").value;
-        const limit = document.getElementById("filter-limit").value;
-        const page = document.getElementById("filter-page").value;
+        const status = document.getElementById('filter-status').value;
+        const sort = document.getElementById('filter-sort').value;
+        const limit = document.getElementById('filter-limit').value;
+        const page = document.getElementById('filter-page').value;
 
         // クエリパラメータを構築
         const params = new URLSearchParams();
-        if (status) params.append("status", status);
-        if (sort) params.append("sort", sort);
-        if (limit) params.append("limit", limit);
-        if (page) params.append("page", page);
+        if (status) params.append('status', status);
+        if (sort) params.append('sort', sort);
+        if (limit) params.append('limit', limit);
+        if (page) params.append('page', page);
 
-        const url = `${BASE_URL}/users${
-          params.toString() ? "?" + params.toString() : ""
-        }`;
+        const url = `${BASE_URL}/users${params.toString() ? '?' + params.toString() : ''}`;
 
         try {
           const response = await fetch(url);
@@ -982,7 +934,7 @@
           // 統計を更新
           updateStats(data.users);
         } catch (error) {
-          console.error("Error fetching users:", error);
+          console.error('Error fetching users:', error);
           container.innerHTML = `
           <div class="error-state">
             <div class="error-icon">⚠️</div>
@@ -996,10 +948,8 @@
 
       // ユーザーカードを描画
       function renderUsers(users) {
-        const container = document.getElementById("users-container");
-        document.getElementById(
-          "users-count"
-        ).textContent = `${users.length}件表示`;
+        const container = document.getElementById('users-container');
+        document.getElementById('users-count').textContent = `${users.length}件表示`;
 
         container.innerHTML = `
         <div class="users-grid">
@@ -1013,7 +963,7 @@
                   <div class="user-name">${escapeHtml(user.name)}</div>
                   <div class="user-email">${escapeHtml(user.email)}</div>
                 </div>
-                <span class="user-status ${user.status || "active"}">
+                <span class="user-status ${user.status || 'active'}">
                   <span class="user-status-dot"></span>
                   ${getStatusLabel(user.status)}
                 </span>
@@ -1022,55 +972,49 @@
                 <div class="user-detail">
                   <span class="user-detail-label">年齢</span>
                   <span class="user-detail-value">${
-                    user.age !== undefined ? user.age + "歳" : "-"
+                    user.age !== undefined ? user.age + '歳' : '-'
                   }</span>
                 </div>
                 <div class="user-detail">
                   <span class="user-detail-label">電話番号</span>
-                  <span class="user-detail-value">${
-                    user.phoneNumber || "-"
-                  }</span>
+                  <span class="user-detail-value">${user.phoneNumber || '-'}</span>
                 </div>
                 <div class="user-detail">
                   <span class="user-detail-label">作成日</span>
-                  <span class="user-detail-value">${formatDate(
-                    user.createdAt
-                  )}</span>
+                  <span class="user-detail-value">${formatDate(user.createdAt)}</span>
                 </div>
                 <div class="user-detail">
                   <span class="user-detail-label">更新日</span>
-                  <span class="user-detail-value">${formatDate(
-                    user.updatedAt
-                  )}</span>
+                  <span class="user-detail-value">${formatDate(user.updatedAt)}</span>
                 </div>
               </div>
               <div class="user-id">ID: ${user.id}</div>
             </div>
-          `
+          `,
             )
-            .join("")}
+            .join('')}
         </div>
       `;
       }
 
       // ページネーションを描画
       function renderPagination(pagination) {
-        const container = document.getElementById("pagination-container");
+        const container = document.getElementById('pagination-container');
         const { page, totalPages, total } = pagination;
 
         if (totalPages <= 1) {
-          container.style.display = "none";
+          container.style.display = 'none';
           return;
         }
 
-        container.style.display = "flex";
+        container.style.display = 'flex';
 
-        let buttons = "";
+        let buttons = '';
 
         // 前へボタン
         buttons += `<button class="pagination-btn" onclick="goToPage(${
           page - 1
-        })" ${page <= 1 ? "disabled" : ""}>←</button>`;
+        })" ${page <= 1 ? 'disabled' : ''}>←</button>`;
 
         // ページ番号ボタン
         const maxVisible = 5;
@@ -1090,7 +1034,7 @@
 
         for (let i = startPage; i <= endPage; i++) {
           buttons += `<button class="pagination-btn ${
-            i === page ? "active" : ""
+            i === page ? 'active' : ''
           }" onclick="goToPage(${i})">${i}</button>`;
         }
 
@@ -1104,24 +1048,23 @@
         // 次へボタン
         buttons += `<button class="pagination-btn" onclick="goToPage(${
           page + 1
-        })" ${page >= totalPages ? "disabled" : ""}>→</button>`;
+        })" ${page >= totalPages ? 'disabled' : ''}>→</button>`;
 
-        container.innerHTML =
-          buttons + `<span class="pagination-info">${total}件中</span>`;
+        container.innerHTML = buttons + `<span class="pagination-info">${total}件中</span>`;
       }
 
       // ページ遷移
       function goToPage(page) {
-        document.getElementById("filter-page").value = page;
+        document.getElementById('filter-page').value = page;
         fetchUsers();
       }
 
       // ユーザー詳細を取得して表示
       async function openUserDetail(userId) {
-        const modal = document.getElementById("user-modal");
-        const modalBody = document.getElementById("modal-body");
+        const modal = document.getElementById('user-modal');
+        const modalBody = document.getElementById('modal-body');
 
-        modal.classList.add("active");
+        modal.classList.add('active');
         modalBody.innerHTML = `
         <div class="loading">
           <div class="spinner"></div>
@@ -1130,9 +1073,7 @@
       `;
 
         try {
-          const response = await fetch(
-            `${BASE_URL}/users/${userId}?includeDetails=true`
-          );
+          const response = await fetch(`${BASE_URL}/users/${userId}?includeDetails=true`);
 
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -1141,7 +1082,7 @@
           const user = await response.json();
           renderUserDetail(user);
         } catch (error) {
-          console.error("Error fetching user detail:", error);
+          console.error('Error fetching user detail:', error);
           modalBody.innerHTML = `
           <div class="error-state">
             <div class="error-icon">⚠️</div>
@@ -1154,13 +1095,13 @@
 
       // ユーザー詳細を描画
       function renderUserDetail(user) {
-        const modalBody = document.getElementById("modal-body");
+        const modalBody = document.getElementById('modal-body');
 
         const address = user.address
-          ? `〒${user.address.postalCode || "-"} ${
-              user.address.prefecture || ""
-            }${user.address.city || ""}${user.address.street || ""}`
-          : "-";
+          ? `〒${user.address.postalCode || '-'} ${
+              user.address.prefecture || ''
+            }${user.address.city || ''}${user.address.street || ''}`
+          : '-';
 
         modalBody.innerHTML = `
         <div class="detail-profile">
@@ -1168,9 +1109,7 @@
           <div class="detail-info">
             <h3>${escapeHtml(user.name)}</h3>
             <p>${escapeHtml(user.email)}</p>
-            <span class="user-status ${
-              user.status || "active"
-            }" style="margin-top: 8px;">
+            <span class="user-status ${user.status || 'active'}" style="margin-top: 8px;">
               <span class="user-status-dot"></span>
               ${getStatusLabel(user.status)}
             </span>
@@ -1183,13 +1122,11 @@
           </div>
           <div class="detail-item">
             <span class="detail-label">年齢</span>
-            <span class="detail-value">${
-              user.age !== undefined ? user.age + "歳" : "-"
-            }</span>
+            <span class="detail-value">${user.age !== undefined ? user.age + '歳' : '-'}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">電話番号</span>
-            <span class="detail-value">${user.phoneNumber || "-"}</span>
+            <span class="detail-value">${user.phoneNumber || '-'}</span>
           </div>
           <div class="detail-item full-width">
             <span class="detail-label">住所</span>
@@ -1210,37 +1147,34 @@
       // モーダルを閉じる
       function closeModal(event) {
         if (event && event.target !== event.currentTarget) return;
-        document.getElementById("user-modal").classList.remove("active");
+        document.getElementById('user-modal').classList.remove('active');
       }
 
       // フィルターをリセット
       function resetFilters() {
-        document.getElementById("filter-status").value = "";
-        document.getElementById("filter-sort").value = "";
-        document.getElementById("filter-limit").value = "20";
-        document.getElementById("filter-page").value = "1";
+        document.getElementById('filter-status').value = '';
+        document.getElementById('filter-sort').value = '';
+        document.getElementById('filter-limit').value = '20';
+        document.getElementById('filter-page').value = '1';
         fetchUsers();
       }
 
       // 統計を更新
       function updateStats(users) {
         const total = users.length;
-        const active = users.filter(
-          (u) => u.status === "active" || !u.status
-        ).length;
-        const inactive = users.filter((u) => u.status === "inactive").length;
-        const suspended = users.filter((u) => u.status === "suspended").length;
+        const active = users.filter((u) => u.status === 'active' || !u.status).length;
+        const inactive = users.filter((u) => u.status === 'inactive').length;
+        const suspended = users.filter((u) => u.status === 'suspended').length;
 
-        document.getElementById("stat-total").textContent =
-          currentPagination?.total || total;
-        document.getElementById("stat-active").textContent = active;
-        document.getElementById("stat-inactive").textContent = inactive;
-        document.getElementById("stat-suspended").textContent = suspended;
+        document.getElementById('stat-total').textContent = currentPagination?.total || total;
+        document.getElementById('stat-active').textContent = active;
+        document.getElementById('stat-inactive').textContent = inactive;
+        document.getElementById('stat-suspended').textContent = suspended;
       }
 
       // ユーティリティ関数
       function getInitials(name) {
-        if (!name) return "?";
+        if (!name) return '?';
         const parts = name.split(/[\s　]+/);
         if (parts.length >= 2) {
           return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -1250,51 +1184,51 @@
 
       function getStatusLabel(status) {
         const labels = {
-          active: "アクティブ",
-          inactive: "非アクティブ",
-          suspended: "停止中",
+          active: 'アクティブ',
+          inactive: '非アクティブ',
+          suspended: '停止中',
         };
-        return labels[status] || "アクティブ";
+        return labels[status] || 'アクティブ';
       }
 
       function formatDate(dateString) {
-        if (!dateString) return "-";
+        if (!dateString) return '-';
         const date = new Date(dateString);
-        return date.toLocaleDateString("ja-JP", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
+        return date.toLocaleDateString('ja-JP', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
         });
       }
 
       function formatDateTime(dateString) {
-        if (!dateString) return "-";
+        if (!dateString) return '-';
         const date = new Date(dateString);
-        return date.toLocaleString("ja-JP", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
+        return date.toLocaleString('ja-JP', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
         });
       }
 
       function escapeHtml(str) {
-        if (!str) return "";
-        const div = document.createElement("div");
+        if (!str) return '';
+        const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
       }
 
       // ESCキーでモーダルを閉じる
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
           closeModal();
         }
       });
 
       // 初期読み込み
-      document.addEventListener("DOMContentLoaded", fetchUsers);
+      document.addEventListener('DOMContentLoaded', fetchUsers);
     </script>
   </body>
 </html>

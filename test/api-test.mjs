@@ -1,12 +1,12 @@
 /**
  * OpenAPI テストスクリプト（Node.js版）
- * 
+ *
  * 共通テストケース（test-cases.js）を使用してAPIテストを実行します。
  * ブラウザ版（test.html）と同じテストケースを使用しています。
- * 
+ *
  * 使用方法:
  *   node api-test.js [オプション]
- * 
+ *
  * オプション:
  *   --all       すべてのテストを実行（デフォルト）
  *   --users     Users APIのテストのみ実行
@@ -205,7 +205,9 @@ OpenAPI テストスクリプト（Node.js版）
   }
 
   console.log('\n' + '▓'.repeat(60));
-  console.log(`${colors.bright}${colors.cyan}        OpenAPI テストスクリプト（Node.js版）${colors.reset}`);
+  console.log(
+    `${colors.bright}${colors.cyan}        OpenAPI テストスクリプト（Node.js版）${colors.reset}`,
+  );
   console.log('▓'.repeat(60));
   console.log(`\nServer: ${colors.yellow}${BASEURL}${colors.reset}`);
   console.log(`テストケースファイル: ${colors.dim}test-cases.js${colors.reset}\n`);

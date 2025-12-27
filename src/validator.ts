@@ -120,7 +120,7 @@ export class OpenAPIValidator {
     const resolved = this.resolveRefs(spec);
     this.resolvedSpec = this.convertSchemaForJsonSchema(resolved);
     this.jsonValidator = new JsonSchemaValidator();
-    
+
     // コンポーネントスキーマを登録
     if (this.resolvedSpec.components?.schemas) {
       for (const [name, schema] of Object.entries(this.resolvedSpec.components.schemas)) {
@@ -148,13 +148,13 @@ export class OpenAPIValidator {
     const resolveRef = (obj: unknown, depth = 0): unknown => {
       // 循環参照を防ぐため深さ制限
       if (depth > 20) return obj;
-      
+
       if (obj === null || typeof obj !== 'object') {
         return obj;
       }
 
       if (Array.isArray(obj)) {
-        return obj.map(item => resolveRef(item, depth + 1));
+        return obj.map((item) => resolveRef(item, depth + 1));
       }
 
       const record = obj as Record<string, unknown>;
@@ -203,7 +203,7 @@ export class OpenAPIValidator {
       }
 
       if (Array.isArray(obj)) {
-        return obj.map(item => convertSchema(item, true));
+        return obj.map((item) => convertSchema(item, true));
       }
 
       const record = obj as Record<string, unknown>;
@@ -227,7 +227,7 @@ export class OpenAPIValidator {
         } else if (key === 'allOf' || key === 'oneOf' || key === 'anyOf') {
           // 複合スキーマを変換
           if (Array.isArray(value)) {
-            result[key] = value.map(item => convertSchema(item, true));
+            result[key] = value.map((item) => convertSchema(item, true));
           } else {
             result[key] = value;
           }
@@ -240,7 +240,7 @@ export class OpenAPIValidator {
       // 1. nullable: true が設定されている場合
       // 2. required でないプロパティの場合
       const shouldAllowNull = record.nullable === true || !isRequired;
-      
+
       if (shouldAllowNull && record.type) {
         const originalType = record.type;
         if (Array.isArray(originalType)) {
@@ -253,7 +253,7 @@ export class OpenAPIValidator {
           result.type = [originalType, 'null'];
         }
       }
-      
+
       // nullable プロパティを削除（JSON Schemaには不要）
       delete result.nullable;
 
@@ -271,7 +271,15 @@ export class OpenAPIValidator {
     // paths 内のスキーマを変換
     if (converted.paths) {
       for (const pathItem of Object.values(converted.paths)) {
-        for (const method of ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'] as const) {
+        for (const method of [
+          'get',
+          'post',
+          'put',
+          'patch',
+          'delete',
+          'options',
+          'head',
+        ] as const) {
           const operation = pathItem[method];
           if (operation) {
             // パラメータのスキーマを変換
@@ -320,7 +328,7 @@ export class OpenAPIValidator {
         // コンポーネントスキーマはトップレベルとしてrequired扱い
         converted.components.schemas[schemaName] = convertSchema(
           converted.components.schemas[schemaName],
-          true
+          true,
         );
       }
     }
@@ -353,12 +361,14 @@ export class OpenAPIValidator {
     if (!matched) {
       return {
         valid: false,
-        errors: [{
-          path: request.path,
-          message: `Path "${request.path}" is not defined in OpenAPI spec`,
-          errorCode: 'PATH_NOT_FOUND',
-          params: { path: request.path }
-        }]
+        errors: [
+          {
+            path: request.path,
+            message: `Path "${request.path}" is not defined in OpenAPI spec`,
+            errorCode: 'PATH_NOT_FOUND',
+            params: { path: request.path },
+          },
+        ],
       };
     }
 
@@ -369,20 +379,19 @@ export class OpenAPIValidator {
     if (!operation) {
       return {
         valid: false,
-        errors: [{
-          path: request.path,
-          message: `Method "${request.method.toUpperCase()}" is not defined for path "${pattern}"`,
-          errorCode: 'METHOD_NOT_ALLOWED',
-          params: { method: request.method.toUpperCase(), path: pattern }
-        }]
+        errors: [
+          {
+            path: request.path,
+            message: `Method "${request.method.toUpperCase()}" is not defined for path "${pattern}"`,
+            errorCode: 'METHOD_NOT_ALLOWED',
+            params: { method: request.method.toUpperCase(), path: pattern },
+          },
+        ],
       };
     }
 
     // パラメータをマージ
-    const allParameters = [
-      ...(pathItem.parameters || []),
-      ...(operation.parameters || [])
-    ];
+    const allParameters = [...(pathItem.parameters || []), ...(operation.parameters || [])];
 
     // クエリパラメータを抽出
     const queryString = request.path.split('?')[1] || '';
@@ -401,14 +410,17 @@ export class OpenAPIValidator {
     if (operation.requestBody) {
       const contentType = 'application/json';
       const bodySchema = operation.requestBody?.content?.[contentType]?.schema;
-      
+
       if (bodySchema) {
-        if (operation.requestBody.required && (request.body === undefined || request.body === null)) {
+        if (
+          operation.requestBody.required &&
+          (request.body === undefined || request.body === null)
+        ) {
           errors.push({
             path: 'body',
             message: 'リクエストボディは必須です',
             errorCode: 'REQUIRED',
-            location: 'body'
+            location: 'body',
           });
         } else if (request.body !== undefined && request.body !== null) {
           this.validateSchema(request.body, bodySchema, 'body', errors);
@@ -418,7 +430,7 @@ export class OpenAPIValidator {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -432,12 +444,14 @@ export class OpenAPIValidator {
     if (!matched) {
       return {
         valid: false,
-        errors: [{
-          path: request.path,
-          message: `Path "${request.path}" is not defined in OpenAPI spec`,
-          errorCode: 'PATH_NOT_FOUND',
-          params: { path: request.path }
-        }]
+        errors: [
+          {
+            path: request.path,
+            message: `Path "${request.path}" is not defined in OpenAPI spec`,
+            errorCode: 'PATH_NOT_FOUND',
+            params: { path: request.path },
+          },
+        ],
       };
     }
 
@@ -448,18 +462,21 @@ export class OpenAPIValidator {
     if (!operation) {
       return {
         valid: false,
-        errors: [{
-          path: request.path,
-          message: `Method "${request.method.toUpperCase()}" is not defined for path "${pattern}"`,
-          errorCode: 'METHOD_NOT_ALLOWED',
-          params: { method: request.method.toUpperCase(), path: pattern }
-        }]
+        errors: [
+          {
+            path: request.path,
+            message: `Method "${request.method.toUpperCase()}" is not defined for path "${pattern}"`,
+            errorCode: 'METHOD_NOT_ALLOWED',
+            params: { method: request.method.toUpperCase(), path: pattern },
+          },
+        ],
       };
     }
 
     // ステータスコードに対応するレスポンス定義を取得
     const statusCode = String(response.statusCode);
-    const responseSpec = operation.responses[statusCode] ||
+    const responseSpec =
+      operation.responses[statusCode] ||
       operation.responses[`${statusCode[0]}XX`] ||
       operation.responses['default'];
 
@@ -468,7 +485,11 @@ export class OpenAPIValidator {
         path: request.path,
         message: `Status code ${response.statusCode} is not defined for "${request.method.toUpperCase()}" "${pattern}"`,
         errorCode: 'UNEXPECTED_STATUS_CODE',
-        params: { statusCode: response.statusCode, method: request.method.toUpperCase(), path: pattern }
+        params: {
+          statusCode: response.statusCode,
+          method: request.method.toUpperCase(),
+          path: pattern,
+        },
       });
       return { valid: false, errors };
     }
@@ -479,7 +500,7 @@ export class OpenAPIValidator {
         errors.push({
           path: request.path,
           message: '204 No Content response should not contain a body',
-          errorCode: 'UNEXPECTED_BODY'
+          errorCode: 'UNEXPECTED_BODY',
         });
       }
       return { valid: errors.length === 0, errors };
@@ -498,7 +519,7 @@ export class OpenAPIValidator {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -509,9 +530,9 @@ export class OpenAPIValidator {
     parameters: any[],
     location: 'path' | 'query' | 'header',
     values: Record<string, any>,
-    errors: ValidationError[]
+    errors: ValidationError[],
   ): void {
-    const locationParams = parameters.filter(p => p.in === location);
+    const locationParams = parameters.filter((p) => p.in === location);
 
     for (const param of locationParams) {
       const value = values[param.name];
@@ -522,7 +543,7 @@ export class OpenAPIValidator {
           path: param.name,
           message: `必須パラメータ "${param.name}" がありません`,
           errorCode: 'REQUIRED',
-          location
+          location,
         });
         continue;
       }
@@ -552,7 +573,7 @@ export class OpenAPIValidator {
   private validateResponseHeaders(
     headerSpecs: Record<string, any> | undefined,
     actualHeaders: Record<string, string>,
-    errors: ValidationError[]
+    errors: ValidationError[],
   ): void {
     if (!headerSpecs) {
       return;
@@ -574,7 +595,7 @@ export class OpenAPIValidator {
           path: `header.${headerName}`,
           message: `必須レスポンスヘッダー "${headerName}" がありません`,
           errorCode: 'REQUIRED',
-          location: 'header'
+          location: 'header',
         });
         continue;
       }
@@ -604,11 +625,11 @@ export class OpenAPIValidator {
     value: unknown,
     schema: any,
     path: string,
-    errors: ValidationError[]
+    errors: ValidationError[],
   ): void {
     try {
       const result = this.jsonValidator.validate(value, schema);
-      
+
       if (!result.valid) {
         for (const error of result.errors) {
           // 期待される型/値を取得
@@ -622,14 +643,12 @@ export class OpenAPIValidator {
           } else if (error.schema && typeof error.schema === 'object') {
             const schema = error.schema as Record<string, unknown>;
             if (schema.type) {
-              expected = Array.isArray(schema.type) 
-                ? schema.type.join(' | ') 
-                : String(schema.type);
+              expected = Array.isArray(schema.type) ? schema.type.join(' | ') : String(schema.type);
             } else if (schema.enum && Array.isArray(schema.enum)) {
               expected = schema.enum.join(' | ');
             }
           }
-          
+
           errors.push({
             path: error.property ? `${path}.${error.property.replace('instance.', '')}` : path,
             message: error.message,
@@ -637,7 +656,7 @@ export class OpenAPIValidator {
             location: path,
             actualValue: error.instance,
             actualType: this.getTypeName(error.instance),
-            expected: expected || undefined
+            expected: expected || undefined,
           });
         }
       }
@@ -645,7 +664,7 @@ export class OpenAPIValidator {
       errors.push({
         path,
         message: `スキーマ検証中にエラー: ${e instanceof Error ? e.message : String(e)}`,
-        errorCode: 'VALIDATION_ERROR'
+        errorCode: 'VALIDATION_ERROR',
       });
     }
   }

@@ -61,7 +61,7 @@ const createViolatingUser = (base) => ({
   extraField: 'この項目はスキーマに存在しない',
   // 違反11: タイポフィールド
   emal: base.email,
-  nmae: base.name
+  nmae: base.name,
 });
 
 // 投稿データ（仕様違反バージョン）
@@ -81,8 +81,8 @@ const createViolatingPost = (base) => ({
     info: {
       readingTime: base.metadata?.readingTime,
       keywords: base.metadata?.keywords,
-      featured: base.metadata?.featured
-    }
+      featured: base.metadata?.featured,
+    },
   },
   // 違反7: statusがenum外の値（enum違反）
   status: 'pending',
@@ -92,7 +92,7 @@ const createViolatingPost = (base) => ({
   updatedAt: null,
   // 違反10: タイポフィールド
   titel: base.title,
-  contnet: base.content
+  contnet: base.content,
 });
 
 // ページネーション（仕様違反バージョン）
@@ -104,7 +104,7 @@ const createViolatingPagination = (page, limit, total) => ({
   // 違反3: totalがオブジェクトになっている
   total: { count: total, unit: '件' },
   // 違反4: totalPagesが負の数（範囲違反）
-  totalPages: -1
+  totalPages: -1,
 });
 
 // エラーレスポンス（仕様違反バージョン）
@@ -117,7 +117,7 @@ const createViolatingError = (code, message, details = null) => ({
   details: details ? { error_list: details, timestamp: Date.now() } : null,
   // 違反4: スキーマにないフィールド
   errorId: crypto.randomUUID(),
-  stack: 'Error: ...'
+  stack: 'Error: ...',
 });
 
 // 元のデータ
@@ -132,11 +132,11 @@ const originalUsers = [
       postalCode: '100-0001',
       prefecture: '東京都',
       city: '千代田区',
-      street: '丸の内1-1-1'
+      street: '丸の内1-1-1',
     },
     status: 'active',
     createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440002',
@@ -148,11 +148,11 @@ const originalUsers = [
       postalCode: '530-0001',
       prefecture: '大阪府',
       city: '大阪市北区',
-      street: '梅田1-1-1'
+      street: '梅田1-1-1',
     },
     status: 'active',
     createdAt: '2024-02-01T00:00:00Z',
-    updatedAt: '2024-02-01T00:00:00Z'
+    updatedAt: '2024-02-01T00:00:00Z',
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440003',
@@ -164,12 +164,12 @@ const originalUsers = [
       postalCode: '460-0001',
       prefecture: '愛知県',
       city: '名古屋市中区',
-      street: '栄1-1-1'
+      street: '栄1-1-1',
     },
     status: 'inactive',
     createdAt: '2024-03-01T00:00:00Z',
-    updatedAt: '2024-03-01T00:00:00Z'
-  }
+    updatedAt: '2024-03-01T00:00:00Z',
+  },
 ];
 
 const originalPosts = [
@@ -182,11 +182,11 @@ const originalPosts = [
     metadata: {
       readingTime: 5,
       keywords: ['初投稿', 'ブログ'],
-      featured: false
+      featured: false,
     },
     status: 'published',
     createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z'
+    updatedAt: '2024-01-15T10:00:00Z',
   },
   {
     id: 2,
@@ -197,11 +197,11 @@ const originalPosts = [
     metadata: {
       readingTime: 15,
       keywords: ['TypeScript', 'プログラミング'],
-      featured: true
+      featured: true,
     },
     status: 'published',
     createdAt: '2024-02-01T14:30:00Z',
-    updatedAt: '2024-02-10T09:00:00Z'
+    updatedAt: '2024-02-10T09:00:00Z',
   },
   {
     id: 3,
@@ -212,12 +212,12 @@ const originalPosts = [
     metadata: {
       readingTime: 20,
       keywords: ['デザイン', 'UI/UX'],
-      featured: false
+      featured: false,
     },
     status: 'draft',
     createdAt: '2024-03-01T08:00:00Z',
-    updatedAt: '2024-03-01T08:00:00Z'
-  }
+    updatedAt: '2024-03-01T08:00:00Z',
+  },
 ];
 
 // =============================================================================
@@ -239,7 +239,7 @@ app.get('/users', (req, res) => {
     'pagination.page: integer型のところstring型を返却',
     'pagination.limit: nullを返却',
     'pagination.total: integer型のところobject型を返却',
-    'pagination.totalPages: 負の値を返却'
+    'pagination.totalPages: 負の値を返却',
   ];
   logViolations('GET /users', violations);
 
@@ -247,7 +247,7 @@ app.get('/users', (req, res) => {
 
   res.json({
     users: violatingUsers,
-    pagination: createViolatingPagination(1, 20, originalUsers.length)
+    pagination: createViolatingPagination(1, 20, originalUsers.length),
   });
 });
 
@@ -263,7 +263,7 @@ app.post('/users', (req, res) => {
     'address: 階層構造が違う（フラット）',
     'status: enum外の値',
     'createdAt: date-time形式でない',
-    'updatedAt: string型のところnumber型'
+    'updatedAt: string型のところnumber型',
   ];
   logViolations('POST /users', violations);
 
@@ -273,10 +273,15 @@ app.post('/users', (req, res) => {
     name: req.body.name || '新規ユーザー',
     age: req.body.age || 20,
     phoneNumber: req.body.phoneNumber || '+819000000000',
-    address: req.body.address || { postalCode: '100-0001', prefecture: '東京都', city: '千代田区', street: '1-1-1' },
+    address: req.body.address || {
+      postalCode: '100-0001',
+      prefecture: '東京都',
+      city: '千代田区',
+      street: '1-1-1',
+    },
     status: 'active',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 
   res.status(201).json(createViolatingUser(newUser));
@@ -286,13 +291,13 @@ app.post('/users', (req, res) => {
 app.get('/users/:userId', (req, res) => {
   const { userId } = req.params;
 
-  const user = originalUsers.find(u => u.id === userId);
+  const user = originalUsers.find((u) => u.id === userId);
   if (!user) {
     const violations = [
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
       'message: string型のところarray型',
-      'details: 構造が違う（余分なネスト）'
+      'details: 構造が違う（余分なネスト）',
     ];
     logViolations('GET /users/:userId (404)', violations);
     return res.status(404).json(createViolatingError('NOT_FOUND', 'ユーザーが見つかりません'));
@@ -306,7 +311,7 @@ app.get('/users/:userId', (req, res) => {
     'age: integer型のところstring型',
     'status: enum外の値 "deleted"',
     'createdAt: date-time形式でない',
-    'updatedAt: string型のところnumber型'
+    'updatedAt: string型のところnumber型',
   ];
   logViolations('GET /users/:userId', violations);
 
@@ -317,12 +322,12 @@ app.get('/users/:userId', (req, res) => {
 app.put('/users/:userId', (req, res) => {
   const { userId } = req.params;
 
-  const user = originalUsers.find(u => u.id === userId);
+  const user = originalUsers.find((u) => u.id === userId);
   if (!user) {
     const violations = [
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
-      'message: string型のところarray型'
+      'message: string型のところarray型',
     ];
     logViolations('PUT /users/:userId (404)', violations);
     return res.status(404).json(createViolatingError('NOT_FOUND', 'ユーザーが見つかりません'));
@@ -337,7 +342,7 @@ app.put('/users/:userId', (req, res) => {
     'status: enum外の値',
     'createdAt: date-time形式でない',
     'updatedAt: string型のところnumber型',
-    'タイポフィールド追加: emal, nmae'
+    'タイポフィールド追加: emal, nmae',
   ];
   logViolations('PUT /users/:userId', violations);
 
@@ -348,12 +353,12 @@ app.put('/users/:userId', (req, res) => {
 app.patch('/users/:userId', (req, res) => {
   const { userId } = req.params;
 
-  const user = originalUsers.find(u => u.id === userId);
+  const user = originalUsers.find((u) => u.id === userId);
   if (!user) {
     const violations = [
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
-      'message: string型のところarray型'
+      'message: string型のところarray型',
     ];
     logViolations('PATCH /users/:userId (404)', violations);
     return res.status(404).json(createViolatingError('NOT_FOUND', 'ユーザーが見つかりません'));
@@ -369,7 +374,7 @@ app.patch('/users/:userId', (req, res) => {
     'address: フラット化されている（階層違反）',
     'status: enum外の値 "deleted"',
     'createdAt: date-time形式でない（"2024年1月1日"）',
-    'updatedAt: string型のところnumber型（タイムスタンプ）'
+    'updatedAt: string型のところnumber型（タイムスタンプ）',
   ];
   logViolations('PATCH /users/:userId', violations);
 
@@ -380,12 +385,12 @@ app.patch('/users/:userId', (req, res) => {
 app.delete('/users/:userId', (req, res) => {
   const { userId } = req.params;
 
-  const user = originalUsers.find(u => u.id === userId);
+  const user = originalUsers.find((u) => u.id === userId);
   if (!user) {
     const violations = [
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
-      'message: string型のところarray型'
+      'message: string型のところarray型',
     ];
     logViolations('DELETE /users/:userId (404)', violations);
     return res.status(404).json(createViolatingError('NOT_FOUND', 'ユーザーが見つかりません'));
@@ -394,7 +399,7 @@ app.delete('/users/:userId', (req, res) => {
   // 204は本体なしだが、わざと本体を返す（違反）
   const violations = [
     '204レスポンスにbodyを返却（No Contentなのにbodyあり）',
-    '返却されたデータもschema違反'
+    '返却されたデータもschema違反',
   ];
   logViolations('DELETE /users/:userId', violations);
 
@@ -406,12 +411,12 @@ app.delete('/users/:userId', (req, res) => {
 app.patch('/users/:userId/profile', (req, res) => {
   const { userId } = req.params;
 
-  const user = originalUsers.find(u => u.id === userId);
+  const user = originalUsers.find((u) => u.id === userId);
   if (!user) {
     const violations = [
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
-      'message: string型のところarray型'
+      'message: string型のところarray型',
     ];
     logViolations('PATCH /users/:userId/profile (404)', violations);
     return res.status(404).json(createViolatingError('NOT_FOUND', 'ユーザーが見つかりません'));
@@ -423,12 +428,12 @@ app.patch('/users/:userId/profile', (req, res) => {
     'bio: string型のところnumber型',
     'avatarUrl: URI形式でない',
     'socialLinks: 階層がフラットになっている',
-    'skills: string配列のところobject配列'
+    'skills: string配列のところobject配列',
   ];
   logViolations('PATCH /users/:userId/profile', violations);
 
   res.json({
-    message: ['プロフィールを更新しました', '成功'],  // string -> array違反
+    message: ['プロフィールを更新しました', '成功'], // string -> array違反
     profile: {
       // bio: string -> number違反
       bio: 12345,
@@ -440,9 +445,9 @@ app.patch('/users/:userId/profile', (req, res) => {
       // skills: string[] -> object[]違反
       skills: [
         { name: 'JavaScript', level: 5 },
-        { name: 'TypeScript', level: 4 }
-      ]
-    }
+        { name: 'TypeScript', level: 4 },
+      ],
+    },
   });
 });
 
@@ -463,12 +468,12 @@ app.post('/posts', (req, res) => {
     'status: enum外の値 "pending"',
     'createdAt: date-time形式でない',
     'updatedAt: nullを返却',
-    'タイポフィールド追加: titel, contnet'
+    'タイポフィールド追加: titel, contnet',
   ];
   logViolations('POST /posts', violations);
 
   const newPost = {
-    id: (originalPosts.length + 1),
+    id: originalPosts.length + 1,
     title: req.body.title || '新規投稿',
     content: req.body.content || 'コンテンツ',
     authorId: req.body.authorId || '550e8400-e29b-41d4-a716-446655440001',
@@ -476,7 +481,7 @@ app.post('/posts', (req, res) => {
     metadata: req.body.metadata || { readingTime: 5, keywords: [], featured: false },
     status: 'published',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 
   res.status(201).json(createViolatingPost(newPost));
@@ -486,12 +491,12 @@ app.post('/posts', (req, res) => {
 app.put('/posts/:postId', (req, res) => {
   const postId = parseInt(req.params.postId);
 
-  const post = originalPosts.find(p => p.id === postId);
+  const post = originalPosts.find((p) => p.id === postId);
   if (!post) {
     const violations = [
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
-      'message: string型のところarray型'
+      'message: string型のところarray型',
     ];
     logViolations('PUT /posts/:postId (404)', violations);
     return res.status(404).json(createViolatingError('NOT_FOUND', '投稿が見つかりません'));
@@ -507,7 +512,7 @@ app.put('/posts/:postId', (req, res) => {
     'metadata: 余分なネスト階層',
     'status: enum外の値 "pending"',
     'createdAt: date-time形式でない',
-    'updatedAt: nullを返却'
+    'updatedAt: nullを返却',
   ];
   logViolations('PUT /posts/:postId', violations);
 
@@ -518,12 +523,12 @@ app.put('/posts/:postId', (req, res) => {
 app.delete('/posts/:postId', (req, res) => {
   const postId = parseInt(req.params.postId);
 
-  const post = originalPosts.find(p => p.id === postId);
+  const post = originalPosts.find((p) => p.id === postId);
   if (!post) {
     const violations = [
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
-      'message: string型のところarray型'
+      'message: string型のところarray型',
     ];
     logViolations('DELETE /posts/:postId (404)', violations);
     return res.status(404).json(createViolatingError('NOT_FOUND', '投稿が見つかりません'));
@@ -531,7 +536,7 @@ app.delete('/posts/:postId', (req, res) => {
 
   const violations = [
     '204レスポンスにbodyを返却（No Contentなのにbodyあり）',
-    '返却されたデータもschema違反'
+    '返却されたデータもschema違反',
   ];
   logViolations('DELETE /posts/:postId', violations);
 
@@ -543,12 +548,12 @@ app.delete('/posts/:postId', (req, res) => {
 app.patch('/posts/:postId/status', (req, res) => {
   const postId = parseInt(req.params.postId);
 
-  const post = originalPosts.find(p => p.id === postId);
+  const post = originalPosts.find((p) => p.id === postId);
   if (!post) {
     const violations = [
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
-      'message: string型のところarray型'
+      'message: string型のところarray型',
     ];
     logViolations('PATCH /posts/:postId/status (404)', violations);
     return res.status(404).json(createViolatingError('NOT_FOUND', '投稿が見つかりません'));
@@ -564,7 +569,7 @@ app.patch('/posts/:postId/status', (req, res) => {
     'metadata: 余分なネスト階層',
     'status: enum外の値 "pending"（リクエストで指定されても無視）',
     'createdAt: date-time形式でない',
-    'updatedAt: nullを返却'
+    'updatedAt: nullを返却',
   ];
   logViolations('PATCH /posts/:postId/status', violations);
 
@@ -578,15 +583,15 @@ app.delete('/posts/:postId/comments/:commentId', (req, res) => {
 
   const violations = [
     '204レスポンスにbodyを返却（No Contentなのにbodyあり）',
-    '返却されたデータのschema違反'
+    '返却されたデータのschema違反',
   ];
   logViolations('DELETE /posts/:postId/comments/:commentId', violations);
 
   // 204なのにbodyを返す
   res.status(204).json({
     deleted: true,
-    postId: 'post-' + postId,  // integer -> string違反
-    commentId: ['comment', commentId]  // string -> array違反
+    postId: 'post-' + postId, // integer -> string違反
+    commentId: ['comment', commentId], // string -> array違反
   });
 });
 
@@ -600,7 +605,7 @@ app.get('/header/hissu', (req, res) => {
     'レスポンスヘッダー aaa-res-hitsuyou: 必須なのに設定されていない',
     'レスポンスヘッダー aaa-res-nini: 整数値を設定（string型違反）',
     'message: string型のところarray型',
-    'receivedHeaders: スキーマにないフィールド'
+    'receivedHeaders: スキーマにないフィールド',
   ];
   logViolations('GET /header/hissu', violations);
 
@@ -613,10 +618,10 @@ app.get('/header/hissu', (req, res) => {
     message: ['ヘッダーバリデーション', '成功'],
     // 余分なフィールド
     receivedHeaders: {
-      all: req.headers
+      all: req.headers,
     },
     // タイポ
-    mesage: 'typo field'
+    mesage: 'typo field',
   });
 });
 
@@ -625,7 +630,7 @@ app.get('/header/uuid', (req, res) => {
   const violations = [
     'レスポンスヘッダー aaa-res-uuid: UUID形式でない値を設定（format: uuid違反）',
     'message: string型のところobject型',
-    'receivedUuid: string型のところarray型'
+    'receivedUuid: string型のところarray型',
   ];
   logViolations('GET /header/uuid', violations);
 
@@ -636,7 +641,7 @@ app.get('/header/uuid', (req, res) => {
     // message: string -> object違反
     message: { text: 'UUIDヘッダーバリデーション成功', code: 200 },
     // receivedUuid: string -> array違反
-    receivedUuid: [req.headers['aaa-req-uuid'], 'extra-value']
+    receivedUuid: [req.headers['aaa-req-uuid'], 'extra-value'],
   });
 });
 
@@ -645,12 +650,12 @@ app.get('/header/regexp', (req, res) => {
   const violations = [
     'レスポンスヘッダー aaa-res-regexp: パターン ^XYZ-[A-Z]{3}$ に一致しない値（pattern違反）',
     'message: string型のところnumber型',
-    'receivedRegexp: スキーマにないフィールド'
+    'receivedRegexp: スキーマにないフィールド',
   ];
   logViolations('GET /header/regexp', violations);
 
   // aaa-res-regexp にパターンに一致しない値を設定（違反）
-  res.set('aaa-res-regexp', 'ABC-123');  // XYZ-でなくABC-
+  res.set('aaa-res-regexp', 'ABC-123'); // XYZ-でなくABC-
 
   res.json({
     // message: string -> number違反
@@ -658,7 +663,7 @@ app.get('/header/regexp', (req, res) => {
     // 余分なフィールド
     receivedRegexp: req.headers['aaa-req-regexp'],
     // タイポ
-    recievedRegexp: 'typo'
+    recievedRegexp: 'typo',
   });
 });
 
@@ -667,7 +672,7 @@ app.get('/header/datetime', (req, res) => {
   const violations = [
     'レスポンスヘッダー aaa-res-datetime: date-time形式でない値（format: date-time違反）',
     'message: string型のところboolean型',
-    'parsedDate: date-time形式でない（format違反）'
+    'parsedDate: date-time形式でない（format違反）',
   ];
   logViolations('GET /header/datetime', violations);
 
@@ -679,7 +684,7 @@ app.get('/header/datetime', (req, res) => {
     message: true,
     receivedDatetime: req.headers['aaa-req-datetime'],
     // parsedDate: date-time形式でない
-    parsedDate: '昨日の10時30分'
+    parsedDate: '昨日の10時30分',
   });
 });
 
@@ -689,33 +694,27 @@ app.get('/header/datetime', (req, res) => {
 
 // GET /path/uuid/:uuid - UUIDパスパラメータテスト（違反レスポンス）
 app.get('/path/uuid/:uuid', (req, res) => {
-  const violations = [
-    'uuid: string型のところobject型',
-    'message: string型のところarray型'
-  ];
+  const violations = ['uuid: string型のところobject型', 'message: string型のところarray型'];
   logViolations('GET /path/uuid/:uuid', violations);
 
   res.json({
     // uuid: string -> object違反
     uuid: { value: req.params.uuid, type: 'uuid' },
     // message: string -> array違反
-    message: ['UUID', 'パスパラメータ', 'バリデーション成功']
+    message: ['UUID', 'パスパラメータ', 'バリデーション成功'],
   });
 });
 
 // GET /path/regexp/:code - 正規表現パスパラメータテスト（違反レスポンス）
 app.get('/path/regexp/:code', (req, res) => {
-  const violations = [
-    'code: string型のところinteger型',
-    'message: string型のところnull'
-  ];
+  const violations = ['code: string型のところinteger型', 'message: string型のところnull'];
   logViolations('GET /path/regexp/:code', violations);
 
   res.json({
     // code: string -> integer違反
     code: 1234,
     // message: string -> null違反
-    message: null
+    message: null,
   });
 });
 
@@ -723,7 +722,7 @@ app.get('/path/regexp/:code', (req, res) => {
 app.get('/path/datetime/:datetime', (req, res) => {
   const violations = [
     'datetime: date-time形式でない（format違反）',
-    'message: string型のところobject型'
+    'message: string型のところobject型',
   ];
   logViolations('GET /path/datetime/:datetime', violations);
 
@@ -731,7 +730,7 @@ app.get('/path/datetime/:datetime', (req, res) => {
     // datetime: date-time形式でない
     datetime: '今日の午後3時',
     // message: string -> object違反
-    message: { status: 'success', code: 200 }
+    message: { status: 'success', code: 200 },
   });
 });
 
@@ -740,7 +739,7 @@ app.get('/path/encoded/:text', (req, res) => {
   const violations = [
     'text: string型のところarray型',
     'encoded: string型のところnumber型',
-    'message: string型のところboolean型'
+    'message: string型のところboolean型',
   ];
   logViolations('GET /path/encoded/:text', violations);
 
@@ -752,23 +751,20 @@ app.get('/path/encoded/:text', (req, res) => {
     // encoded: string -> number違反
     encoded: 12345,
     // message: string -> boolean違反
-    message: false
+    message: false,
   });
 });
 
 // GET /path/integer/:num - 整数パスパラメータテスト（違反レスポンス）
 app.get('/path/integer/:num', (req, res) => {
-  const violations = [
-    'num: integer型のところstring型',
-    'message: string型のところarray型'
-  ];
+  const violations = ['num: integer型のところstring型', 'message: string型のところarray型'];
   logViolations('GET /path/integer/:num', violations);
 
   res.json({
     // num: integer -> string違反
     num: req.params.num + '個',
     // message: string -> array違反
-    message: ['整数', 'パスパラメータ', 'バリデーション成功']
+    message: ['整数', 'パスパラメータ', 'バリデーション成功'],
   });
 });
 
@@ -785,7 +781,7 @@ app.use((req, res, next) => {
       '404エラーレスポンス: Error schemaに違反',
       'code: string型のところnumber型',
       'message: string型のところarray型',
-      'スキーマにないフィールド追加: errorId, stack'
+      'スキーマにないフィールド追加: errorId, stack',
     ];
     logViolations(`${req.method} ${req.path} (404 Not Found)`, violations);
     res.status(404).json(createViolatingError('NOT_FOUND', 'エンドポイントが見つかりません'));
